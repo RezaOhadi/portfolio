@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Biography placeholder">
+  
+  <defs>
+    <radialGradient id="glow-bio" cx="50%" cy="-5%" r="85%">
+      <stop offset="0%" stop-color="#F2EEE6" stop-opacity="0.16"/>
+      <stop offset="45%" stop-color="#F2EEE6" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#F2EEE6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vign-bio" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </linearGradient>
+    
+  <filter id="grain-bio">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer>
+  </filter>
+  </defs>
+  <rect width="1600" height="1000" fill="#0A0A0C"/>
+  <rect width="1600" height="1000" fill="url(#glow-bio)"/>
+  <g opacity="0.5"><line x1="120" y1="500" x2="1480" y2="500" stroke="#F2EEE6" stroke-width="1" opacity="0.12"/><line x1="120" y1="530" x2="1480" y2="530" stroke="#F2EEE6" stroke-width="1" opacity="0.12"/><line x1="120" y1="560" x2="1480" y2="560" stroke="#F2EEE6" stroke-width="1" opacity="0.12"/><line x1="120" y1="590" x2="1480" y2="590" stroke="#F2EEE6" stroke-width="1" opacity="0.12"/><line x1="120" y1="620" x2="1480" y2="620" stroke="#F2EEE6" stroke-width="1" opacity="0.12"/></g>
+  <g transform="translate(0 800)"><g><rect x="1" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="115.28571428571429" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="229.57142857142858" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="343.8571428571429" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="458.14285714285717" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="572.4285714285714" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="686.7142857142858" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="801" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="915.2857142857143" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="1029.5714285714287" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="1143.857142857143" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="1258.142857142857" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="1372.4285714285716" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="1486.7142857142858" y="0" width="112.28571428571429" height="200" fill="#F2EEE6" opacity="0.18000000000000002"/><rect x="75.42857142857143" y="0" width="70.85714285714286" height="124" fill="#0A0A0C" opacity="0.2"/><rect x="189.71428571428572" y="0" width="70.85714285714286" height="124" fill="#0A0A0C" opacity="0.2"/><rect x="418.28571428571433" y="0" width="70.85714285714286" height="124" fill="#0A0A0C" opacity="0.2"/><rect x="532.5714285714286" y="0" width="70.85714285714286" height="124" fill="#0A0A0C" opacity="0.2"/><rect x="646.8571428571429" y="0" width="70.85714285714286" height="124" fill="#0A0A0C" opacity="0.2"/><rect x="875.4285714285714" y="0" width="70.85714285714286" height="124" fill="#0A0A0C" opacity="0.2"/><rect x="989.7142857142858" y="0" width="70.85714285714286" height="124" fill="#0A0A0C" opacity="0.2"/><rect x="1218.2857142857142" y="0" width="70.85714285714286" height="124" fill="#0A0A0C" opacity="0.2"/><rect x="1332.5714285714284" y="0" width="70.85714285714286" height="124" fill="#0A0A0C" opacity="0.2"/><rect x="1446.857142857143" y="0" width="70.85714285714286" height="124" fill="#0A0A0C" opacity="0.2"/></g></g>
+  <rect width="1600" height="1000" fill="url(#vign-bio)"/>
+  <rect width="1600" height="1000" filter="url(#grain-bio)"/>
+</svg>

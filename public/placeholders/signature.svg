@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="200" viewBox="0 0 620 200" role="img" aria-label="Signature placeholder">
+  <path d="M30 140 C 80 40, 120 40, 130 110 C 138 160, 170 60, 210 110 C 240 150, 250 70, 300 90 C 360 115, 330 40, 400 70 C 470 100, 520 90, 590 60"
+    fill="none" stroke="#F2EEE6" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+  <text x="30" y="180" font-family="Georgia, serif" font-style="italic" font-size="20" fill="#8C8C96" opacity="0.5">Reza Ohadi</text>
+</svg>

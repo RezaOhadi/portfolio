@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="Cinematic placeholder">
+  
+  <defs>
+    <radialGradient id="glow-hero" cx="50%" cy="-5%" r="85%">
+      <stop offset="0%" stop-color="#F2EEE6" stop-opacity="0.16"/>
+      <stop offset="45%" stop-color="#F2EEE6" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#F2EEE6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vign-hero" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </linearGradient>
+    
+  <filter id="grain-hero">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer>
+  </filter>
+  </defs>
+  <rect width="1600" height="900" fill="#0A0A0C"/>
+  <rect width="1600" height="900" fill="url(#glow-hero)"/>
+  <g opacity="0.5"><line x1="0" y1="288" x2="1600" y2="288" stroke="#F2EEE6" stroke-width="1" opacity="0.1"/><line x1="0" y1="314" x2="1600" y2="314" stroke="#F2EEE6" stroke-width="1" opacity="0.1"/><line x1="0" y1="340" x2="1600" y2="340" stroke="#F2EEE6" stroke-width="1" opacity="0.1"/><line x1="0" y1="366" x2="1600" y2="366" stroke="#F2EEE6" stroke-width="1" opacity="0.1"/><line x1="0" y1="392" x2="1600" y2="392" stroke="#F2EEE6" stroke-width="1" opacity="0.1"/></g>
+  <g transform="translate(800 558) skewX(-8)">
+    <g transform="translate(-800 0)"><g><rect x="1" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="115.28571428571429" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="229.57142857142858" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="343.8571428571429" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="458.14285714285717" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="572.4285714285714" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="686.7142857142858" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="801" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="915.2857142857143" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="1029.5714285714287" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="1143.857142857143" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="1258.142857142857" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="1372.4285714285716" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="1486.7142857142858" y="0" width="112.28571428571429" height="220" fill="#F2EEE6" opacity="0.198"/><rect x="75.42857142857143" y="0" width="70.85714285714286" height="136.4" fill="#0A0A0C" opacity="0.22"/><rect x="189.71428571428572" y="0" width="70.85714285714286" height="136.4" fill="#0A0A0C" opacity="0.22"/><rect x="418.28571428571433" y="0" width="70.85714285714286" height="136.4" fill="#0A0A0C" opacity="0.22"/><rect x="532.5714285714286" y="0" width="70.85714285714286" height="136.4" fill="#0A0A0C" opacity="0.22"/><rect x="646.8571428571429" y="0" width="70.85714285714286" height="136.4" fill="#0A0A0C" opacity="0.22"/><rect x="875.4285714285714" y="0" width="70.85714285714286" height="136.4" fill="#0A0A0C" opacity="0.22"/><rect x="989.7142857142858" y="0" width="70.85714285714286" height="136.4" fill="#0A0A0C" opacity="0.22"/><rect x="1218.2857142857142" y="0" width="70.85714285714286" height="136.4" fill="#0A0A0C" opacity="0.22"/><rect x="1332.5714285714284" y="0" width="70.85714285714286" height="136.4" fill="#0A0A0C" opacity="0.22"/><rect x="1446.857142857143" y="0" width="70.85714285714286" height="136.4" fill="#0A0A0C" opacity="0.22"/></g></g>
+  </g>
+  <rect width="1600" height="900" fill="url(#vign-hero)"/>
+  <rect width="1600" height="900" filter="url(#grain-hero)"/>
+  <text x="800" y="450" text-anchor="middle" font-family="Georgia, serif" font-size="34" fill="#F2EEE6" opacity="0.16" letter-spacing="14">REZA OHADI</text>
+</svg>
