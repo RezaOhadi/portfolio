@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, ArrowRight } from "lucide-react";
-import { Hero } from "@/components/home/Hero";
 import { ArtistJsonLd } from "@/components/seo/ArtistJsonLd";
-import { FeaturedComposition } from "@/components/home/FeaturedComposition";
+import { CinematicPrelude } from "@/components/home/CinematicPrelude";
 import { ProductCard } from "@/components/store/ProductCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PianoDivider } from "@/components/ui/PianoDivider";
@@ -30,6 +29,7 @@ export default async function HomePage() {
     products[0];
   const latest = products.slice(0, 3);
   const galleryPreview = gallery.slice(0, 4);
+  const memories = gallery.slice(0, 3);
   const statementLines = content.home.artistStatement
     .split(/(?<=\.)\s+/)
     .map((s) => s.trim())
@@ -38,14 +38,9 @@ export default async function HomePage() {
   return (
     <>
       <ArtistJsonLd social={content.social} />
-      <Hero hero={content.hero} />
 
-      {/* Featured composition */}
-      {featured ? (
-        <section className="py-24 md:py-32">
-          <FeaturedComposition product={featured} />
-        </section>
-      ) : null}
+      {/* Cinematic prelude — one continuous piano world */}
+      <CinematicPrelude hero={content.hero} featured={featured} memories={memories} />
 
       <PianoDivider label="The Catalogue" />
 
