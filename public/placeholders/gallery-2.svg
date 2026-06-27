@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="950" viewBox="0 0 1300 950" role="img" aria-label="Gallery placeholder 2">
+  <defs>
+    <radialGradient id="light-g1" cx="68%" cy="30%" r="78%">
+      <stop offset="0%" stop-color="#F2EEE6" stop-opacity="0.20"/>
+      <stop offset="42%" stop-color="#F2EEE6" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#F2EEE6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vg-g1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="45%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.5"/>
+    </linearGradient>
+    
+  <filter id="grain-g1">
+    <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.07"/></feComponentTransfer>
+  </filter>
+  </defs>
+  <rect width="1300" height="950" fill="#0A0A0C"/>
+  <rect width="1300" height="950" fill="url(#light-g1)"/>
+  <rect x="156" y="133" width="988" height="684" fill="#F2EEE6" opacity="0.04"/><g><line x1="260" y1="323" x2="1040" y2="323" stroke="#F2EEE6" stroke-width="1" opacity="0.28"/><line x1="260" y1="345" x2="1040" y2="345" stroke="#F2EEE6" stroke-width="1" opacity="0.28"/><line x1="260" y1="367" x2="1040" y2="367" stroke="#F2EEE6" stroke-width="1" opacity="0.28"/><line x1="260" y1="389" x2="1040" y2="389" stroke="#F2EEE6" stroke-width="1" opacity="0.28"/><line x1="260" y1="411" x2="1040" y2="411" stroke="#F2EEE6" stroke-width="1" opacity="0.28"/><line x1="260" y1="532" x2="1040" y2="532" stroke="#F2EEE6" stroke-width="1" opacity="0.2"/><line x1="260" y1="554" x2="1040" y2="554" stroke="#F2EEE6" stroke-width="1" opacity="0.2"/><line x1="260" y1="576" x2="1040" y2="576" stroke="#F2EEE6" stroke-width="1" opacity="0.2"/><line x1="260" y1="598" x2="1040" y2="598" stroke="#F2EEE6" stroke-width="1" opacity="0.2"/><line x1="260" y1="620" x2="1040" y2="620" stroke="#F2EEE6" stroke-width="1" opacity="0.2"/></g>
+  <rect width="1300" height="950" fill="url(#vg-g1)"/>
+  <rect width="1300" height="950" filter="url(#grain-g1)"/>
+</svg>

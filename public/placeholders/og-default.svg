@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Reza Ohadi">
+  
+  <defs>
+    <radialGradient id="glow-og" cx="50%" cy="-5%" r="85%">
+      <stop offset="0%" stop-color="#F2EEE6" stop-opacity="0.16"/>
+      <stop offset="45%" stop-color="#F2EEE6" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#F2EEE6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vign-og" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </linearGradient>
+    
+  <filter id="grain-og">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer>
+  </filter>
+  </defs>
+  <rect width="1200" height="630" fill="#0A0A0C"/>
+  <rect width="1200" height="630" fill="url(#glow-og)"/>
+  <g transform="translate(0 510)"><g><rect x="1" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="86.71428571428571" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="172.42857142857142" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="258.1428571428571" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="343.85714285714283" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="429.57142857142856" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="515.2857142857142" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="601" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="686.7142857142857" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="772.4285714285713" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="858.1428571428571" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="943.8571428571428" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="1029.5714285714284" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="1115.2857142857142" y="0" width="83.71428571428571" height="120" fill="#F2EEE6" opacity="0.162"/><rect x="56.57142857142857" y="0" width="53.14285714285714" height="74.4" fill="#0A0A0C" opacity="0.18"/><rect x="142.28571428571428" y="0" width="53.14285714285714" height="74.4" fill="#0A0A0C" opacity="0.18"/><rect x="313.71428571428567" y="0" width="53.14285714285714" height="74.4" fill="#0A0A0C" opacity="0.18"/><rect x="399.4285714285714" y="0" width="53.14285714285714" height="74.4" fill="#0A0A0C" opacity="0.18"/><rect x="485.1428571428571" y="0" width="53.14285714285714" height="74.4" fill="#0A0A0C" opacity="0.18"/><rect x="656.5714285714286" y="0" width="53.14285714285714" height="74.4" fill="#0A0A0C" opacity="0.18"/><rect x="742.2857142857142" y="0" width="53.14285714285714" height="74.4" fill="#0A0A0C" opacity="0.18"/><rect x="913.7142857142857" y="0" width="53.14285714285714" height="74.4" fill="#0A0A0C" opacity="0.18"/><rect x="999.4285714285713" y="0" width="53.14285714285714" height="74.4" fill="#0A0A0C" opacity="0.18"/><rect x="1085.142857142857" y="0" width="53.14285714285714" height="74.4" fill="#0A0A0C" opacity="0.18"/></g></g>
+  <text x="64" y="300" font-family="Georgia, serif" font-size="92" fill="#F2EEE6">Reza Ohadi</text>
+  <text x="68" y="350" font-family="Helvetica, Arial, sans-serif" font-size="24" letter-spacing="8" fill="#8C8C96">PIANIST · COMPOSER</text>
+  <rect width="1200" height="630" filter="url(#grain-og)"/>
+</svg>

@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   Design tokens
+   ========================================================================== */
+:root {
+  --ink: #0a0a0c;
+  --ink-deep: #060608;
+  --ivory: #f2eee6;
+  --silver: #b9b9c2;
+  --charcoal: #232329;
+
+  --bg: var(--ink);
+  --fg: var(--ivory);
+
+  /* Vertical rhythm for editorial sections */
+  --section-y: clamp(5rem, 12vh, 11rem);
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+@layer base {
+  * {
+    border-color: rgb(255 255 255 / 0.08);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-feature-settings: "kern", "liga", "calt";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgb(242 238 230 / 0.85);
+    color: #0a0a0c;
+  }
+
+  /* Accessible, visible focus everywhere */
+  :focus-visible {
+    outline: 2px solid rgb(242 238 230 / 0.7);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  /* Refined scrollbar (progressive enhancement) */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--ink-deep);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2c2c33;
+    border: 2px solid var(--ink-deep);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3a3a42;
+  }
+
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* ==========================================================================
+   Components / utilities
+   ========================================================================== */
+@layer components {
+  .container-editorial {
+    @apply mx-auto w-full max-w-editorial px-6 sm:px-8 lg:px-12;
+  }
+
+  /* The recurring "kicker" label — small, tracked-out, uppercase */
+  .kicker {
+    @apply font-sans text-[0.7rem] uppercase tracking-editorial text-silver-400;
+  }
+
+  /* Hairline divider */
+  .hairline {
+    @apply h-px w-full bg-white/10;
+  }
+
+  /* Animated underline for inline links */
+  .link-underline {
+    @apply relative inline-block;
+  }
+  .link-underline::after {
+    content: "";
+    @apply absolute -bottom-0.5 left-0 h-px w-full origin-right scale-x-0 bg-current transition-transform duration-500 ease-cinematic;
+  }
+  .link-underline:hover::after,
+  .link-underline:focus-visible::after {
+    @apply origin-left scale-x-100;
+  }
+
+  /* Glassy surface used sparingly for floating UI */
+  .glass {
+    background: rgb(12 12 15 / 0.55);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    border: 1px solid rgb(255 255 255 / 0.08);
+  }
+}
+
+@layer utilities {
+  /* Cinematic film grain overlay — applied to <body> wrapper */
+  .grain::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.04;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .text-shadow-cinematic {
+    text-shadow: 0 1px 40px rgb(0 0 0 / 0.5);
+  }
+
+  /* Mask helpers for elegant fades */
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent);
+    mask-image: linear-gradient(to bottom, black 60%, transparent);
+  }
+  .mask-fade-edges {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+
+  /* Shimmer skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, #121215 25%, #1c1c21 37%, #121215 63%);
+    background-size: 400% 100%;
+    @apply animate-shimmer;
+  }
+}
+
+/* ==========================================================================
+   Reduced motion — honor user preference globally
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .grain::after {
+    display: none;
+  }
+}

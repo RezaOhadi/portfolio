@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-label="Elegy for a Still Room cover">
+  
+  <defs>
+    <radialGradient id="glow-cov4" cx="50%" cy="-5%" r="85%">
+      <stop offset="0%" stop-color="#F2EEE6" stop-opacity="0.16"/>
+      <stop offset="45%" stop-color="#F2EEE6" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#F2EEE6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vign-cov4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </linearGradient>
+    
+  <filter id="grain-cov4">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer>
+  </filter>
+  </defs>
+  <rect width="900" height="1200" fill="#0A0A0C"/>
+  <rect width="900" height="1200" fill="url(#glow-cov4)"/>
+  <ellipse cx="450" cy="480" rx="396" ry="360" fill="#F2EEE6" opacity="0.05"/>
+  <rect x="28" y="28" width="844" height="1144" fill="none" stroke="#F2EEE6" stroke-width="1" opacity="0.2"/>
+  <g opacity="0.65"><rect x="162" y="360" width="7" height="192" fill="#F2EEE6" opacity="0.22"/><rect x="234" y="153.20169585834435" width="7" height="398.79830414165565" fill="#F2EEE6" opacity="0.54"/><rect x="306" y="102.90422544815647" width="7" height="449.09577455184353" fill="#F2EEE6" opacity="0.22"/><rect x="378" y="247.17171161826894" width="7" height="304.82828838173106" fill="#F2EEE6" opacity="0.54"/><rect x="450" y="243.17460297015896" width="7" height="308.82539702984104" fill="#F2EEE6" opacity="0.22"/><rect x="522" y="101.93204893641433" width="7" height="450.06795106358567" fill="#F2EEE6" opacity="0.54"/><rect x="594" y="155.99017528521938" width="7" height="396.0098247147806" fill="#F2EEE6" opacity="0.22"/><rect x="666" y="355.56113027213166" width="7" height="196.43886972786834" fill="#F2EEE6" opacity="0.54"/><rect x="738" y="150.4716839438235" width="7" height="401.5283160561765" fill="#F2EEE6" opacity="0.22"/></g>
+  <g><g><rect x="1" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="65.28571428571429" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="129.57142857142858" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="193.8571428571429" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="258.14285714285717" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="322.42857142857144" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="386.7142857142858" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="451.00000000000006" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="515.2857142857143" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="579.5714285714287" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="643.8571428571429" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="708.1428571428572" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="772.4285714285716" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="836.7142857142858" y="1110" width="62.28571428571429" height="90" fill="#F2EEE6" opacity="0.27"/><rect x="42.42857142857144" y="1110" width="39.85714285714286" height="55.8" fill="#0A0A0C" opacity="0.3"/><rect x="106.71428571428572" y="1110" width="39.85714285714286" height="55.8" fill="#0A0A0C" opacity="0.3"/><rect x="235.28571428571433" y="1110" width="39.85714285714286" height="55.8" fill="#0A0A0C" opacity="0.3"/><rect x="299.5714285714286" y="1110" width="39.85714285714286" height="55.8" fill="#0A0A0C" opacity="0.3"/><rect x="363.8571428571429" y="1110" width="39.85714285714286" height="55.8" fill="#0A0A0C" opacity="0.3"/><rect x="492.4285714285715" y="1110" width="39.85714285714286" height="55.8" fill="#0A0A0C" opacity="0.3"/><rect x="556.7142857142858" y="1110" width="39.85714285714286" height="55.8" fill="#0A0A0C" opacity="0.3"/><rect x="685.2857142857143" y="1110" width="39.85714285714286" height="55.8" fill="#0A0A0C" opacity="0.3"/><rect x="749.5714285714287" y="1110" width="39.85714285714286" height="55.8" fill="#0A0A0C" opacity="0.3"/><rect x="813.857142857143" y="1110" width="39.85714285714286" height="55.8" fill="#0A0A0C" opacity="0.3"/></g></g>
+  <rect width="900" height="1200" fill="url(#vign-cov4)"/>
+  <text x="450" y="864" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="48" fill="#F2EEE6">Elegy for a Still Room</text>
+  <text x="450" y="908" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="17" letter-spacing="6" fill="#A6A6AE">REZA OHADI</text>
+  <rect width="900" height="1200" filter="url(#grain-cov4)"/>
+</svg>
