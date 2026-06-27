@@ -21,6 +21,13 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    serverActions: {
+      // Default Server Action body limit is 1 MB, which rejects PDF uploads in
+      // the admin product form. Raise it so sheet music can be uploaded.
+      bodySizeLimit: "4mb",
+    },
+  },
 };
 
 export default nextConfig;
