@@ -11,6 +11,7 @@ const config: Config = {
       colors: {
         ink: {
           DEFAULT: "#0A0A0C",
+          deep: "#060608",
           950: "#060608",
           900: "#0A0A0C",
           800: "#121215",

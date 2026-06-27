@@ -1,25 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1300" height="950" viewBox="0 0 1300 950" role="img" aria-label="Gallery placeholder 5">
-  
   <defs>
-    <radialGradient id="glow-g4" cx="50%" cy="-5%" r="85%">
-      <stop offset="0%" stop-color="#F2EEE6" stop-opacity="0.16"/>
-      <stop offset="45%" stop-color="#F2EEE6" stop-opacity="0.04"/>
+    <radialGradient id="light-g4" cx="30%" cy="24%" r="78%">
+      <stop offset="0%" stop-color="#F2EEE6" stop-opacity="0.20"/>
+      <stop offset="42%" stop-color="#F2EEE6" stop-opacity="0.05"/>
       <stop offset="100%" stop-color="#F2EEE6" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="vign-g4" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#000" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    <linearGradient id="vg-g4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="45%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.5"/>
     </linearGradient>
     
   <filter id="grain-g4">
-    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" stitchTiles="stitch"/>
     <feColorMatrix type="saturate" values="0"/>
-    <feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer>
+    <feComponentTransfer><feFuncA type="linear" slope="0.07"/></feComponentTransfer>
   </filter>
   </defs>
   <rect width="1300" height="950" fill="#121215"/>
-  <rect width="1300" height="950" fill="url(#glow-g4)"/>
-  <g transform="translate(0 570)"><g><rect x="1" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="93.85714285714286" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="186.71428571428572" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="279.57142857142856" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="372.42857142857144" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="465.28571428571433" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="558.1428571428571" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="651" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="743.8571428571429" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="836.7142857142858" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="929.5714285714287" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="1022.4285714285714" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="1115.2857142857142" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="1208.142857142857" y="0" width="90.85714285714286" height="380" fill="#F2EEE6" opacity="0.27"/><rect x="61.28571428571429" y="0" width="57.57142857142858" height="235.6" fill="#0A0A0C" opacity="0.3"/><rect x="154.14285714285717" y="0" width="57.57142857142858" height="235.6" fill="#0A0A0C" opacity="0.3"/><rect x="339.85714285714283" y="0" width="57.57142857142858" height="235.6" fill="#0A0A0C" opacity="0.3"/><rect x="432.7142857142857" y="0" width="57.57142857142858" height="235.6" fill="#0A0A0C" opacity="0.3"/><rect x="525.5714285714287" y="0" width="57.57142857142858" height="235.6" fill="#0A0A0C" opacity="0.3"/><rect x="711.2857142857143" y="0" width="57.57142857142858" height="235.6" fill="#0A0A0C" opacity="0.3"/><rect x="804.1428571428572" y="0" width="57.57142857142858" height="235.6" fill="#0A0A0C" opacity="0.3"/><rect x="989.857142857143" y="0" width="57.57142857142858" height="235.6" fill="#0A0A0C" opacity="0.3"/><rect x="1082.7142857142858" y="0" width="57.57142857142858" height="235.6" fill="#0A0A0C" opacity="0.3"/><rect x="1175.5714285714284" y="0" width="57.57142857142858" height="235.6" fill="#0A0A0C" opacity="0.3"/></g></g>
-  <rect width="1300" height="950" fill="url(#vign-g4)"/>
+  <rect width="1300" height="950" fill="url(#light-g4)"/>
+  <g transform="translate(0 608)"><g><rect x="1" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="93.85714285714286" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="186.71428571428572" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="279.57142857142856" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="372.42857142857144" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="465.28571428571433" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="558.1428571428571" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="651" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="743.8571428571429" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="836.7142857142858" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="929.5714285714287" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="1022.4285714285714" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="1115.2857142857142" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="1208.142857142857" y="0" width="90.85714285714286" height="342" fill="#F2EEE6" opacity="0.30600000000000005"/><rect x="61.28571428571429" y="0" width="57.57142857142858" height="212.04" fill="#0A0A0C" opacity="0.34"/><rect x="154.14285714285717" y="0" width="57.57142857142858" height="212.04" fill="#0A0A0C" opacity="0.34"/><rect x="339.85714285714283" y="0" width="57.57142857142858" height="212.04" fill="#0A0A0C" opacity="0.34"/><rect x="432.7142857142857" y="0" width="57.57142857142858" height="212.04" fill="#0A0A0C" opacity="0.34"/><rect x="525.5714285714287" y="0" width="57.57142857142858" height="212.04" fill="#0A0A0C" opacity="0.34"/><rect x="711.2857142857143" y="0" width="57.57142857142858" height="212.04" fill="#0A0A0C" opacity="0.34"/><rect x="804.1428571428572" y="0" width="57.57142857142858" height="212.04" fill="#0A0A0C" opacity="0.34"/><rect x="989.857142857143" y="0" width="57.57142857142858" height="212.04" fill="#0A0A0C" opacity="0.34"/><rect x="1082.7142857142858" y="0" width="57.57142857142858" height="212.04" fill="#0A0A0C" opacity="0.34"/><rect x="1175.5714285714284" y="0" width="57.57142857142858" height="212.04" fill="#0A0A0C" opacity="0.34"/></g></g>
+  <rect width="1300" height="950" fill="url(#vg-g4)"/>
   <rect width="1300" height="950" filter="url(#grain-g4)"/>
 </svg>

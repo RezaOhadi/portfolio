@@ -9,6 +9,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PianoDivider } from "@/components/ui/PianoDivider";
 import { Button } from "@/components/ui/Button";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
+import { DrawLine } from "@/components/motion/DrawLine";
 import { getSiteContent } from "@/lib/data/content";
 import { getProducts } from "@/lib/data/products";
 import { getGalleryImages } from "@/lib/data/gallery";
@@ -29,6 +30,10 @@ export default async function HomePage() {
     products[0];
   const latest = products.slice(0, 3);
   const galleryPreview = gallery.slice(0, 4);
+  const statementLines = content.home.artistStatement
+    .split(/(?<=\.)\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   return (
     <>
@@ -77,23 +82,34 @@ export default async function HomePage() {
       <section className="relative overflow-hidden py-28 md:py-40">
         <div className="pointer-events-none absolute inset-0 bg-hall-glow opacity-60" />
         <div className="container-editorial relative">
-          <Reveal className="mx-auto max-w-4xl text-center">
-            <span className="kicker">Artist Statement</span>
-            <blockquote className="mt-8 font-serif text-3xl font-light leading-[1.3] text-ivory sm:text-4xl lg:text-5xl">
-              “{content.home.artistStatement}”
-            </blockquote>
-            {content.bio.signatureImage ? (
-              <div className="mt-12 flex justify-center">
+          <div className="mx-auto max-w-4xl text-center">
+            <Reveal>
+              <span className="kicker">Artist Statement</span>
+            </Reveal>
+            <Stagger
+              as="blockquote"
+              stagger={0.14}
+              className="mt-8 font-serif text-3xl font-light leading-[1.3] text-ivory sm:text-4xl lg:text-5xl"
+            >
+              {statementLines.map((line, i) => (
+                <StaggerItem as="span" key={i} className="block">
+                  {i === 0 ? "“" : ""}
+                  {line}
+                  {i === statementLines.length - 1 ? "”" : ""}
+                </StaggerItem>
+              ))}
+            </Stagger>
+            <Reveal delay={0.1} className="mt-12 flex flex-col items-center gap-5">
+              {content.bio.signatureImage ? (
                 <Image
                   src={content.bio.signatureImage}
                   alt="Reza Ohadi signature"
                   width={200}
                   height={64}
-                  className="h-16 w-auto opacity-80"
+                  className="h-14 w-auto opacity-80"
                 />
-              </div>
-            ) : null}
-            <div className="mt-8">
+              ) : null}
+              <DrawLine className="text-silver-300/60" />
               <Link
                 href="/biography"
                 className="group inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-widest text-silver-300 transition-colors hover:text-ivory"
@@ -101,8 +117,8 @@ export default async function HomePage() {
                 Read the full biography
                 <ArrowUpRight className="h-4 w-4 transition-transform duration-500 ease-cinematic group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
-            </div>
-          </Reveal>
+            </Reveal>
+          </div>
         </div>
       </section>
 

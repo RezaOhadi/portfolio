@@ -130,28 +130,36 @@ function bioWide() {
 
 /* --------------------------------- COVERS ---------------------------------- */
 const motifs = [
-  (w, h) => `<circle cx="${w / 2}" cy="${h * 0.4}" r="150" fill="none" stroke="${IVORY}" stroke-width="1" opacity="0.35"/><circle cx="${w / 2}" cy="${h * 0.4}" r="92" fill="none" stroke="${IVORY}" stroke-width="1" opacity="0.25"/>`,
-  (w, h) => `<g opacity="0.4">${staff(w * 0.15, h * 0.34, w * 0.7, 16, IVORY, 0.6, 1.2)}</g>`,
-  (w, h) => `<path d="M ${w * 0.2} ${h * 0.5} Q ${w / 2} ${h * 0.2} ${w * 0.8} ${h * 0.5}" fill="none" stroke="${IVORY}" stroke-width="1.2" opacity="0.4"/>`,
-  (w, h) => `<rect x="${w * 0.32}" y="${h * 0.22}" width="${w * 0.36}" height="${h * 0.36}" fill="none" stroke="${IVORY}" stroke-width="1" opacity="0.3" transform="rotate(45 ${w / 2} ${h * 0.4})"/>`,
-  (w, h) => `<g opacity="0.5">${Array.from({ length: 7 }, (_, i) => `<line x1="${w * 0.2 + i * (w * 0.6 / 6)}" y1="${h * 0.2}" x2="${w * 0.2 + i * (w * 0.6 / 6)}" y2="${h * 0.58}" stroke="${IVORY}" stroke-width="1" opacity="${0.15 + (i % 2) * 0.2}"/>`).join("")}</g>`,
-  (w, h) => `<circle cx="${w / 2}" cy="${h * 0.4}" r="130" fill="none" stroke="${IVORY}" stroke-width="0.8" opacity="0.3"/><line x1="${w * 0.2}" y1="${h * 0.4}" x2="${w * 0.8}" y2="${h * 0.4}" stroke="${IVORY}" stroke-width="0.8" opacity="0.25"/>`,
+  // concentric spotlight rings + centre point
+  (w, h) => `<g opacity="0.55"><circle cx="${w / 2}" cy="${h * 0.4}" r="170" fill="none" stroke="${IVORY}" stroke-width="1.2"/><circle cx="${w / 2}" cy="${h * 0.4}" r="112" fill="none" stroke="${IVORY}" stroke-width="0.8" opacity="0.6"/><circle cx="${w / 2}" cy="${h * 0.4}" r="3.5" fill="${IVORY}"/></g>`,
+  // staves with a clef-like flourish
+  (w, h) => `<g opacity="0.55">${staff(w * 0.16, h * 0.3, w * 0.68, 18, IVORY, 0.7, 1.3)}<path d="M ${w * 0.24} ${h * 0.26} C ${w * 0.32} ${h * 0.3}, ${w * 0.18} ${h * 0.42}, ${w * 0.27} ${h * 0.46}" fill="none" stroke="${IVORY}" stroke-width="1.4"/></g>`,
+  // piano-lid sweep (two curves)
+  (w, h) => `<g opacity="0.6"><path d="M ${w * 0.16} ${h * 0.52} Q ${w / 2} ${h * 0.16} ${w * 0.84} ${h * 0.5}" fill="none" stroke="${IVORY}" stroke-width="1.4"/><path d="M ${w * 0.23} ${h * 0.56} Q ${w / 2} ${h * 0.3} ${w * 0.77} ${h * 0.55}" fill="none" stroke="${IVORY}" stroke-width="0.7" opacity="0.6"/></g>`,
+  // nested rotated squares
+  (w, h) => `<g opacity="0.55" transform="rotate(45 ${w / 2} ${h * 0.4})"><rect x="${w * 0.3}" y="${h * 0.2}" width="${w * 0.4}" height="${h * 0.4}" fill="none" stroke="${IVORY}" stroke-width="1.1"/><rect x="${w * 0.37}" y="${h * 0.27}" width="${w * 0.26}" height="${h * 0.26}" fill="none" stroke="${IVORY}" stroke-width="0.7" opacity="0.6"/></g>`,
+  // vertical key bars of varied height
+  (w, h) => `<g opacity="0.65">${Array.from({ length: 9 }, (_, i) => { const x = w * 0.18 + i * (w * 0.64 / 8); const bh = h * (0.16 + 0.22 * Math.abs(Math.sin(i * 0.9))); return `<rect x="${x}" y="${h * 0.46 - bh}" width="7" height="${bh}" fill="${IVORY}" opacity="${0.22 + (i % 2) * 0.32}"/>`; }).join("")}</g>`,
+  // low sun over a horizon
+  (w, h) => `<g opacity="0.55"><circle cx="${w / 2}" cy="${h * 0.42}" r="122" fill="none" stroke="${IVORY}" stroke-width="1"/><line x1="${w * 0.14}" y1="${h * 0.42}" x2="${w * 0.86}" y2="${h * 0.42}" stroke="${IVORY}" stroke-width="1"/><line x1="${w * 0.26}" y1="${h * 0.49}" x2="${w * 0.74}" y2="${h * 0.49}" stroke="${IVORY}" stroke-width="0.6" opacity="0.55"/></g>`,
 ];
 
 function cover(i, title, composer) {
   const w = 900, h = 1200, id = `cov${i}`;
   const motif = motifs[i % motifs.length](w, h);
+  const titleSize = title.length > 15 ? 48 : 58;
   const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(title)} cover">
   ${defs(w, h, id)}
   <rect width="${w}" height="${h}" fill="${i % 2 ? INK2 : INK}"/>
   <rect width="${w}" height="${h}" fill="url(#glow-${id})"/>
-  <rect x="28" y="28" width="${w - 56}" height="${h - 56}" fill="none" stroke="${IVORY}" stroke-width="1" opacity="0.18"/>
+  <ellipse cx="${w / 2}" cy="${h * 0.4}" rx="${w * 0.44}" ry="${h * 0.3}" fill="${IVORY}" opacity="0.05"/>
+  <rect x="28" y="28" width="${w - 56}" height="${h - 56}" fill="none" stroke="${IVORY}" stroke-width="1" opacity="0.2"/>
   ${motif}
-  <g>${keyboard(w, h, { y: h - 90, height: 90, opacity: 0.28 })}</g>
+  <g>${keyboard(w, h, { y: h - 90, height: 90, opacity: 0.3 })}</g>
   <rect width="${w}" height="${h}" fill="url(#vign-${id})"/>
-  <text x="${w / 2}" y="${h * 0.72}" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="58" fill="${IVORY}">${esc(title)}</text>
-  <text x="${w / 2}" y="${h * 0.72 + 44}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="18" letter-spacing="6" fill="${SILVER}">${esc(composer.toUpperCase())}</text>
+  <text x="${w / 2}" y="${h * 0.72}" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="${titleSize}" fill="${IVORY}">${esc(title)}</text>
+  <text x="${w / 2}" y="${h * 0.72 + 44}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="17" letter-spacing="6" fill="#A6A6AE">${esc(composer.toUpperCase())}</text>
   <rect width="${w}" height="${h}" filter="url(#grain-${id})"/>
 </svg>`;
   write(`cover-${i + 1}.svg`, svg);
@@ -202,18 +210,42 @@ function gallery(i, ratio) {
   const sizes = { tall: [1000, 1300], wide: [1300, 950], square: [1100, 1100] };
   const [w, h] = sizes[ratio];
   const id = `g${i}`;
-  const variant = i % 3;
+  // Off-centre "studio light" position per image for a directional, editorial feel.
+  const lx = [30, 68, 50, 38][i % 4];
+  const ly = [24, 30, 18, 62][i % 4];
+  const variant = i % 4;
   let art = "";
-  if (variant === 0) art = `<g opacity="0.7">${staff(60, h * 0.55, w - 120, 24, IVORY, 0.16, 1)}</g>`;
-  else if (variant === 1) art = `<g transform="translate(0 ${h - h * 0.4})">${keyboard(w, h, { y: 0, height: h * 0.4, opacity: 0.3 })}</g>`;
-  else art = `<circle cx="${w / 2}" cy="${h / 2}" r="${Math.min(w, h) * 0.28}" fill="none" stroke="${IVORY}" stroke-width="1" opacity="0.25"/>`;
+  if (variant === 0) {
+    // piano keyboard catching the light
+    art = `<g transform="translate(0 ${h - h * 0.36})">${keyboard(w, h, { y: 0, height: h * 0.36, opacity: 0.34 })}</g>`;
+  } else if (variant === 1) {
+    // a sheet of score on a music stand
+    art = `<rect x="${w * 0.12}" y="${h * 0.14}" width="${w * 0.76}" height="${h * 0.72}" fill="${IVORY}" opacity="0.04"/><g>${staff(w * 0.2, h * 0.34, w * 0.6, 22, IVORY, 0.28, 1)}${staff(w * 0.2, h * 0.56, w * 0.6, 22, IVORY, 0.2, 1)}</g>`;
+  } else if (variant === 2) {
+    // a portrait spotlight
+    art = `<ellipse cx="${w / 2}" cy="${h * 0.46}" rx="${Math.min(w, h) * 0.26}" ry="${Math.min(w, h) * 0.33}" fill="none" stroke="${IVORY}" stroke-width="1.1" opacity="0.24"/><circle cx="${w / 2}" cy="${h * 0.37}" r="${Math.min(w, h) * 0.12}" fill="none" stroke="${IVORY}" stroke-width="1.1" opacity="0.28"/>`;
+  } else {
+    // the strings inside an open piano
+    art = `<g>${Array.from({ length: 12 }, (_, k) => `<line x1="${w * 0.1 + k * (w * 0.8 / 11)}" y1="${h * 0.12}" x2="${w * 0.1 + k * (w * 0.8 / 11)}" y2="${h * 0.88}" stroke="${IVORY}" stroke-width="0.7" opacity="${0.1 + (k % 3) * 0.09}"/>`).join("")}</g>`;
+  }
   const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="Gallery placeholder ${i + 1}">
-  ${defs(w, h, id)}
+  <defs>
+    <radialGradient id="light-${id}" cx="${lx}%" cy="${ly}%" r="78%">
+      <stop offset="0%" stop-color="${IVORY}" stop-opacity="0.20"/>
+      <stop offset="42%" stop-color="${IVORY}" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="${IVORY}" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vg-${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="45%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.5"/>
+    </linearGradient>
+    ${grain(`grain-${id}`, 0.7, 0.07)}
+  </defs>
   <rect width="${w}" height="${h}" fill="${i % 2 ? INK : INK2}"/>
-  <rect width="${w}" height="${h}" fill="url(#glow-${id})"/>
+  <rect width="${w}" height="${h}" fill="url(#light-${id})"/>
   ${art}
-  <rect width="${w}" height="${h}" fill="url(#vign-${id})"/>
+  <rect width="${w}" height="${h}" fill="url(#vg-${id})"/>
   <rect width="${w}" height="${h}" filter="url(#grain-${id})"/>
 </svg>`;
   write(`gallery-${i + 1}.svg`, svg);

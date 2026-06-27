@@ -1,25 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1100" height="1100" viewBox="0 0 1100 1100" role="img" aria-label="Gallery placeholder 6">
-  
   <defs>
-    <radialGradient id="glow-g5" cx="50%" cy="-5%" r="85%">
-      <stop offset="0%" stop-color="#F2EEE6" stop-opacity="0.16"/>
-      <stop offset="45%" stop-color="#F2EEE6" stop-opacity="0.04"/>
+    <radialGradient id="light-g5" cx="68%" cy="30%" r="78%">
+      <stop offset="0%" stop-color="#F2EEE6" stop-opacity="0.20"/>
+      <stop offset="42%" stop-color="#F2EEE6" stop-opacity="0.05"/>
       <stop offset="100%" stop-color="#F2EEE6" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="vign-g5" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#000" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    <linearGradient id="vg-g5" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="45%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.5"/>
     </linearGradient>
     
   <filter id="grain-g5">
-    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" stitchTiles="stitch"/>
     <feColorMatrix type="saturate" values="0"/>
-    <feComponentTransfer><feFuncA type="linear" slope="0.05"/></feComponentTransfer>
+    <feComponentTransfer><feFuncA type="linear" slope="0.07"/></feComponentTransfer>
   </filter>
   </defs>
   <rect width="1100" height="1100" fill="#0A0A0C"/>
-  <rect width="1100" height="1100" fill="url(#glow-g5)"/>
-  <circle cx="550" cy="550" r="308.00000000000006" fill="none" stroke="#F2EEE6" stroke-width="1" opacity="0.25"/>
-  <rect width="1100" height="1100" fill="url(#vign-g5)"/>
+  <rect width="1100" height="1100" fill="url(#light-g5)"/>
+  <rect x="132" y="154.00000000000003" width="836" height="792" fill="#F2EEE6" opacity="0.04"/><g><line x1="220" y1="374" x2="880" y2="374" stroke="#F2EEE6" stroke-width="1" opacity="0.28"/><line x1="220" y1="396" x2="880" y2="396" stroke="#F2EEE6" stroke-width="1" opacity="0.28"/><line x1="220" y1="418" x2="880" y2="418" stroke="#F2EEE6" stroke-width="1" opacity="0.28"/><line x1="220" y1="440" x2="880" y2="440" stroke="#F2EEE6" stroke-width="1" opacity="0.28"/><line x1="220" y1="462" x2="880" y2="462" stroke="#F2EEE6" stroke-width="1" opacity="0.28"/><line x1="220" y1="616.0000000000001" x2="880" y2="616.0000000000001" stroke="#F2EEE6" stroke-width="1" opacity="0.2"/><line x1="220" y1="638.0000000000001" x2="880" y2="638.0000000000001" stroke="#F2EEE6" stroke-width="1" opacity="0.2"/><line x1="220" y1="660.0000000000001" x2="880" y2="660.0000000000001" stroke="#F2EEE6" stroke-width="1" opacity="0.2"/><line x1="220" y1="682.0000000000001" x2="880" y2="682.0000000000001" stroke="#F2EEE6" stroke-width="1" opacity="0.2"/><line x1="220" y1="704.0000000000001" x2="880" y2="704.0000000000001" stroke="#F2EEE6" stroke-width="1" opacity="0.2"/></g>
+  <rect width="1100" height="1100" fill="url(#vg-g5)"/>
   <rect width="1100" height="1100" filter="url(#grain-g5)"/>
 </svg>

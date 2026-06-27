@@ -115,7 +115,7 @@ export function Nav({ social }: { social: SocialLinks }) {
             role="dialog"
             aria-modal="true"
             aria-label="Site menu"
-            className="fixed inset-0 z-[90] overflow-hidden"
+            className="fixed inset-0 z-[90] overflow-hidden bg-ink-deep"
             initial={{ opacity: reduce ? 0 : 1 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.4, ease: EASE } }}
@@ -136,7 +136,7 @@ export function Nav({ social }: { social: SocialLinks }) {
 
             {/* Content */}
             <motion.div
-              className="relative z-10 flex h-full flex-col justify-between px-6 pb-10 pt-24 sm:px-10 md:px-16 md:pt-28"
+              className="relative z-10 flex h-full flex-col justify-between gap-8 overflow-y-auto px-6 pb-10 pt-24 sm:px-10 md:px-16 md:pt-28"
               initial="hidden"
               animate="show"
               exit="hidden"

@@ -9,7 +9,7 @@ export function Footer({ social }: { social: SocialLinks }) {
   return (
     <footer className="relative border-t border-white/10 bg-ink-deep">
       <div className="container-editorial py-16 md:py-24">
-        <Waveform className="mb-14" />
+        <Waveform className="mb-14" mode="reveal" />
 
         <div className="grid gap-12 md:grid-cols-12">
           <div className="md:col-span-5">

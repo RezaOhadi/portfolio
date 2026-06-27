@@ -61,7 +61,7 @@ export function ProductCard({
             <h3 className="truncate font-serif text-2xl text-ivory">
               {product.title}
             </h3>
-            <p className="kicker mt-1 truncate normal-case tracking-wider text-silver-400">
+            <p className="mt-1.5 truncate font-sans text-xs tracking-wide text-silver-300">
               {product.genre} · {product.instrument}
             </p>
           </div>

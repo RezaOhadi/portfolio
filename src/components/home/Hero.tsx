@@ -16,8 +16,13 @@ export function Hero({ hero }: { hero: HeroContent }) {
     offset: ["start start", "end start"],
   });
   const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "16%"]);
+  const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
   const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  // Hero → featured composition: keys lift and fade, title settles slightly.
+  const keysY = useTransform(scrollYProgress, [0, 1], ["0%", "-14%"]);
+  const keysOpacity = useTransform(scrollYProgress, [0, 0.6], [0.12, 0]);
+  const titleScale = useTransform(scrollYProgress, [0, 0.6], [1, 0.94]);
 
   return (
     <section
@@ -28,7 +33,7 @@ export function Hero({ hero }: { hero: HeroContent }) {
       {/* Background image with subtle parallax + B&W treatment */}
       <motion.div
         className="absolute inset-0"
-        style={{ y: reduce ? 0 : imageY }}
+        style={{ y: reduce ? 0 : imageY, scale: reduce ? 1 : imageScale }}
       >
         <Image
           src={hero.image}
@@ -50,7 +55,11 @@ export function Hero({ hero }: { hero: HeroContent }) {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink/70 via-transparent to-transparent" />
 
       {/* Abstract vertical piano-key lines */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 items-stretch justify-end gap-[6px] pr-6 opacity-[0.12] md:flex" aria-hidden>
+      <motion.div
+        className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 items-stretch justify-end gap-[6px] pr-6 md:flex"
+        style={{ y: reduce ? 0 : keysY, opacity: reduce ? 0.12 : keysOpacity }}
+        aria-hidden
+      >
         {Array.from({ length: 14 }).map((_, i) => (
           <motion.span
             key={i}
@@ -61,7 +70,7 @@ export function Hero({ hero }: { hero: HeroContent }) {
             transition={{ duration: 1.2, ease: EASE, delay: 0.3 + i * 0.05 }}
           />
         ))}
-      </div>
+      </motion.div>
 
       {/* Content */}
       <motion.div
@@ -77,13 +86,15 @@ export function Hero({ hero }: { hero: HeroContent }) {
           Pianist · Composer · Canada
         </motion.span>
 
-        <TextReveal
-          text={hero.headline}
-          as="h1"
-          immediate
-          delay={0.6}
-          className="font-serif text-display text-ivory text-shadow-cinematic"
-        />
+        <motion.div style={{ scale: reduce ? 1 : titleScale }} className="origin-left">
+          <TextReveal
+            text={hero.headline}
+            as="h1"
+            immediate
+            delay={0.6}
+            className="font-serif text-display text-ivory text-shadow-cinematic"
+          />
+        </motion.div>
 
         <motion.p
           initial={reduce ? false : { opacity: 0, y: 14 }}
