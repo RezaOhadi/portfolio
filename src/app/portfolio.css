@@ -292,6 +292,105 @@ html {
   gap: 12px;
   min-height: 44px;
 }
+.scroll-mouse-control {
+  position: fixed;
+  z-index: 65;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+.scroll-mouse-control:hover {
+  color: var(--ivory);
+}
+.scroll-mouse-control--cue {
+  left: 50%;
+  bottom: 26px;
+  flex-direction: column;
+  gap: 8px;
+  transform: translateX(-50%);
+}
+.scroll-mouse-control--top {
+  right: 28px;
+  bottom: 28px;
+  padding: 9px 12px 9px 9px;
+  border: 1px solid #ffffff22;
+  border-radius: 999px;
+  background: #111214c9;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 35px #0006;
+}
+.scroll-mouse-control--top:hover {
+  border-color: #d5ae88aa;
+  box-shadow:
+    0 12px 35px #0008,
+    0 0 24px #d5ae8830;
+}
+.scroll-mouse-shell {
+  position: relative;
+  display: grid;
+  place-items: start center;
+  width: 22px;
+  height: 36px;
+  border: 1px solid #b7b5b180;
+  border-radius: 999px;
+  background: #11121480;
+  backdrop-filter: blur(10px);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.scroll-mouse-control:hover .scroll-mouse-shell {
+  border-color: #d5ae88cc;
+  box-shadow: 0 0 18px #d5ae8830;
+}
+.scroll-mouse-shell--return {
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border-color: #d5ae8899;
+}
+.scroll-mouse-wheel {
+  width: 3px;
+  height: 7px;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: scroll-wheel 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+.scroll-mouse-arrow {
+  color: var(--accent);
+  transition: transform 0.25s ease;
+}
+.scroll-mouse-control:hover .scroll-mouse-arrow {
+  transform: translateY(-1px);
+}
+.scroll-mouse-label {
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.22em;
+  color: #b7b5b1cc;
+}
+@keyframes scroll-wheel {
+  0% {
+    opacity: 0;
+    transform: translateY(-1px);
+  }
+  20% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
 .portfolio-section {
   padding-block: clamp(64px, 8vw, 120px);
   border-bottom: 1px solid #ffffff14;
@@ -653,6 +752,11 @@ body.grain::after {
   }
   .hero-title {
     font-size: 64px;
+  }
+}
+@media (max-width: 560px) {
+  .scroll-mouse-control {
+    display: none;
   }
 }
 @media (prefers-reduced-motion: no-preference) {
