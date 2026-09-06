@@ -1,12 +1,16 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowDown, ArrowUpRight, Play } from "lucide-react";
 import type { HeroContent } from "@/lib/types";
+import { HeroPortrait } from "@/components/home/HeroPortrait";
+import heroGenerated from "@/config/hero.generated.json";
 
 export function Hero({ hero }: { hero: HeroContent }) {
-  const portrait = hero.image.startsWith("/placeholders/")
-    ? "/profile.jpg"
-    : hero.image;
+  // An admin-uploaded hero image wins; otherwise the build-time resolved local
+  // portrait (public/assets/images/hero-portrait.*), falling back to profile.jpg.
+  const portrait =
+    hero.image && !hero.image.startsWith("/placeholders/")
+      ? hero.image
+      : heroGenerated.portrait;
   return (
     <section
       id="home"
@@ -31,22 +35,12 @@ export function Hero({ hero }: { hero: HeroContent }) {
             </Link>
           </div>
         </div>
-        <figure className="hero-portrait">
-          <div className="portrait-frame">
-            <Image
-              src={portrait}
-              alt="Reza Ohadi at the piano"
-              fill
-              priority
-              sizes="(min-width: 1024px) 420px, (min-width: 640px) 45vw, 85vw"
-              className="object-cover"
-            />
-          </div>
-          <figcaption>
-            <span>Reza Ohadi</span>
-            <span>At the piano</span>
-          </figcaption>
-        </figure>
+        <HeroPortrait
+          src={portrait}
+          alt="Portrait of Reza Ohadi"
+          caption="Reza Ohadi"
+          subcaption="At the piano"
+        />
         <div className="hero-baseline">
           <span>Classical roots. An open horizon.</span>
           <a href="#about">

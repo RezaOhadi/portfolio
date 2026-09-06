@@ -257,6 +257,17 @@ html {
   position: relative;
   aspect-ratio: 4/5;
   background: var(--surface);
+  overflow: hidden;
+}
+/* Depth layer is oversized so parallax drift never exposes the frame edge. */
+.portrait-depth {
+  position: absolute;
+  inset: -8%;
+  will-change: transform;
+}
+.portrait-inner {
+  position: absolute;
+  inset: 0;
 }
 .portrait-frame img {
   filter: grayscale(1);
@@ -415,6 +426,44 @@ html {
   font-size: 12px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+/* --- scroll choreography --------------------------------------------------
+   Indicator hairline that fills with the accent as a section travels through
+   the viewport, plus the masked lines used for staggered heading reveals.     */
+.section-rule {
+  position: relative;
+  height: 1px;
+  margin: 16px 0 32px;
+  background: #ffffff14;
+  overflow: hidden;
+}
+.section-rule span {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--accent), #ffffff12);
+}
+.stagger-line {
+  display: block;
+  overflow: hidden;
+}
+.stagger-line > span {
+  display: block;
+  will-change: transform;
+}
+/* Pinned split-scroll: the label column holds while the copy scrolls past. */
+@media (min-width: 761px) {
+  .about-sticky {
+    position: sticky;
+    top: 128px;
+    align-self: start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .about-sticky {
+    position: static;
+  }
 }
 .section-lead {
   font-size: 16px;
