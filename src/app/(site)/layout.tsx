@@ -1,5 +1,6 @@
 import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
+import { ScrollMouseIndicator } from "@/components/layout/ScrollMouseIndicator";
 import { getSocialLinks } from "@/lib/data/content";
 
 export default async function SiteLayout({
@@ -20,6 +21,8 @@ export default async function SiteLayout({
       <Nav social={social} />
       <main id="main">{children}</main>
       <Footer social={social} />
+      {/* Sitewide back-to-top; the downward "scroll" cue shows on the home page only. */}
+      <ScrollMouseIndicator targetId="about" cuePath="/" />
     </>
   );
 }

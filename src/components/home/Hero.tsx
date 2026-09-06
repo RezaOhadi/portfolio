@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowDown, ArrowUpRight, Play } from "lucide-react";
 import type { HeroContent } from "@/lib/types";
-import { ScrollMouseIndicator } from "@/components/layout/ScrollMouseIndicator";
 
 export function Hero({ hero }: { hero: HeroContent }) {
   const portrait = hero.image.startsWith("/placeholders/")
@@ -54,7 +53,6 @@ export function Hero({ hero }: { hero: HeroContent }) {
             Discover <ArrowDown size={16} aria-hidden />
           </a>
         </div>
-        <ScrollMouseIndicator targetId="about" />
       </div>
     </section>
   );
