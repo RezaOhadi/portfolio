@@ -1,6 +1,14 @@
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { defaultContent } from "./placeholder";
+import { mediaConfig } from "@/config/media";
+
+function configuredMedia(items: MediaItem[]): MediaItem[] {
+  return items.map((item) => ({
+    ...item,
+    youtubeUrl: mediaConfig.youtubeOverrides[item.id] || item.youtubeUrl,
+  }));
+}
 import type {
   BioContent,
   HeroContent,
@@ -18,10 +26,14 @@ export type ContentKey = "social" | "hero" | "home" | "bio" | "media";
  */
 export async function getSiteContent(): Promise<SiteContent> {
   const supabase = createSupabasePublicClient();
-  if (!supabase) return defaultContent;
+  if (!supabase)
+    return { ...defaultContent, media: configuredMedia(defaultContent.media) };
 
-  const { data, error } = await supabase.from("site_content").select("key, value");
-  if (error || !data) return defaultContent;
+  const { data, error } = await supabase
+    .from("site_content")
+    .select("key, value");
+  if (error || !data)
+    return { ...defaultContent, media: configuredMedia(defaultContent.media) };
 
   const map = Object.fromEntries(data.map((r) => [r.key, r.value])) as Record<
     string,
@@ -33,7 +45,11 @@ export async function getSiteContent(): Promise<SiteContent> {
     hero: { ...defaultContent.hero, ...(map.hero as object | undefined) },
     home: { ...defaultContent.home, ...(map.home as object | undefined) },
     bio: { ...defaultContent.bio, ...(map.bio as object | undefined) },
-    media: Array.isArray(map.media) ? (map.media as MediaItem[]) : defaultContent.media,
+    media: configuredMedia(
+      Array.isArray(map.media)
+        ? (map.media as MediaItem[])
+        : defaultContent.media,
+    ),
   };
 }
 
@@ -62,7 +78,10 @@ export async function upsertContent(
   if (!supabase) return { ok: false, error: "Supabase admin not configured." };
   const { error } = await supabase
     .from("site_content")
-    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+    .upsert(
+      { key, value, updated_at: new Date().toISOString() },
+      { onConflict: "key" },
+    );
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }

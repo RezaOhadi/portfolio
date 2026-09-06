@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Instagram, Youtube, Music2 } from "lucide-react";
+import { Music2 } from "lucide-react";
+import { SocialLinks } from "@/components/media/SocialLinks";
 import { navItems, utilityNav, siteConfig } from "@/config/site";
-import type { SocialLinks } from "@/lib/types";
+import type { SocialLinks as SocialData } from "@/lib/types";
 import { Waveform } from "@/components/ui/Waveform";
 
-export function Footer({ social }: { social: SocialLinks }) {
+export function Footer({ social }: { social: SocialData }) {
   const year = new Date().getFullYear();
   return (
     <footer className="relative border-t border-white/10 bg-ink-deep">
@@ -66,20 +67,16 @@ export function Footer({ social }: { social: SocialLinks }) {
                 </Link>
               </li>
             </ul>
-            <div className="mt-6 flex items-center gap-5 text-silver-300">
-              {social.instagram ? (
-                <a href={social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="transition-colors hover:text-ivory">
-                  <Instagram className="h-5 w-5" />
-                </a>
-              ) : null}
-              {social.youtube ? (
-                <a href={social.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="transition-colors hover:text-ivory">
-                  <Youtube className="h-5 w-5" />
-                </a>
-              ) : null}
+            <div className="mt-6">
+              <SocialLinks social={social} />
               {social.soundcloud ? (
-                <a href={social.soundcloud} target="_blank" rel="noopener noreferrer" aria-label="SoundCloud" className="transition-colors hover:text-ivory">
-                  <Music2 className="h-5 w-5" />
+                <a
+                  className="action-text mt-3"
+                  href={social.soundcloud}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Music2 size={18} aria-hidden /> SoundCloud
                 </a>
               ) : null}
             </div>
@@ -90,9 +87,7 @@ export function Footer({ social }: { social: SocialLinks }) {
           <p className="font-sans text-xs">
             © {year} {siteConfig.name}. All rights reserved.
           </p>
-          <p className="font-sans text-xs">
-            Crafted as a quiet musical world.
-          </p>
+          <p className="font-sans text-xs">Crafted as a quiet musical world.</p>
         </div>
       </div>
     </footer>

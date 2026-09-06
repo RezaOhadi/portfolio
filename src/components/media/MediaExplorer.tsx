@@ -18,12 +18,12 @@ export function MediaExplorer({ items }: { items: MediaItem[] }) {
 
   return (
     <div>
-      <div role="tablist" aria-label="Media categories" className="mb-10 flex flex-wrap gap-2">
+      <div role="group" aria-label="Filter media by category" className="mb-10 flex flex-wrap gap-2">
         {categories.map((cat) => (
           <button
             key={cat}
-            role="tab"
-            aria-selected={active === cat}
+            type="button"
+            aria-pressed={active === cat}
             onClick={() => setActive(cat)}
             className={cn(
               "rounded-full border px-4 py-2 text-[0.7rem] uppercase tracking-widest transition-colors duration-300",

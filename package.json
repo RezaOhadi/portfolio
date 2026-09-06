@@ -10,7 +10,10 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "gen:placeholders": "node scripts/gen-placeholders.mjs",
-    "postinstall": "node scripts/gen-placeholders.mjs"
+    "postinstall": "node scripts/gen-placeholders.mjs",
+    "predev": "node scripts/gen-gallery.mjs",
+    "prebuild": "node scripts/gen-gallery.mjs",
+    "gen:gallery": "node scripts/gen-gallery.mjs"
   },
   "dependencies": {
     "@stripe/stripe-js": "^5.5.0",

@@ -36,12 +36,14 @@ export async function saveSocial(_p: ContentState, fd: FormData): Promise<Conten
     ...cur,
     instagram: s(fd, "instagram"),
     youtube: s(fd, "youtube"),
+    spotify: s(fd, "spotify"),
     soundcloud: s(fd, "soundcloud"),
     email: s(fd, "email"),
   });
   if (!res.ok) return { status: "error", message: res.error };
   revalidatePublic();
   revalidatePath("/contact");
+  revalidatePath("/media");
   return { status: "success", message: "Social links saved." };
 }
 

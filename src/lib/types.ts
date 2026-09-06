@@ -77,6 +77,7 @@ export interface GalleryImage {
 /* ----------------------------- Site content ------------------------------ */
 
 export interface SocialLinks {
+  spotify?: string;
   instagram: string;
   youtube: string;
   soundcloud: string;

@@ -4,7 +4,7 @@ import type { SocialLinks } from "@/lib/types";
 
 /** Structured data for the artist profile (helps search + rich results). */
 export function ArtistJsonLd({ social }: { social: SocialLinks }) {
-  const sameAs = [social.instagram, social.youtube, social.soundcloud].filter(Boolean);
+  const sameAs = [social.instagram, social.youtube, social.soundcloud, social.spotify].filter(Boolean);
   const json = {
     "@context": "https://schema.org",
     "@type": "MusicGroup",
@@ -19,7 +19,7 @@ export function ArtistJsonLd({ social }: { social: SocialLinks }) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(json).replace(/</g, "\\u003c") }}
     />
   );
 }

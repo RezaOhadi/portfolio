@@ -40,7 +40,7 @@ export const placeholderProducts: Product[] = [
     coverImage: ph("cover-1.svg"),
     previewImages: [ph("preview-1.svg"), ph("preview-2.svg"), ph("preview-3.svg")],
     audioPreviewUrl: null,
-    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    youtubeUrl: null,
     instagramUrl: "https://www.instagram.com/reza_ohadi/",
     pdfPath: null,
     published: true,
@@ -68,7 +68,7 @@ export const placeholderProducts: Product[] = [
     coverImage: ph("cover-2.svg"),
     previewImages: [ph("preview-2.svg"), ph("preview-1.svg")],
     audioPreviewUrl: null,
-    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    youtubeUrl: null,
     instagramUrl: null,
     pdfPath: null,
     published: true,
@@ -124,7 +124,7 @@ export const placeholderProducts: Product[] = [
     coverImage: ph("cover-4.svg"),
     previewImages: [ph("preview-1.svg"), ph("preview-2.svg"), ph("preview-3.svg")],
     audioPreviewUrl: null,
-    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    youtubeUrl: null,
     instagramUrl: "https://www.instagram.com/reza_ohadi/",
     pdfPath: null,
     published: true,
@@ -179,7 +179,7 @@ export const placeholderProducts: Product[] = [
     coverImage: ph("cover-6.svg"),
     previewImages: [ph("preview-3.svg"), ph("preview-1.svg"), ph("preview-2.svg")],
     audioPreviewUrl: null,
-    youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    youtubeUrl: null,
     instagramUrl: null,
     pdfPath: null,
     published: true,
@@ -209,9 +209,9 @@ export const placeholderGallery: GalleryImage[] = [
 /* -------------------------------------------------------------------------- */
 
 export const placeholderMedia: MediaItem[] = [
-  { id: "m1", title: "Nocturne in Ash — Live", type: "youtube", category: "Performance", youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", audioUrl: null, instagramUrl: null, poster: ph("gallery-2.svg"), description: "A live performance of an original work for solo piano.", featured: true },
-  { id: "m2", title: "Letters to the Sea — Studio", type: "youtube", category: "Performance", youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", audioUrl: null, instagramUrl: null, poster: ph("gallery-5.svg"), description: "A studio session, captured in a single take.", featured: false },
-  { id: "m3", title: "The Quiet Hour", type: "youtube", category: "Original", youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", audioUrl: null, instagramUrl: null, poster: ph("gallery-8.svg"), description: "An original composition for solo piano.", featured: false },
+  { id: "m1", title: "Beethoven Sonata 8 — Pathétique, Op. 13", type: "youtube", category: "Performance", youtubeUrl: null, audioUrl: null, instagramUrl: null, poster: ph("gallery-2.svg"), description: "Beethoven’s Sonata No. 8 in C minor, Op. 13, performed by Reza Ohadi.", featured: true },
+  { id: "m2", title: "Flowers Love — Joel Fajerman", type: "youtube", category: "Performance", youtubeUrl: null, audioUrl: null, instagramUrl: null, poster: ph("gallery-5.svg"), description: "A piano performance of Joel Fajerman’s Flowers Love.", featured: false },
+  { id: "m3", title: "The Quiet Hour", type: "youtube", category: "Original", youtubeUrl: null, audioUrl: null, instagramUrl: null, poster: ph("gallery-8.svg"), description: "An original composition for solo piano.", featured: false },
   { id: "m4", title: "Improvisation no. 4", type: "audio", category: "Improvisation", youtubeUrl: null, audioUrl: null, instagramUrl: null, poster: ph("gallery-3.svg"), description: "A short improvisation — audio only.", featured: false },
   { id: "m5", title: "Behind the score", type: "instagram", category: "Reel", youtubeUrl: null, audioUrl: null, instagramUrl: "https://www.instagram.com/reza_ohadi/", poster: ph("gallery-6.svg"), description: "A short reel from behind the scenes.", featured: false },
 ];
@@ -223,7 +223,8 @@ export const placeholderMedia: MediaItem[] = [
 export const defaultContent: SiteContent = {
   social: {
     instagram: "https://www.instagram.com/reza_ohadi/",
-    youtube: "https://www.youtube.com/channel/UCtC_REvBHwkt6FNmxk6cEUQ",
+    youtube: "https://www.youtube.com/@rezaohadipianist",
+    spotify: "https://open.spotify.com/artist/0PF3j82FQfwxYpr2YGFzZQ",
     soundcloud: "https://soundcloud.com/rezaohadi",
     email: "rezaohadi.music@gmail.com",
   },

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1300" viewBox="0 0 1000 1300" role="img" aria-label="Gallery placeholder 7">
+  <defs>
+    <radialGradient id="light-g6" cx="50%" cy="18%" r="78%">
+      <stop offset="0%" stop-color="#F2EEE6" stop-opacity="0.20"/>
+      <stop offset="42%" stop-color="#F2EEE6" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#F2EEE6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vg-g6" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="45%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.5"/>
+    </linearGradient>
+    
+  <filter id="grain-g6">
+    <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.07"/></feComponentTransfer>
+  </filter>
+  </defs>
+  <rect width="1000" height="1300" fill="#121215"/>
+  <rect width="1000" height="1300" fill="url(#light-g6)"/>
+  <ellipse cx="500" cy="598" rx="260" ry="330" fill="none" stroke="#F2EEE6" stroke-width="1.1" opacity="0.24"/><circle cx="500" cy="481" r="120" fill="none" stroke="#F2EEE6" stroke-width="1.1" opacity="0.28"/>
+  <rect width="1000" height="1300" fill="url(#vg-g6)"/>
+  <rect width="1000" height="1300" filter="url(#grain-g6)"/>
+</svg>

@@ -1,19 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, ArrowRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { ArtistJsonLd } from "@/components/seo/ArtistJsonLd";
-import { CinematicPrelude } from "@/components/home/CinematicPrelude";
+import { Hero } from "@/components/home/Hero";
+import { FeaturedComposition } from "@/components/home/FeaturedComposition";
 import { ProductCard } from "@/components/store/ProductCard";
-import { SectionHeading } from "@/components/ui/SectionHeading";
-import { PianoDivider } from "@/components/ui/PianoDivider";
-import { Button } from "@/components/ui/Button";
-import { Reveal, Stagger, StaggerItem } from "@/components/motion/Reveal";
-import { DrawLine } from "@/components/motion/DrawLine";
+import { Reveal } from "@/components/motion/Reveal";
+import { YouTubeEmbed } from "@/components/media/YouTubeEmbed";
+import { SpotifyEmbed } from "@/components/media/SpotifyEmbed";
+import { SocialLinks } from "@/components/media/SocialLinks";
+import { GalleryLightbox } from "@/components/gallery/GalleryLightbox";
+import { ContactForm } from "@/components/contact/ContactForm";
+import { mediaConfig } from "@/config/media";
 import { getSiteContent } from "@/lib/data/content";
 import { getProducts } from "@/lib/data/products";
 import { getGalleryImages } from "@/lib/data/gallery";
 import { formatDate } from "@/lib/utils";
-
 export const revalidate = 60;
 
 export default async function HomePage() {
@@ -22,187 +24,244 @@ export default async function HomePage() {
     getProducts(),
     getGalleryImages(),
   ]);
-
   const featured =
     products.find((p) => p.slug === content.home.featuredProductSlug) ??
     products.find((p) => p.featured) ??
     products[0];
-  const latest = products.slice(0, 3);
-  const galleryPreview = gallery.slice(0, 4);
-  const memories = gallery.slice(0, 3);
-  const statementLines = content.home.artistStatement
-    .split(/(?<=\.)\s+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-
+  const videos = content.media
+    .filter((item) => item.type === "youtube")
+    .slice(0, 3);
   return (
     <>
       <ArtistJsonLd social={content.social} />
-
-      {/* Cinematic prelude — one continuous piano world */}
-      <CinematicPrelude hero={content.hero} featured={featured} memories={memories} />
-
-      <PianoDivider label="The Catalogue" />
-
-      {/* Latest sheet music */}
-      <section className="py-24 md:py-32">
+      <Hero hero={content.hero} />
+      <section
+        id="about"
+        data-nav-section
+        className="portfolio-section"
+        aria-labelledby="about-title"
+      >
+        <div className="container-editorial about-grid">
+          <Reveal>
+            <span className="section-number">01 / The artist</span>
+            <h2 id="about-title" className="section-title">
+              A life at
+              <br />
+              the piano.
+            </h2>
+          </Reveal>
+          <Reveal className="about-copy">
+            <p className="section-lead">{content.bio.intro}</p>
+            <blockquote>{content.home.artistStatement}</blockquote>
+            {content.bio.signatureImage ? (
+              <Image
+                src={content.bio.signatureImage}
+                alt="Reza Ohadi signature"
+                width={200}
+                height={64}
+                className="mb-6 h-12 w-auto"
+              />
+            ) : null}
+            <Link href="/biography" className="action-text">
+              Read the full biography <ArrowUpRight size={18} aria-hidden />
+            </Link>
+          </Reveal>
+        </div>
+      </section>
+      <section
+        id="media"
+        data-nav-section
+        className="portfolio-section"
+        aria-labelledby="media-title"
+      >
         <div className="container-editorial">
-          <div className="mb-14 flex items-end justify-between gap-6">
-            <SectionHeading
-              kicker="Latest Sheet Music"
-              title="New to the catalogue"
-            />
-            <Reveal className="hidden shrink-0 sm:block">
-              <Link
-                href="/store"
-                className="group inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-widest text-silver-300 transition-colors hover:text-ivory"
-              >
-                View all
-                <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-cinematic group-hover:translate-x-1" />
-              </Link>
-            </Reveal>
-          </div>
-
-          <Stagger className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-            {latest.map((product) => (
-              <StaggerItem key={product.id}>
-                <ProductCard product={product} />
-              </StaggerItem>
-            ))}
-          </Stagger>
-        </div>
-      </section>
-
-      {/* Artist statement */}
-      <section className="relative overflow-hidden py-28 md:py-40">
-        <div className="pointer-events-none absolute inset-0 bg-hall-glow opacity-60" />
-        <div className="container-editorial relative">
-          <div className="mx-auto max-w-4xl text-center">
-            <Reveal>
-              <span className="kicker">Artist Statement</span>
-            </Reveal>
-            <Stagger
-              as="blockquote"
-              stagger={0.14}
-              className="mt-8 font-serif text-3xl font-light leading-[1.3] text-ivory sm:text-4xl lg:text-5xl"
-            >
-              {statementLines.map((line, i) => (
-                <StaggerItem as="span" key={i} className="block">
-                  {i === 0 ? "“" : ""}
-                  {line}
-                  {i === statementLines.length - 1 ? "”" : ""}
-                </StaggerItem>
-              ))}
-            </Stagger>
-            <Reveal delay={0.1} className="mt-12 flex flex-col items-center gap-5">
-              {content.bio.signatureImage ? (
-                <Image
-                  src={content.bio.signatureImage}
-                  alt="Reza Ohadi signature"
-                  width={200}
-                  height={64}
-                  className="h-14 w-auto opacity-80"
+          <Reveal className="section-top">
+            <div>
+              <span className="section-number">02 / Listen & watch</span>
+              <h2 id="media-title" className="section-title">
+                Music, in the moment.
+              </h2>
+            </div>
+            <Link href="/media" className="action-text">
+              All performances <ArrowUpRight size={18} aria-hidden />
+            </Link>
+          </Reveal>
+          <div className="media-grid">
+            {videos.map((item) => (
+              <Reveal key={item.id} className="media-card">
+                <YouTubeEmbed
+                  url={item.youtubeUrl}
+                  title={item.title}
+                  poster={item.poster}
                 />
-              ) : null}
-              <DrawLine className="text-silver-300/60" />
-              <Link
-                href="/biography"
-                className="group inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-widest text-silver-300 transition-colors hover:text-ivory"
-              >
-                Read the full biography
-                <ArrowUpRight className="h-4 w-4 transition-transform duration-500 ease-cinematic group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </Link>
-            </Reveal>
+                <span className="media-meta">{item.category}</span>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+              </Reveal>
+            ))}
+          </div>
+          {!videos.length ? (
+            <p className="section-lead">
+              New performances will be shared here soon.
+            </p>
+          ) : null}
+          <div className="spotify-panel">
+            <div>
+              <span className="section-number">On record</span>
+              <h3>A closer listen.</h3>
+              <p className="section-lead">
+                Original music and piano recordings, wherever you listen.
+              </p>
+              <div className="mt-6">
+                <SocialLinks social={content.social} />
+              </div>
+            </div>
+            <SpotifyEmbed
+              url={content.social.spotify || mediaConfig.spotifyUrl}
+            />
           </div>
         </div>
       </section>
-
-      {/* Selected performances */}
-      {content.home.performances.length ? (
-        <section className="py-24 md:py-32">
-          <div className="container-editorial">
-            <SectionHeading
-              kicker="Selected Performances"
-              title="Upcoming & recent"
-              className="mb-12"
-            />
-            <Stagger className="flex flex-col">
-              {content.home.performances.map((perf, i) => (
-                <StaggerItem
-                  key={i}
-                  className="group grid grid-cols-1 gap-2 border-t border-white/10 py-7 transition-colors last:border-b hover:bg-white/[0.02] sm:grid-cols-12 sm:items-baseline sm:gap-6"
-                >
-                  <span className="font-sans text-xs uppercase tracking-widest text-silver-400 sm:col-span-3">
-                    {formatDate(perf.date)}
-                  </span>
-                  <span className="font-serif text-2xl text-ivory sm:col-span-6">
-                    {perf.title}
-                  </span>
-                  <span className="font-sans text-sm text-silver-300 sm:col-span-3 sm:text-right">
-                    {perf.venue}, {perf.location}
-                  </span>
-                </StaggerItem>
-              ))}
-            </Stagger>
+      <section
+        id="concerts"
+        data-nav-section
+        className="portfolio-section"
+        aria-labelledby="concerts-title"
+      >
+        <div className="container-editorial">
+          <Reveal className="section-top">
+            <div>
+              <span className="section-number">03 / On stage</span>
+              <h2 id="concerts-title" className="section-title">
+                Upcoming & recent.
+              </h2>
+            </div>
+            <Link href="/contact" className="action-text">
+              Booking inquiries <ArrowUpRight size={18} aria-hidden />
+            </Link>
+          </Reveal>
+          {content.home.performances.length ? (
+            content.home.performances.map((performance, i) => (
+              <Reveal key={performance.date + i} className="concert-row">
+                <time dateTime={performance.date}>
+                  {formatDate(performance.date)}
+                </time>
+                <h3>{performance.title}</h3>
+                <p>
+                  {performance.venue}
+                  <br />
+                  {performance.location}
+                </p>
+              </Reveal>
+            ))
+          ) : (
+            <p className="section-lead">
+              New concert dates will be announced here. Please get in touch for
+              booking inquiries.
+            </p>
+          )}
+        </div>
+      </section>
+      <section
+        id="gallery"
+        data-nav-section
+        className="portfolio-section"
+        aria-labelledby="gallery-title"
+      >
+        <div className="container-editorial">
+          <Reveal className="section-top">
+            <div>
+              <span className="section-number">04 / In frame</span>
+              <h2 id="gallery-title" className="section-title">
+                Beyond the notes.
+              </h2>
+            </div>
+            <Link href="/gallery" className="action-text">
+              Full gallery <ArrowUpRight size={18} aria-hidden />
+            </Link>
+          </Reveal>
+          <GalleryLightbox images={gallery.slice(0, 6)} />
+          <div className="mt-7">
+            <a
+              className="action-text"
+              href={content.social.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Follow @Reza_Ohadi on Instagram{" "}
+              <ArrowUpRight size={18} aria-hidden />
+            </a>
           </div>
+        </div>
+      </section>
+      {featured ? (
+        <section
+          className="portfolio-section"
+          aria-label="Featured composition"
+        >
+          <FeaturedComposition product={featured} />
         </section>
       ) : null}
-
-      <PianoDivider label="In Frame" />
-
-      {/* Gallery preview */}
-      <section className="py-24 md:py-32">
+      <section className="portfolio-section" aria-labelledby="scores-title">
         <div className="container-editorial">
-          <div className="mb-12 flex items-end justify-between gap-6">
-            <SectionHeading kicker="Gallery" title="Moments in black & white" />
-            <Reveal className="hidden shrink-0 sm:block">
-              <Link
-                href="/gallery"
-                className="group inline-flex items-center gap-2 text-[0.72rem] uppercase tracking-widest text-silver-300 transition-colors hover:text-ivory"
-              >
-                Full gallery
-                <ArrowRight className="h-4 w-4 transition-transform duration-500 ease-cinematic group-hover:translate-x-1" />
-              </Link>
-            </Reveal>
-          </div>
-          <Stagger className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            {galleryPreview.map((img) => (
-              <StaggerItem key={img.id}>
-                <Link
-                  href="/gallery"
-                  className="group relative block aspect-[3/4] overflow-hidden bg-charcoal-900 ring-1 ring-white/10"
-                >
-                  <Image
-                    src={img.imageUrl}
-                    alt={img.caption ?? "Gallery image"}
-                    fill
-                    sizes="(min-width: 768px) 22vw, 45vw"
-                    className="object-cover grayscale transition-all duration-700 ease-cinematic group-hover:scale-105 group-hover:grayscale-0"
-                  />
-                </Link>
-              </StaggerItem>
+          <Reveal className="section-top">
+            <div>
+              <span className="section-number">The catalogue</span>
+              <h2 id="scores-title" className="section-title">
+                New to the catalogue.
+              </h2>
+            </div>
+            <Link className="action-text" href="/store">
+              All sheet music <ArrowUpRight size={18} aria-hidden />
+            </Link>
+          </Reveal>
+          <div className="media-grid">
+            {products.slice(0, 3).map((product) => (
+              <Reveal key={product.id}>
+                <ProductCard product={product} />
+              </Reveal>
             ))}
-          </Stagger>
+          </div>
         </div>
       </section>
-
-      {/* Contact CTA */}
-      <section className="border-t border-white/10 py-28 md:py-40">
-        <div className="container-editorial text-center">
+      <section className="portfolio-section">
+        <div className="container-editorial">
+          <Reveal
+            as="blockquote"
+            className="mx-auto max-w-3xl text-center font-serif text-3xl italic leading-relaxed"
+          >
+            In the space between two notes, a silence remembers everything the
+            music meant to say.
+          </Reveal>
+        </div>
+      </section>
+      <section
+        id="contact"
+        data-nav-section
+        className="portfolio-section"
+        aria-labelledby="contact-title"
+      >
+        <div className="container-editorial contact-grid">
           <Reveal>
-            <span className="kicker">Get in touch</span>
+            <span className="section-number">05 / Get in touch</span>
+            <h2 id="contact-title" className="section-title">
+              Let’s make
+              <br />
+              something resonant.
+            </h2>
+            <p className="section-lead mt-6">
+              Bookings, commissions & collaborations. For performances,
+              sheet-music licensing, lessons, or a new idea.
+            </p>
+            <a
+              className="action-text mt-6 break-all"
+              href={"mailto:" + content.social.email}
+            >
+              {content.social.email} <ArrowUpRight size={18} aria-hidden />
+            </a>
+            <SocialLinks social={content.social} />
           </Reveal>
-          <SectionHeading
-            align="center"
-            title="Bookings, commissions & collaborations"
-            className="mt-6"
-            titleClassName="mx-auto"
-          />
-          <Reveal delay={0.1} className="mt-10 flex justify-center">
-            <Button href="/contact" variant="primary" size="lg">
-              Start a conversation <ArrowUpRight className="h-4 w-4" />
-            </Button>
-          </Reveal>
+          <ContactForm />
         </div>
       </section>
     </>

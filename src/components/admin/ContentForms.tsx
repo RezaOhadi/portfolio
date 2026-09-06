@@ -74,6 +74,10 @@ export function SocialForm({ social }: { social: SocialLinks }) {
             <input name="youtube" defaultValue={social.youtube} className={input} />
           </label>
           <label className="block">
+            <span className={label}>Spotify artist, album, or track URL</span>
+            <input name="spotify" type="url" defaultValue={social.spotify ?? ""} className={input} />
+          </label>
+          <label className="block">
             <span className={label}>SoundCloud URL</span>
             <input name="soundcloud" defaultValue={social.soundcloud} className={input} />
           </label>

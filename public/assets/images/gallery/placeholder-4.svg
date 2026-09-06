@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1300" viewBox="0 0 1000 1300" role="img" aria-label="Gallery placeholder 4">
+  <defs>
+    <radialGradient id="light-g3" cx="38%" cy="62%" r="78%">
+      <stop offset="0%" stop-color="#F2EEE6" stop-opacity="0.20"/>
+      <stop offset="42%" stop-color="#F2EEE6" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#F2EEE6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vg-g3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="45%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.5"/>
+    </linearGradient>
+    
+  <filter id="grain-g3">
+    <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncA type="linear" slope="0.07"/></feComponentTransfer>
+  </filter>
+  </defs>
+  <rect width="1000" height="1300" fill="#0A0A0C"/>
+  <rect width="1000" height="1300" fill="url(#light-g3)"/>
+  <g><line x1="100" y1="156" x2="100" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.1"/><line x1="172.72727272727275" y1="156" x2="172.72727272727275" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.19"/><line x1="245.45454545454547" y1="156" x2="245.45454545454547" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.28"/><line x1="318.1818181818182" y1="156" x2="318.1818181818182" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.1"/><line x1="390.90909090909093" y1="156" x2="390.90909090909093" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.19"/><line x1="463.6363636363637" y1="156" x2="463.6363636363637" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.28"/><line x1="536.3636363636364" y1="156" x2="536.3636363636364" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.1"/><line x1="609.0909090909091" y1="156" x2="609.0909090909091" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.19"/><line x1="681.8181818181819" y1="156" x2="681.8181818181819" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.28"/><line x1="754.5454545454546" y1="156" x2="754.5454545454546" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.1"/><line x1="827.2727272727274" y1="156" x2="827.2727272727274" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.19"/><line x1="900.0000000000001" y1="156" x2="900.0000000000001" y2="1144" stroke="#F2EEE6" stroke-width="0.7" opacity="0.28"/></g>
+  <rect width="1000" height="1300" fill="url(#vg-g3)"/>
+  <rect width="1000" height="1300" filter="url(#grain-g3)"/>
+</svg>

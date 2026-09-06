@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { parseYouTubeId } from "./media-urls";
 
 /** Merge Tailwind classes safely. */
 export function cn(...inputs: ClassValue[]) {
@@ -42,11 +43,7 @@ export function absoluteUrl(path = ""): string {
 
 /** Extract a YouTube video id from common URL shapes. */
 export function youtubeId(url: string | null | undefined): string | null {
-  if (!url) return null;
-  const m = url.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/,
-  );
-  return m ? m[1] : null;
+  return parseYouTubeId(url);
 }
 
 /** A pleasant relative/absolute date string. */
@@ -57,5 +54,6 @@ export function formatDate(value: string | Date): string {
     year: "numeric",
     month: "long",
     day: "numeric",
+    ...(typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? { timeZone: "UTC" } : {}),
   }).format(d);
 }

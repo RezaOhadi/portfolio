@@ -70,9 +70,9 @@ export async function submitContact(
   if (result.skipped) {
     // Email delivery not configured (e.g. local/demo). Don't lose the message UX.
     return {
-      status: "success",
+      status: "error",
       message:
-        "Thanks! Your message was received. (Email delivery isn't configured in this environment yet.)",
+        "Email delivery is currently unavailable. Your message has not been sent. Please use the direct email link instead.",
     };
   }
   return {

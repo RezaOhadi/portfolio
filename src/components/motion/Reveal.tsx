@@ -1,64 +1,64 @@
 "use client";
-
-import { motion, useReducedMotion, type Variants } from "framer-motion";
-import type { ElementType, ReactNode } from "react";
-import { EASE, fadeUp } from "./presets";
-
+import {
+  useEffect,
+  useRef,
+  type ElementType,
+  type ReactNode,
+  type CSSProperties,
+} from "react";
+import type { Variants } from "framer-motion";
 interface RevealProps {
   children: ReactNode;
   className?: string;
   variants?: Variants;
   delay?: number;
-  /** Fraction of element visible before triggering (0–1). */
   amount?: number;
   as?: ElementType;
   once?: boolean;
 }
-
-/**
- * Scroll-into-view reveal. Honors prefers-reduced-motion by rendering content
- * immediately with no transform.
- */
+/** Visible in SSR and without JavaScript; motion is only progressive enhancement. */
 export function Reveal({
   children,
-  className,
-  variants = fadeUp,
+  className = "",
   delay = 0,
-  amount = 0.3,
-  as = "div",
+  amount = 0.15,
+  as: Tag = "div",
   once = true,
 }: RevealProps) {
-  const reduce = useReducedMotion();
-  const MotionTag = motion(as as ElementType);
-
-  if (reduce) {
-    const Tag = as as ElementType;
-    return <Tag className={className}>{children}</Tag>;
-  }
-
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const node = ref.current;
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (!node || preference.matches || !("IntersectionObserver" in window))
+      return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          node.dataset.revealed = "true";
+          if (once) observer.disconnect();
+        } else if (!once) delete node.dataset.revealed;
+      },
+      { threshold: Math.min(amount, 0.3) },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [amount, once]);
   return (
-    <MotionTag
-      className={className}
-      variants={variants}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once, amount }}
-      transition={{ delay }}
+    <Tag
+      ref={ref}
+      className={"scroll-reveal " + className}
+      style={{ "--reveal-delay": delay + "s" } as CSSProperties}
     >
       {children}
-    </MotionTag>
+    </Tag>
   );
 }
-
-/** Container that staggers its <RevealItem> children when scrolled into view. */
 export function Stagger({
   children,
   className,
-  stagger = 0.09,
-  delayChildren = 0,
-  amount = 0.25,
   as = "div",
-  once = true,
+  amount,
+  once,
 }: {
   children: ReactNode;
   className?: string;
@@ -68,44 +68,20 @@ export function Stagger({
   as?: ElementType;
   once?: boolean;
 }) {
-  const reduce = useReducedMotion();
-  const MotionTag = motion(as as ElementType);
-  if (reduce) {
-    const Tag = as as ElementType;
-    return <Tag className={className}>{children}</Tag>;
-  }
   return (
-    <MotionTag
-      className={className}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once, amount }}
-      variants={{ hidden: {}, show: { transition: { staggerChildren: stagger, delayChildren } } }}
-    >
+    <Reveal className={className} as={as} amount={amount} once={once}>
       {children}
-    </MotionTag>
+    </Reveal>
   );
 }
-
 export function StaggerItem({
   children,
   className,
-  as = "div",
+  as: Tag = "div",
 }: {
   children: ReactNode;
   className?: string;
   as?: ElementType;
 }) {
-  const MotionTag = motion(as as ElementType);
-  return (
-    <MotionTag
-      className={className}
-      variants={{
-        hidden: { opacity: 0, y: 22 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.85, ease: EASE } },
-      }}
-    >
-      {children}
-    </MotionTag>
-  );
+  return <Tag className={className}>{children}</Tag>;
 }
