@@ -51,3 +51,28 @@ for (let i = 1; i <= 8; i++) {
   }
 }
 console.log("Gallery manifest: " + images.length + " local photographs.");
+
+// --- Hero portrait -----------------------------------------------------------
+// Drop a file at public/assets/images/hero-portrait.{jpg,jpeg,png,webp,avif}
+// and it becomes the homepage focal portrait. Resolved at build time because
+// public/ is not present in the serverless filesystem at runtime on Vercel.
+const imagesDir = path.join(root, "public/assets/images");
+let heroPortrait = "/profile.jpg";
+try {
+  const heroFile = (await readdir(imagesDir, { withFileTypes: true }))
+    .filter(
+      (item) =>
+        item.isFile() && /^hero-portrait\.(jpe?g|png|webp|avif)$/i.test(item.name),
+    )
+    .sort((a, b) => a.name.localeCompare(b.name))[0];
+  if (heroFile) {
+    heroPortrait = "/assets/images/" + encodeURIComponent(heroFile.name);
+  }
+} catch (error) {
+  if (error.code !== "ENOENT") throw error;
+}
+await writeFile(
+  path.join(root, "src/config/hero.generated.json"),
+  JSON.stringify({ portrait: heroPortrait }, null, 2) + "\n",
+);
+console.log("Hero portrait: " + heroPortrait);

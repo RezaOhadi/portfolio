@@ -6,6 +6,11 @@ import { Hero } from "@/components/home/Hero";
 import { FeaturedComposition } from "@/components/home/FeaturedComposition";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Reveal } from "@/components/motion/Reveal";
+import {
+  ScrollScene,
+  SectionIndicator,
+  StaggerLines,
+} from "@/components/motion/ScrollScene";
 import { YouTubeEmbed } from "@/components/media/YouTubeEmbed";
 import { SpotifyEmbed } from "@/components/media/SpotifyEmbed";
 import { SocialLinks } from "@/components/media/SocialLinks";
@@ -42,15 +47,16 @@ export default async function HomePage() {
         aria-labelledby="about-title"
       >
         <div className="container-editorial about-grid">
-          <Reveal>
+          <div className="about-sticky">
             <span className="section-number">01 / The artist</span>
-            <h2 id="about-title" className="section-title">
-              A life at
-              <br />
-              the piano.
-            </h2>
-          </Reveal>
-          <Reveal className="about-copy">
+            <StaggerLines
+              id="about-title"
+              className="section-title"
+              lines={["A life at", "the piano."]}
+            />
+            <SectionIndicator />
+          </div>
+          <ScrollScene className="about-copy">
             <p className="section-lead">{content.bio.intro}</p>
             <blockquote>{content.home.artistStatement}</blockquote>
             {content.bio.signatureImage ? (
@@ -65,7 +71,7 @@ export default async function HomePage() {
             <Link href="/biography" className="action-text">
               Read the full biography <ArrowUpRight size={18} aria-hidden />
             </Link>
-          </Reveal>
+          </ScrollScene>
         </div>
       </section>
       <section
@@ -78,17 +84,24 @@ export default async function HomePage() {
           <Reveal className="section-top">
             <div>
               <span className="section-number">02 / Listen & watch</span>
-              <h2 id="media-title" className="section-title">
-                Music, in the moment.
-              </h2>
+              <StaggerLines
+                id="media-title"
+                className="section-title"
+                lines={["Music, in the moment."]}
+              />
             </div>
             <Link href="/media" className="action-text">
               All performances <ArrowUpRight size={18} aria-hidden />
             </Link>
           </Reveal>
+          <SectionIndicator />
           <div className="media-grid">
-            {videos.map((item) => (
-              <Reveal key={item.id} className="media-card">
+            {videos.map((item, i) => (
+              <ScrollScene
+                key={item.id}
+                className="media-card"
+                depth={0.55 + i * 0.3}
+              >
                 <YouTubeEmbed
                   url={item.youtubeUrl}
                   title={item.title}
@@ -97,7 +110,7 @@ export default async function HomePage() {
                 <span className="media-meta">{item.category}</span>
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
-              </Reveal>
+              </ScrollScene>
             ))}
           </div>
           {!videos.length ? (
@@ -132,17 +145,24 @@ export default async function HomePage() {
           <Reveal className="section-top">
             <div>
               <span className="section-number">03 / On stage</span>
-              <h2 id="concerts-title" className="section-title">
-                Upcoming & recent.
-              </h2>
+              <StaggerLines
+                id="concerts-title"
+                className="section-title"
+                lines={["Upcoming & recent."]}
+              />
             </div>
             <Link href="/contact" className="action-text">
               Booking inquiries <ArrowUpRight size={18} aria-hidden />
             </Link>
           </Reveal>
+          <SectionIndicator />
           {content.home.performances.length ? (
             content.home.performances.map((performance, i) => (
-              <Reveal key={performance.date + i} className="concert-row">
+              <ScrollScene
+                key={performance.date + i}
+                className="concert-row"
+                depth={0.5}
+              >
                 <time dateTime={performance.date}>
                   {formatDate(performance.date)}
                 </time>
@@ -152,7 +172,7 @@ export default async function HomePage() {
                   <br />
                   {performance.location}
                 </p>
-              </Reveal>
+              </ScrollScene>
             ))
           ) : (
             <p className="section-lead">
@@ -172,14 +192,19 @@ export default async function HomePage() {
           <Reveal className="section-top">
             <div>
               <span className="section-number">04 / In frame</span>
-              <h2 id="gallery-title" className="section-title">
-                Beyond the notes.
-              </h2>
+              <StaggerLines
+                id="gallery-title"
+                className="section-title"
+                lines={["Beyond the notes."]}
+              />
             </div>
             <Link href="/gallery" className="action-text">
               Full gallery <ArrowUpRight size={18} aria-hidden />
             </Link>
           </Reveal>
+          <SectionIndicator />
+          {/* Not wrapped in ScrollScene: the lightbox renders a fixed overlay,
+              which a transformed ancestor would re-anchor and break. */}
           <GalleryLightbox images={gallery.slice(0, 6)} />
           <div className="mt-7">
             <a
@@ -199,7 +224,9 @@ export default async function HomePage() {
           className="portfolio-section"
           aria-label="Featured composition"
         >
-          <FeaturedComposition product={featured} />
+          <ScrollScene depth={0.7}>
+            <FeaturedComposition product={featured} />
+          </ScrollScene>
         </section>
       ) : null}
       <section className="portfolio-section" aria-labelledby="scores-title">
@@ -207,32 +234,36 @@ export default async function HomePage() {
           <Reveal className="section-top">
             <div>
               <span className="section-number">The catalogue</span>
-              <h2 id="scores-title" className="section-title">
-                New to the catalogue.
-              </h2>
+              <StaggerLines
+                id="scores-title"
+                className="section-title"
+                lines={["New to the catalogue."]}
+              />
             </div>
             <Link className="action-text" href="/store">
               All sheet music <ArrowUpRight size={18} aria-hidden />
             </Link>
           </Reveal>
+          <SectionIndicator />
           <div className="media-grid">
-            {products.slice(0, 3).map((product) => (
-              <Reveal key={product.id}>
+            {products.slice(0, 3).map((product, i) => (
+              <ScrollScene key={product.id} depth={0.55 + i * 0.3}>
                 <ProductCard product={product} />
-              </Reveal>
+              </ScrollScene>
             ))}
           </div>
         </div>
       </section>
       <section className="portfolio-section">
         <div className="container-editorial">
-          <Reveal
+          <ScrollScene
             as="blockquote"
+            depth={1.15}
             className="mx-auto max-w-3xl text-center font-serif text-3xl italic leading-relaxed"
           >
             In the space between two notes, a silence remembers everything the
             music meant to say.
-          </Reveal>
+          </ScrollScene>
         </div>
       </section>
       <section
@@ -244,11 +275,12 @@ export default async function HomePage() {
         <div className="container-editorial contact-grid">
           <Reveal>
             <span className="section-number">05 / Get in touch</span>
-            <h2 id="contact-title" className="section-title">
-              Let’s make
-              <br />
-              something resonant.
-            </h2>
+            <StaggerLines
+              id="contact-title"
+              className="section-title"
+              lines={["Let’s make", "something resonant."]}
+            />
+            <SectionIndicator />
             <p className="section-lead mt-6">
               Bookings, commissions & collaborations. For performances,
               sheet-music licensing, lessons, or a new idea.
