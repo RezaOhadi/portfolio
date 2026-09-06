@@ -2,17 +2,26 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronUp } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const SCROLL_THRESHOLD = 300;
 
 export function ScrollMouseIndicator({
   targetId = "about",
+  cuePath = "/",
 }: {
   targetId?: string;
+  /**
+   * Route that shows the hero "scroll" cue. Back-to-top is available sitewide;
+   * the downward cue only makes sense where `targetId` exists (the landing page).
+   */
+  cuePath?: string;
 }) {
   const reduce = useReducedMotion();
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const showCue = pathname === cuePath;
 
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > SCROLL_THRESHOLD);
@@ -62,7 +71,7 @@ export function ScrollMouseIndicator({
           </span>
           <span className="scroll-mouse-label">TOP</span>
         </motion.button>
-      ) : (
+      ) : showCue ? (
         <motion.button
           key="scroll-cue"
           type="button"
@@ -84,7 +93,7 @@ export function ScrollMouseIndicator({
           </span>
           <span className="scroll-mouse-label">SCROLL</span>
         </motion.button>
-      )}
+      ) : null}
     </AnimatePresence>
   );
 }
