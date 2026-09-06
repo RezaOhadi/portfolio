@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, Clock, FileText } from "lucide-react";
 import type { Product } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +13,6 @@ import { formatDuration, formatPrice } from "@/lib/utils";
 
 export function FeaturedComposition({ product }: { product: Product }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
@@ -29,7 +28,7 @@ export function FeaturedComposition({ product }: { product: Product }) {
       className="container-editorial grid items-center gap-10 lg:grid-cols-2 lg:gap-16"
     >
       <Reveal className="order-2 lg:order-1">
-        <motion.div style={{ y: reduce ? 0 : coverY }}>
+        <motion.div className="parallax-layer" style={{ y: coverY }}>
           <Link
             href={`/store/${product.slug}`}
             className="group relative block aspect-[4/5] overflow-hidden bg-charcoal-900 ring-1 ring-white/10"
@@ -54,7 +53,7 @@ export function FeaturedComposition({ product }: { product: Product }) {
           </span>
         </Reveal>
 
-        <motion.div style={{ y: reduce ? 0 : titleY }}>
+        <motion.div className="parallax-layer" style={{ y: titleY }}>
           <TextReveal
             text={product.title}
             as="h2"
@@ -68,7 +67,7 @@ export function FeaturedComposition({ product }: { product: Product }) {
           </p>
         </Reveal>
 
-        <motion.div style={{ y: reduce ? 0 : detailsY }}>
+        <motion.div className="parallax-layer" style={{ y: detailsY }}>
           <Reveal delay={0.1}>
             <dl className="flex flex-wrap gap-x-8 gap-y-3 border-y border-white/10 py-5 text-silver-300">
               <div className="flex items-center gap-2">

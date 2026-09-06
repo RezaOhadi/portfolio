@@ -1,13 +1,7 @@
 "use client";
 
 import { useRef, type ElementType, type ReactNode } from "react";
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-} from "framer-motion";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
 
 const SPRING = { stiffness: 120, damping: 30, mass: 0.35 };
 
@@ -34,7 +28,6 @@ export function ScrollScene({
   depth?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
@@ -62,19 +55,12 @@ export function ScrollScene({
 
   const MotionTag = motion(as as ElementType);
 
-  if (reduce) {
-    const Tag = as as ElementType;
-    return (
-      <Tag ref={ref} className={className}>
-        {children}
-      </Tag>
-    );
-  }
-
+  // `scroll-scene` is what the reduced-motion and no-script rules pin back to a
+  // resolved state — the markup must stay identical in every mode.
   return (
     <MotionTag
       ref={ref}
-      className={className}
+      className={["scroll-scene", className].filter(Boolean).join(" ")}
       style={{ opacity, y, scale, willChange: "transform, opacity" }}
     >
       {children}
@@ -88,7 +74,6 @@ export function ScrollScene({
  */
 export function SectionIndicator({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start 85%", "end 40%"],
@@ -105,7 +90,7 @@ export function SectionIndicator({ className }: { className?: string }) {
       className={["section-rule", className].filter(Boolean).join(" ")}
       aria-hidden
     >
-      <motion.span style={reduce ? { transform: "scaleX(1)" } : { scaleX }} />
+      <motion.span style={{ scaleX }} />
     </div>
   );
 }
@@ -125,18 +110,10 @@ export function StaggerLines({
   as?: ElementType;
   id?: string;
 }) {
-  const reduce = useReducedMotion();
-  const Tag = as as ElementType;
+  const MotionTag = motion(as as ElementType);
 
-  if (reduce) {
-    return (
-      <Tag id={id} className={className}>
-        {lines.join(" ")}
-      </Tag>
-    );
-  }
-
-  const MotionTag = motion(Tag);
+  // MotionConfig skips the transform for reduced-motion users and the CSS rule
+  // on `.stagger-line > span` pins the resolved position — no render branch.
   return (
     <MotionTag
       id={id}
