@@ -8,7 +8,11 @@ export const env = {
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
 
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  // Accept either the legacy anon key or the newer publishable key (anon first).
+  // Both are referenced statically so Next.js inlines them into client bundles.
+  supabaseAnonKey:
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   publicBucket: process.env.SUPABASE_PUBLIC_BUCKET ?? "public-assets",
   scoresBucket: process.env.SUPABASE_SCORES_BUCKET ?? "scores",
