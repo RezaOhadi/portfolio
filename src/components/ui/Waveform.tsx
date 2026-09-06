@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { EASE } from "@/components/motion/presets";
 
@@ -20,7 +20,6 @@ export function Waveform({
   bars?: number;
   mode?: "scroll" | "reveal";
 }) {
-  const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll();
   const clip = useTransform(scrollYProgress, (v) => `inset(0 ${(1 - v) * 100}% 0 0)`);
 
@@ -53,16 +52,16 @@ export function Waveform({
       <Row opacity="opacity-[0.14]" />
       {mode === "reveal" ? (
         <motion.div
-          className="absolute inset-0"
-          initial={{ clipPath: reduce ? "inset(0 0 0 0)" : "inset(0 100% 0 0)" }}
+          className="absolute inset-0 parallax-layer"
+          initial={{ clipPath: "inset(0 100% 0 0)" }}
           whileInView={{ clipPath: "inset(0 0 0 0)" }}
           viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: reduce ? 0 : 1.6, ease: EASE }}
+          transition={{ duration: 1.6, ease: EASE }}
         >
           <Row opacity="opacity-60" />
         </motion.div>
       ) : (
-        <motion.div className="absolute inset-0" style={{ clipPath: reduce ? "none" : clip }}>
+        <motion.div className="absolute inset-0 parallax-layer" style={{ clipPath: clip }}>
           <Row opacity="opacity-60" />
         </motion.div>
       )}
