@@ -22,24 +22,26 @@ export function CameraRig({ motion, onIntroComplete }: { motion: RefObject<Journ
     if (!intro.complete) {
       intro.elapsed += Math.min(delta, 0.05);
       // Deep links, restored scroll and an early swipe take priority over the intro.
-      if (intro.elapsed >= 1.8 || p > 0.015) {
+      if (intro.elapsed >= 2.4 || p > 0.015) {
         intro.complete = true;
         onIntroComplete();
       }
     }
-    const t = Math.min(1, intro.elapsed / 1.8);
+    const t = Math.min(1, intro.elapsed / 2.4);
     const entranceOffset = intro.complete ? 0 : 4 * (1 - t * t * (3 - 2 * t));
     const alpha = state.snap ? 1 : 1 - Math.exp(-universeConfig.camera.damping * Math.min(delta, 0.05));
     const portrait = MathUtils.clamp(1 - size.width / Math.max(1, size.height), 0, 0.65);
     if (camera instanceof PerspectiveCamera) {
       const fov = universeConfig.camera.fov + portrait * 48;
-      if (Math.abs(camera.fov - fov) > 0.01) {
+      const aspect = size.width / Math.max(1, size.height);
+      if (Math.abs(camera.fov - fov) > 0.01 || camera.aspect !== aspect) {
         camera.fov = fov;
+        camera.aspect = aspect;
         camera.updateProjectionMatrix();
       }
     }
     target.set(
-      Math.sin(p * Math.PI * 2) * 0.65 * (1 - portrait) + state.pointerX * 0.16,
+      Math.sin(p * Math.PI * 2) * 0.65 * (1 - portrait * 1.5) + state.pointerX * 0.16 * (1 - portrait),
       Math.sin(p * Math.PI) * 0.3 - state.pointerY * 0.1,
       MathUtils.lerp(universeConfig.camera.startZ, universeConfig.camera.endZ, p) + portrait * 4 + entranceOffset,
     );

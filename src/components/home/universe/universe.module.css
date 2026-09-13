@@ -1,4 +1,8 @@
-.universe{position:relative;isolation:isolate;background:#060608;color:#f2eee6}
+.universe{position:relative;isolation:isolate;background:#060608;color:#f2eee6;width:100%;max-width:100vw;box-sizing:border-box;overflow-x:clip}
+.universe *,.universe *::before,.universe *::after{box-sizing:border-box;min-width:0}
+.stage,.content,.chapter,.textPlane{width:100%;max-width:100vw;overflow-x:clip}
+.stage canvas{display:block;width:100%!important;max-width:100vw;box-sizing:border-box}
+:global(html):has(.universe),:global(body):has(.universe){max-width:100%;overflow-x:clip}
 .stage{position:sticky;top:0;height:100svh;width:100%;overflow:hidden;pointer-events:none;z-index:-1}
 .stage canvas{position:relative;opacity:0;transition:opacity 1s}
 .universe[data-enhanced="true"] .stage canvas{opacity:1}
@@ -70,7 +74,13 @@
 @keyframes explorePulse{0%,100%{opacity:.5;transform:translateY(0)}50%{opacity:1;transform:translateY(4px)}}
 /* Keep SSR content semantic; only scripting-capable, motion-enabled clients wait. */
 @media(scripting:enabled) and (prefers-reduced-motion:no-preference){
+  :global(body):has(.universe[data-intro="pending"][data-static="false"]){overflow:hidden}
   .universe[data-intro="pending"][data-static="false"] .textPlane{visibility:hidden}
+  .universe[data-intro="pending"][data-static="false"] .controls{visibility:hidden}
+  .universe[data-intro="pending"][data-static="false"] .fallbackArt{background:#060608}
+  :global(body):has(.universe[data-intro="pending"][data-static="false"]) :global(header),
+  :global(body):has(.universe[data-intro="pending"][data-static="false"]) :global(button),
+  :global(body):has(.universe[data-intro="pending"][data-static="false"]) :global(footer){visibility:hidden}
 }
 .universe[data-editorial="true"] .entry [data-beat="mask"]{filter:blur(calc((1 - var(--enter)) * 8px));transform:translate3d(0,calc((1 - var(--enter)) * 18px - var(--exit) * 24px),0)}
 @media(prefers-reduced-motion:reduce){.universe .scrollCue span{animation:none!important}}
@@ -89,3 +99,13 @@
 .universe[data-editorial="true"] .textPlane:has(:focus-visible) .drawLink::after{transform:scaleX(1)}
 @media(max-width:760px){.universe[data-editorial="true"] .chapter{padding:0 7%;min-height:calc(var(--panel-height,700px) + 130svh)}.textPlane{padding:2rem 0}.universe[data-editorial="true"] .textPlane{transform:none}.universe[data-editorial="true"] .entry .textPlane{padding-top:120px}}
 @media(prefers-reduced-motion:reduce){.universe[data-editorial="true"] .chapter{min-height:auto;padding:140px 8% 80px}.universe[data-editorial="true"] .textPlane{position:relative;top:auto;transform:none}.universe[data-editorial="true"] [data-beat]{opacity:1;filter:none;transform:none;pointer-events:auto!important}.universe[data-editorial="true"] .drawLink::after{transform:none}}
+@media(max-width:1024px){
+  .chapter,.universe[data-editorial="true"] .chapter{padding-left:1.25rem;padding-right:1.25rem}
+  .copy,.biography .copy,.music .copy{max-width:100%;margin-inline:auto;overflow-wrap:anywhere}
+  .textPlane{transform:none!important}
+  .headlineMask{margin-inline:0;padding-inline:0;max-width:100%}
+  .copy::before{inset:-2rem -1.25rem}
+  .controls{left:1.25rem;right:1.25rem}
+  .works li{gap:1rem}.works li>div{min-width:0}
+  .link{max-width:100%;gap:1rem}
+}

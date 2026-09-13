@@ -1,11 +1,11 @@
 "use client";
-import { useEffect, type RefObject } from "react";
+import { useLayoutEffect, type RefObject } from "react";
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 const ease = (n: number) => n * n * (3 - 2 * n);
 
 /** Event-driven DOM animation; no per-frame React updates or scroll interception. */
 export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, enabled: boolean) {
-  useEffect(() => {
+  useLayoutEffect(() => {
     const host = root.current;
     if (!host || !enabled) return;
     const chapters = Array.from(host.querySelectorAll<HTMLElement>("[data-editorial-chapter]")).map(element => ({
@@ -14,6 +14,7 @@ export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, ena
       beats: Array.from(element.querySelectorAll<HTMLElement>("[data-beat]")).map(node => ({ node, enter: Number(node.dataset.enter), exit: Number(node.dataset.exit) })),
     }));
     let frame = 0, previous = 0, x = 0, y = 0, targetX = 0, targetY = 0;
+    let entryTime = window.scrollY < 100 ? 0 : 2;
     let disposed = false;
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
     const tick = (time: number) => {
@@ -21,12 +22,14 @@ export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, ena
       if (document.hidden) return;
       const dt = Math.min((time - (previous || time - 16)) / 1000, 0.05);
       previous = time;
+      entryTime += dt;
       const alpha = 1 - Math.exp(-dt / 0.18);
       x += (targetX - x) * (1 - Math.exp(-dt / 0.22));
       y += (targetY - y) * (1 - Math.exp(-dt / 0.22));
       let unsettled = Math.abs(x - targetX) + Math.abs(y - targetY) > 0.002;
       for (const chapter of chapters) {
-        chapter.current += (chapter.target - chapter.current) * alpha;
+        const target = chapter === chapters[0] ? Math.min(chapter.target, entryTime / 1.4 * 0.6) : chapter.target;
+        chapter.current += (target - chapter.current) * alpha;
         unsettled ||= Math.abs(chapter.target - chapter.current) > 0.0001;
         chapter.panel.style.setProperty("--tilt-x", `${(-y * 1.5).toFixed(3)}deg`);
         chapter.panel.style.setProperty("--tilt-y", `${(x * 1.5).toFixed(3)}deg`);
@@ -42,7 +45,7 @@ export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, ena
     };
     const wake = () => { if (!frame && !document.hidden && !disposed) { previous = 0; frame = requestAnimationFrame(tick); } };
     const scroll = () => {
-      chapters.forEach((chapter, index) => { chapter.target = clamp((window.scrollY - chapter.top + 100) / chapter.span + (index === 0 ? 0.24 : 0)); });
+      chapters.forEach((chapter, index) => { chapter.target = clamp((window.scrollY - chapter.top + 100) / chapter.span + (index === 0 ? 0.48 : 0)); });
       wake();
     };
     const measure = () => {

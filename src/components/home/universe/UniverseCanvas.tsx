@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from "react";
-import { InstancedMesh, Object3D, type Group } from "three";
+import { InstancedMesh, Object3D, type Group, type PointLight, type AmbientLight } from "three";
 import { universeConfig } from "@/config/home-universe";
 import { CameraRig, type JourneyMotion } from "./CameraRig";
 
@@ -80,6 +80,29 @@ function Ready({ onReady }: { onReady: () => void }) {
   return null;
 }
 
+function PreludeLights() {
+  const ambient = useRef<AmbientLight>(null);
+  const key = useRef<PointLight>(null);
+  const middle = useRef<PointLight>(null);
+  const far = useRef<PointLight>(null);
+  const elapsed = useRef(0);
+  useFrame((_, delta) => {
+    elapsed.current += Math.min(delta, 0.05);
+    const t = Math.min(1, Math.max(0, (elapsed.current - 0.2) / 2.2));
+    const light = t * t * (3 - 2 * t);
+    if (ambient.current) ambient.current.intensity = light * 0.5;
+    if (key.current) key.current.intensity = light * 45;
+    if (middle.current) middle.current.intensity = light * 65;
+    if (far.current) far.current.intensity = light * 55;
+  });
+  return <>
+    <ambientLight ref={ambient} intensity={0} />
+    <pointLight ref={key} position={[1, 3, 6]} color="#e8c6a0" intensity={0} distance={35} />
+    <pointLight ref={middle} position={[-3, 2, -16]} color="#d5ae88" intensity={0} distance={35} />
+    <pointLight ref={far} position={[2, 3, -33]} color="#f2eee6" intensity={0} distance={25} />
+  </>;
+}
+
 export default function UniverseCanvas(props: Props) {
   const { motion, mobile, active, selected, workCount, onReady, onFailure } = props;
   const quality = mobile ? universeConfig.mobile : universeConfig.desktop;
@@ -101,10 +124,7 @@ export default function UniverseCanvas(props: Props) {
   >
     <color attach="background" args={["#060608"]} />
     <fog attach="fog" args={["#060608", 7, 40]} />
-    <ambientLight intensity={0.5} />
-    <pointLight position={[1, 3, 6]} color="#e8c6a0" intensity={45} distance={35} />
-    <pointLight position={[-3, 2, -16]} color="#d5ae88" intensity={65} distance={35} />
-    <pointLight position={[2, 3, -33]} color="#f2eee6" intensity={55} distance={25} />
+    <PreludeLights />
     <Strings count={quality.strings} />
     <Dust count={quality.particles} />
     {[0, 1, 2, 3, 4].map((index) => <mesh key={index} position={[0, -1.3, -index * 12]} rotation={[0.15, 0, 0.12]}>

@@ -17,7 +17,7 @@ export function JourneyContent({ data, selected, onSelect }: {
           <p className={styles.eyebrow} {...beat(0, 0.76, "accent")}>00 / Pianist · Composer</p>
           <h1 id="hero-title" className={styles.headlineMask}><span {...beat(0.08, 0.80, "mask")}>{data.name}</span></h1>
           <p className={styles.tagline} {...beat(0.28, 0.84, "body")}>{data.supporting}</p>
-          <p className={styles.scrollCue} {...beat(0.12, 0.70, "accent")}>Scroll to explore <span aria-hidden>↓</span></p>
+          <p className={styles.scrollCue} {...beat(0.44, 0.70, "accent")}>Scroll to explore <span aria-hidden>↓</span></p>
           <a className={`${styles.link} ${styles.drawLink}`} href="#about" {...beat(0.47, 0.88, "accent")}>Enter the piano universe <span aria-hidden>↓</span></a>
         </div>
         <span className={styles.marginNote} aria-hidden {...beat(0.55, 0.87, "accent")}>Memory / Silence / Resonance</span>
