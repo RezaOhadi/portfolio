@@ -12,7 +12,9 @@
 .controls button{border-bottom:1px solid #b7b5b1;padding:0 0 5px;letter-spacing:.08em}
 .chapter{min-height:125svh;padding:15svh 8%;display:flex;align-items:center;position:relative;scroll-margin-top:90px}
 .entry{min-height:115svh}
-.copy{position:relative;z-index:1;isolation:isolate;max-width:620px;width:100%;text-shadow:0 2px 10px rgba(0,0,0,.95),0 0 25px rgba(0,0,0,.9),0 0 50px rgba(0,0,0,.7)}
+.copy{position:relative;z-index:1;max-width:620px;width:100%}
+.content,.chapter,.textPlane,.copy{background:transparent}
+.chapter :is(h1,h2,p,a),.eyebrow,.marginNote,.workNumber,.controls{ text-shadow:0 2px 4px rgba(0,0,0,.9),0 0 12px rgba(0,0,0,.8),0 0 24px rgba(0,0,0,.7);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.24em;color:#d5ae88;margin-bottom:2rem}
 .chapter h1,.chapter h2{font-family:var(--font-serif),Georgia,serif;font-weight:400;line-height:.96;letter-spacing:-.045em;text-wrap:balance}
 .chapter h1{font-size:clamp(4.5rem,10vw,10rem)}
@@ -29,16 +31,6 @@
   max-width:540px;
   background:none;
 }
-/* A feathered scrim travels with the text plane and dims strings behind it.
-   No backdrop filter or extra WebGL pass is needed. */
-.copy::before{
-  content:"";
-  position:absolute;
-  z-index:-1;
-  inset:-3rem calc(-1 * clamp(18px,4vw,64px));
-  pointer-events:none;
-  background:radial-gradient(ellipse at center,rgba(6,6,8,.97) 0%,rgba(6,6,8,.92) 55%,rgba(6,6,8,.7) 72%,transparent 100%);
-}
 .biography .copy .body{color:#eae5dc;font-weight:400}
 .biography .copy .eyebrow,.biography .copy .link{color:#d5ae88}
 .biography .copy .link:hover{color:#ead1b6}
@@ -46,7 +38,7 @@
 .portrait{width:30%;flex-shrink:0;transform:rotate(-3deg);margin-top:10vh}
 .photo{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;filter:grayscale(1);border:1px solid #b59b7833}
 .portrait figcaption{display:flex;justify-content:space-between;gap:1rem;font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-top:1rem;color:#b7b5b1}
-.music{min-height:150svh;background:linear-gradient(0deg,#060608,transparent 25%)}
+.music{min-height:150svh}
 .music .copy{max-width:600px}
 .works{list-style:none;padding:0;margin:2.5rem 0}
 .works li{display:flex;gap:1.5rem;border-top:1px solid #f2eee629;padding:1.4rem 0;transition:border-color .25s}
@@ -61,7 +53,7 @@
 .universe[data-static="true"] .content{margin-top:0}
 .universe[data-static="true"] .chapter{min-height:auto}
 .universe[data-static="true"] .entry{min-height:100svh}
-@media(max-width:760px){.controls{top:110px;font-size:8px;left:7%;right:7%}.chapter{padding:140px 7% 80px;min-height:110svh}.entry{padding-top:180px}.biography{flex-direction:column;align-items:flex-start;gap:2rem}.portrait{width:65%;max-width:300px;margin:1rem 0 0 15%}.chapter h1{font-size:clamp(3.5rem,16vw,6rem)}.chapter h2{font-size:clamp(3rem,12vw,4.5rem)}.music{min-height:130svh}.body{font-size:14px}.marginNote{font-size:8px}.copy{background:radial-gradient(ellipse at left,#060608bb,transparent)} }
+@media(max-width:760px){.controls{top:110px;font-size:8px;left:7%;right:7%}.chapter{padding:140px 7% 80px;min-height:110svh}.entry{padding-top:180px}.biography{flex-direction:column;align-items:flex-start;gap:2rem}.portrait{width:65%;max-width:300px;margin:1rem 0 0 15%}.chapter h1{font-size:clamp(3.5rem,16vw,6rem)}.chapter h2{font-size:clamp(3rem,12vw,4.5rem)}.music{min-height:130svh}.body{font-size:14px}.marginNote{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.stage{position:absolute}.chapter{min-height:auto;padding-top:150px;padding-bottom:80px}.entry{min-height:90svh}.content{margin-top:0}.portrait{transform:none}.stage canvas,.works li{transition:none}}
 
 /* Editorial choreography is opt-in after the renderer is ready. SSR stays readable. */
@@ -82,14 +74,15 @@
   :global(body):has(.universe[data-intro="pending"][data-static="false"]) :global(button),
   :global(body):has(.universe[data-intro="pending"][data-static="false"]) :global(footer){visibility:hidden}
 }
-.universe[data-editorial="true"] .entry [data-beat="mask"]{filter:blur(calc((1 - var(--enter)) * 8px));transform:translate3d(0,calc((1 - var(--enter)) * 18px - var(--exit) * 24px),0)}
+.universe[data-editorial="true"] .entry [data-beat="mask"]{transform:translate3d(0,calc((1 - var(--enter)) * 18px - var(--exit) * 24px),0)}
 @media(prefers-reduced-motion:reduce){.universe .scrollCue span{animation:none!important}}
 .universe[data-editorial="true"] .chapter{display:block;padding:0 8%;min-height:max(230svh,calc(var(--panel-height,700px) + 140svh))}
 .universe[data-editorial="true"] .textPlane{position:sticky;top:var(--pin-top,100px);transform:perspective(1400px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg))}
 .universe[data-editorial="true"] .entry .textPlane{padding-top:90px}
 .universe[data-editorial="true"] [data-beat]{--enter:0;--exit:0;opacity:calc(var(--enter) * (1 - var(--exit)))}
-.universe[data-editorial="true"] [data-beat="mask"]{transform:translate3d(0,calc((1 - var(--enter)) * 110% - var(--exit) * 25%),0);letter-spacing:calc(-.045em + var(--enter) * .018em)}
-.universe[data-editorial="true"] [data-beat="body"]{filter:blur(calc((1 - var(--enter)) * 8px));transform:translate3d(0,calc((1 - var(--enter)) * 18px - var(--exit) * 24px),0)}
+.universe[data-editorial="true"] .chapter[data-animating="true"] [data-beat]{will-change:transform,opacity}
+.universe[data-editorial="true"] [data-beat="mask"]{transform:translate3d(0,calc((1 - var(--enter)) * 110% - var(--exit) * 25%),0);letter-spacing:-.027em}
+.universe[data-editorial="true"] [data-beat="body"]{transform:translate3d(0,calc((1 - var(--enter)) * 18px - var(--exit) * 24px),0)}
 .universe[data-editorial="true"] [data-beat="accent"]{transform:translate3d(0,calc((1 - var(--enter)) * 6px - var(--exit) * 16px),0)}
 .drawLink{position:relative;border-bottom:0}
 .drawLink::after{content:"";position:absolute;bottom:0;left:0;right:0;height:1px;background:#d5ae88;transform-origin:left}
@@ -104,7 +97,6 @@
   .copy,.biography .copy,.music .copy{max-width:100%;margin-inline:auto;overflow-wrap:anywhere}
   .textPlane{transform:none!important}
   .headlineMask{margin-inline:0;padding-inline:0;max-width:100%}
-  .copy::before{inset:-2rem -1.25rem}
   .controls{left:1.25rem;right:1.25rem}
   .works li{gap:1rem}.works li>div{min-width:0}
   .link{max-width:100%;gap:1rem}

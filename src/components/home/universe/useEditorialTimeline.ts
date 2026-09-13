@@ -23,11 +23,12 @@ export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, ena
       const dt = Math.min((time - (previous || time - 16)) / 1000, 0.05);
       previous = time;
       entryTime += dt;
-      const alpha = 1 - Math.exp(-dt / 0.18);
+      const alpha = 1 - Math.exp(-dt / 0.08);
       x += (targetX - x) * (1 - Math.exp(-dt / 0.22));
       y += (targetY - y) * (1 - Math.exp(-dt / 0.22));
       let unsettled = Math.abs(x - targetX) + Math.abs(y - targetY) > 0.002;
       for (const chapter of chapters) {
+        chapter.element.dataset.animating = String(chapter.target > 0 && chapter.current < 0.9999);
         const target = chapter === chapters[0] ? Math.min(chapter.target, entryTime / 1.4 * 0.6) : chapter.target;
         chapter.current += (target - chapter.current) * alpha;
         unsettled ||= Math.abs(chapter.target - chapter.current) > 0.0001;
@@ -89,6 +90,7 @@ export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, ena
       host.removeEventListener("pointermove", pointer); host.removeEventListener("pointerleave", leave);
       delete host.dataset.editorial;
       chapters.forEach(({ element, panel, beats }) => {
+        delete element.dataset.animating;
         element.style.removeProperty("--panel-height"); element.style.removeProperty("--pin-top");
         panel.style.removeProperty("--tilt-x"); panel.style.removeProperty("--tilt-y");
         beats.forEach(({ node }) => { node.style.removeProperty("--enter"); node.style.removeProperty("--exit"); node.style.pointerEvents = ""; });
