@@ -17,7 +17,7 @@ interface Props {
   onIntroComplete: () => void;
 }
 
-function Strings({ count }: { count: number }) {
+function Strings({ count, mobile }: { count: number; mobile: boolean }) {
   const mesh = useRef<InstancedMesh>(null);
   useLayoutEffect(() => {
     if (!mesh.current) return;
@@ -35,7 +35,7 @@ function Strings({ count }: { count: number }) {
   }, [count]);
   return <instancedMesh ref={mesh} args={[undefined, undefined, count]}>
     <cylinderGeometry args={[0.012, 0.012, 78, 5]} />
-    <meshStandardMaterial color="#b49470" metalness={0.75} roughness={0.38} />
+    {mobile ? <meshLambertMaterial color="#b49470" /> : <meshStandardMaterial color="#b49470" metalness={0.75} roughness={0.38} />}
   </instancedMesh>;
 }
 
@@ -58,6 +58,26 @@ function Dust({ count }: { count: number }) {
   </points>;
 }
 
+function MobileRings({ selected }: { selected: boolean }) {
+  const mesh = useRef<InstancedMesh>(null);
+  useLayoutEffect(() => {
+    if (!mesh.current) return;
+    const object = new Object3D();
+    for (let ring = 0; ring < 4; ring++) {
+      object.rotation.set(ring * 0.13, ring * 0.19, 0);
+      object.scale.setScalar((1.1 + ring * 0.045) / 1.1);
+      object.updateMatrix();
+      mesh.current.setMatrixAt(ring, object.matrix);
+    }
+    mesh.current.instanceMatrix.needsUpdate = true;
+    mesh.current.computeBoundingSphere();
+  }, []);
+  return <instancedMesh ref={mesh} args={[undefined, undefined, 4]}>
+    <torusGeometry args={[1.1, 0.012, 5, 48]} />
+    <meshLambertMaterial color={selected ? "#dfc8a3" : "#786651"} />
+  </instancedMesh>;
+}
+
 function Resonance({ index, selected, mobile }: { index: number; selected: boolean; mobile: boolean }) {
   const group = useRef<Group>(null);
   useFrame((_, delta) => {
@@ -67,7 +87,7 @@ function Resonance({ index, selected, mobile }: { index: number; selected: boole
     group.current.scale.setScalar(next);
   });
   return <group ref={group} position={[2.3 + index * 0.55, 0.25 - index * 0.2, -31 - index * 3]} rotation={[0.35, -0.6, 0.3 + index * 0.4]}>
-    {Array.from({ length: mobile ? 4 : 7 }, (_, ring) => <mesh key={ring} rotation={[ring * 0.13, ring * 0.19, 0]}>
+    {mobile ? <MobileRings selected={selected} /> : Array.from({ length: 7 }, (_, ring) => <mesh key={ring} rotation={[ring * 0.13, ring * 0.19, 0]}>
       <torusGeometry args={[1.1 + ring * 0.045, 0.012, 5, mobile ? 48 : 96]} />
       {mobile ? <meshLambertMaterial color={selected ? "#dfc8a3" : "#786651"} /> : <meshStandardMaterial color={selected ? "#dfc8a3" : "#786651"} metalness={0.65} roughness={0.4} />}
     </mesh>)}
@@ -87,7 +107,8 @@ function PreludeLights() {
   const far = useRef<PointLight>(null);
   const elapsed = useRef(0);
   useFrame((_, delta) => {
-    elapsed.current += Math.min(delta, 0.05);
+    if (elapsed.current >= 2.4) return;
+    elapsed.current = Math.min(2.4, elapsed.current + Math.min(delta, 0.05));
     const t = Math.min(1, Math.max(0, (elapsed.current - 0.2) / 2.2));
     const light = t * t * (3 - 2 * t);
     if (ambient.current) ambient.current.intensity = light * 0.5;
@@ -117,7 +138,7 @@ export default function UniverseCanvas(props: Props) {
   return <Canvas
     ref={element}
     frameloop={active ? "always" : "never"}
-    dpr={[1, quality.dpr]}
+    dpr={mobile ? [1, 1] : [1, quality.dpr]}
     camera={{ position: [0, 0, 12], fov: universeConfig.camera.fov, near: 0.1, far: 100 }}
     gl={{ alpha: false, antialias: !mobile, powerPreference: "default" }}
     fallback={null}
@@ -125,7 +146,7 @@ export default function UniverseCanvas(props: Props) {
     <color attach="background" args={["#060608"]} />
     <fog attach="fog" args={["#060608", 7, 40]} />
     <PreludeLights />
-    <Strings count={quality.strings} />
+    <Strings count={quality.strings} mobile={mobile} />
     <Dust count={quality.particles} />
     {[0, 1, 2, 3, 4].map((index) => <mesh key={index} position={[0, -1.3, -index * 12]} rotation={[0.15, 0, 0.12]}>
       <torusGeometry args={[5.7, 0.14, mobile ? 5 : 8, mobile ? 40 : 80, Math.PI * 1.35]} />

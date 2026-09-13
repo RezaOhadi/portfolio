@@ -80,7 +80,7 @@
 .universe[data-editorial="true"] .textPlane{position:sticky;top:var(--pin-top,100px);transform:perspective(1400px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg))}
 .universe[data-editorial="true"] .entry .textPlane{padding-top:90px}
 .universe[data-editorial="true"] [data-beat]{--enter:0;--exit:0;opacity:calc(var(--enter) * (1 - var(--exit)))}
-.universe[data-editorial="true"] .chapter[data-animating="true"] [data-beat]{will-change:transform,opacity}
+.universe[data-editorial="true"] .chapter[data-animating="true"] [data-beat]{will-change:transform,opacity;backface-visibility:hidden}
 .universe[data-editorial="true"] [data-beat="mask"]{transform:translate3d(0,calc((1 - var(--enter)) * 110% - var(--exit) * 25%),0);letter-spacing:-.027em}
 .universe[data-editorial="true"] [data-beat="body"]{transform:translate3d(0,calc((1 - var(--enter)) * 18px - var(--exit) * 24px),0)}
 .universe[data-editorial="true"] [data-beat="accent"]{transform:translate3d(0,calc((1 - var(--enter)) * 6px - var(--exit) * 16px),0)}

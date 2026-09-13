@@ -10,8 +10,8 @@ export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, ena
     if (!host || !enabled) return;
     const chapters = Array.from(host.querySelectorAll<HTMLElement>("[data-editorial-chapter]")).map(element => ({
       element, panel: element.querySelector<HTMLElement>("[data-text-plane]")!,
-      top: 0, span: 1, current: 0, target: 0,
-      beats: Array.from(element.querySelectorAll<HTMLElement>("[data-beat]")).map(node => ({ node, enter: Number(node.dataset.enter), exit: Number(node.dataset.exit) })),
+      top: 0, span: 1, current: 0, target: 0, animating: "", tiltX: "", tiltY: "",
+      beats: Array.from(element.querySelectorAll<HTMLElement>("[data-beat]")).map(node => ({ node, enter: Number(node.dataset.enter), exit: Number(node.dataset.exit), lastEnter: "", lastExit: "", interactive: "unset" })),
     }));
     let frame = 0, previous = 0, x = 0, y = 0, targetX = 0, targetY = 0;
     let entryTime = window.scrollY < 100 ? 0 : 2;
@@ -28,18 +28,22 @@ export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, ena
       y += (targetY - y) * (1 - Math.exp(-dt / 0.22));
       let unsettled = Math.abs(x - targetX) + Math.abs(y - targetY) > 0.002;
       for (const chapter of chapters) {
-        chapter.element.dataset.animating = String(chapter.target > 0 && chapter.current < 0.9999);
+        const animating = String(chapter.target > 0 && chapter.current < 0.9999);
+        if (animating !== chapter.animating) chapter.element.dataset.animating = chapter.animating = animating;
         const target = chapter === chapters[0] ? Math.min(chapter.target, entryTime / 1.4 * 0.6) : chapter.target;
         chapter.current += (target - chapter.current) * alpha;
         unsettled ||= Math.abs(chapter.target - chapter.current) > 0.0001;
-        chapter.panel.style.setProperty("--tilt-x", `${(-y * 1.5).toFixed(3)}deg`);
-        chapter.panel.style.setProperty("--tilt-y", `${(x * 1.5).toFixed(3)}deg`);
+        const tiltX = `${(-y * 1.5).toFixed(3)}deg`, tiltY = `${(x * 1.5).toFixed(3)}deg`;
+        if (tiltX !== chapter.tiltX) chapter.panel.style.setProperty("--tilt-x", chapter.tiltX = tiltX);
+        if (tiltY !== chapter.tiltY) chapter.panel.style.setProperty("--tilt-y", chapter.tiltY = tiltY);
         for (const beat of chapter.beats) {
           const enter = ease(clamp((chapter.current - beat.enter) / 0.12));
           const exit = ease(clamp((chapter.current - beat.exit) / 0.12));
-          beat.node.style.setProperty("--enter", enter.toFixed(4));
-          beat.node.style.setProperty("--exit", exit.toFixed(4));
-          beat.node.style.pointerEvents = enter > 0.9 && exit < 0.1 ? "" : "none";
+          const nextEnter = enter.toFixed(4), nextExit = exit.toFixed(4);
+          if (nextEnter !== beat.lastEnter) beat.node.style.setProperty("--enter", beat.lastEnter = nextEnter);
+          if (nextExit !== beat.lastExit) beat.node.style.setProperty("--exit", beat.lastExit = nextExit);
+          const interactive = enter > 0.9 && exit < 0.1 ? "" : "none";
+          if (interactive !== beat.interactive) beat.node.style.pointerEvents = beat.interactive = interactive;
         }
       }
       if (unsettled) frame = requestAnimationFrame(tick);

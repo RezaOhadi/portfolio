@@ -79,10 +79,17 @@ export function PianoUniverse({ data }: { data: HomeUniverseData }) {
     const node = root.current;
     if (!node) return;
     let visible = true;
+    let top = 0, span = 1;
     const updateActive = () => setActive(visible && !document.hidden);
+    // Scroll events read only the scroll offset; layout is cached on resize.
+    const scroll = () => {
+      motion.current.progress = Math.max(0, Math.min(1, (window.scrollY - top) / span));
+    };
     const measure = () => {
       const rect = node.getBoundingClientRect();
-      motion.current.progress = Math.max(0, Math.min(1, -rect.top / Math.max(1, node.offsetHeight - window.innerHeight)));
+      top = rect.top + window.scrollY;
+      span = Math.max(1, node.offsetHeight - window.innerHeight);
+      scroll();
     };
     const snap = () => { measure(); motion.current.snap = true; };
     const pointer = (event: PointerEvent) => {
@@ -94,7 +101,7 @@ export function PianoUniverse({ data }: { data: HomeUniverseData }) {
     const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; updateActive(); });
     const resize = new ResizeObserver(measure);
     observer.observe(node); resize.observe(node);
-    window.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("scroll", scroll, { passive: true });
     // Native scroll includes touch and momentum; never intercept touchmove.
     window.addEventListener("resize", measure);
     window.addEventListener("hashchange", snap);
@@ -105,7 +112,7 @@ export function PianoUniverse({ data }: { data: HomeUniverseData }) {
     snap(); updateActive();
     return () => {
       observer.disconnect(); resize.disconnect();
-      window.removeEventListener("scroll", measure); window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", scroll); window.removeEventListener("resize", measure);
       window.removeEventListener("hashchange", snap); window.removeEventListener("pageshow", snap);
       document.removeEventListener("visibilitychange", updateActive);
       node.removeEventListener("pointermove", pointer); node.removeEventListener("pointerleave", resetPointer);

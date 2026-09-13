@@ -8,5 +8,5 @@ export const universeConfig = {
   maxWorks: 3,
   camera: { startZ: 12, endZ: -32, fov: 40, damping: 12.5 }, // 80ms response, independent of frame rate.
   desktop: { dpr: 1.5, strings: 64, particles: 420 },
-  mobile: { dpr: 1.0, strings: 28, particles: 64 },
+  mobile: { dpr: 1.0, strings: 14, particles: 64 },
 } as const;
