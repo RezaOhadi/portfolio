@@ -2,7 +2,7 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useMemo, type RefObject } from "react";
-import { Vector3, MathUtils } from "three";
+import { Vector3, MathUtils, PerspectiveCamera } from "three";
 import { universeConfig } from "@/config/home-universe";
 
 export interface JourneyMotion {
@@ -14,14 +14,22 @@ export interface JourneyMotion {
 
 export function CameraRig({ motion }: { motion: RefObject<JourneyMotion> }) {
   const target = useMemo(() => new Vector3(), []);
-  useFrame(({ camera }, delta) => {
+  useFrame(({ camera, size }, delta) => {
     const state = motion.current;
     const p = state.progress;
     const alpha = state.snap ? 1 : 1 - Math.exp(-universeConfig.camera.damping * Math.min(delta, 0.05));
+    const portrait = MathUtils.clamp(1 - size.width / Math.max(1, size.height), 0, 0.65);
+    if (camera instanceof PerspectiveCamera) {
+      const fov = universeConfig.camera.fov + portrait * 48;
+      if (Math.abs(camera.fov - fov) > 0.01) {
+        camera.fov = fov;
+        camera.updateProjectionMatrix();
+      }
+    }
     target.set(
-      Math.sin(p * Math.PI * 2) * 0.65 + state.pointerX * 0.16,
+      Math.sin(p * Math.PI * 2) * 0.65 * (1 - portrait) + state.pointerX * 0.16,
       Math.sin(p * Math.PI) * 0.3 - state.pointerY * 0.1,
-      MathUtils.lerp(universeConfig.camera.startZ, universeConfig.camera.endZ, p),
+      MathUtils.lerp(universeConfig.camera.startZ, universeConfig.camera.endZ, p) + portrait * 4,
     );
     camera.position.lerp(target, alpha);
     camera.rotation.x = MathUtils.lerp(camera.rotation.x, state.pointerY * 0.012, alpha);

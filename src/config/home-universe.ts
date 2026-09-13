@@ -8,5 +8,5 @@ export const universeConfig = {
   maxWorks: 3,
   camera: { startZ: 12, endZ: -32, fov: 40, damping: 7 },
   desktop: { dpr: 1.5, strings: 64, particles: 420 },
-  mobile: { dpr: 1.25, strings: 32, particles: 120 },
+  mobile: { dpr: 1.0, strings: 28, particles: 64 },
 } as const;

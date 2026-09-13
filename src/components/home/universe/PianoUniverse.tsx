@@ -32,9 +32,7 @@ export function PianoUniverse({ data }: { data: HomeUniverseData }) {
 
   useEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const screen = window.matchMedia("(max-width: 760px)");
     const update = () => {
-      setMobile(screen.matches);
       if (preference.matches) { setAllowed(false); return; }
       // Probe before importing the renderer. Release the temporary GPU context.
       const probe = document.createElement("canvas");
@@ -46,8 +44,16 @@ export function PianoUniverse({ data }: { data: HomeUniverseData }) {
     };
     update();
     preference.addEventListener("change", update);
+    return () => { preference.removeEventListener("change", update); };
+  }, []);
+
+  useEffect(() => {
+    // Quality selection never disables WebGL or the editorial timeline.
+    const screen = window.matchMedia("(max-width: 1024px), (any-pointer: coarse)");
+    const update = () => setMobile(screen.matches);
+    update();
     screen.addEventListener("change", update);
-    return () => { preference.removeEventListener("change", update); screen.removeEventListener("change", update); };
+    return () => screen.removeEventListener("change", update);
   }, []);
 
   useEffect(() => {
@@ -67,10 +73,11 @@ export function PianoUniverse({ data }: { data: HomeUniverseData }) {
     };
     const resetPointer = () => { motion.current.pointerX = 0; motion.current.pointerY = 0; };
     const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; updateActive(); });
-    const resize = new ResizeObserver(snap);
+    const resize = new ResizeObserver(measure);
     observer.observe(node); resize.observe(node);
     window.addEventListener("scroll", measure, { passive: true });
-    window.addEventListener("resize", snap);
+    // Native scroll includes touch and momentum; never intercept touchmove.
+    window.addEventListener("resize", measure);
     window.addEventListener("hashchange", snap);
     window.addEventListener("pageshow", snap);
     document.addEventListener("visibilitychange", updateActive);
@@ -79,7 +86,7 @@ export function PianoUniverse({ data }: { data: HomeUniverseData }) {
     snap(); updateActive();
     return () => {
       observer.disconnect(); resize.disconnect();
-      window.removeEventListener("scroll", measure); window.removeEventListener("resize", snap);
+      window.removeEventListener("scroll", measure); window.removeEventListener("resize", measure);
       window.removeEventListener("hashchange", snap); window.removeEventListener("pageshow", snap);
       document.removeEventListener("visibilitychange", updateActive);
       node.removeEventListener("pointermove", pointer); node.removeEventListener("pointerleave", resetPointer);

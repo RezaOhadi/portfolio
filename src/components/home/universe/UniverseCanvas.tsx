@@ -57,7 +57,7 @@ function Dust({ count }: { count: number }) {
   </points>;
 }
 
-function Resonance({ index, selected }: { index: number; selected: boolean }) {
+function Resonance({ index, selected, mobile }: { index: number; selected: boolean; mobile: boolean }) {
   const group = useRef<Group>(null);
   useFrame((_, delta) => {
     if (!group.current) return;
@@ -66,9 +66,9 @@ function Resonance({ index, selected }: { index: number; selected: boolean }) {
     group.current.scale.setScalar(next);
   });
   return <group ref={group} position={[2.3 + index * 0.55, 0.25 - index * 0.2, -31 - index * 3]} rotation={[0.35, -0.6, 0.3 + index * 0.4]}>
-    {Array.from({ length: 7 }, (_, ring) => <mesh key={ring} rotation={[ring * 0.13, ring * 0.19, 0]}>
-      <torusGeometry args={[1.1 + ring * 0.045, 0.012, 5, 96]} />
-      <meshStandardMaterial color={selected ? "#dfc8a3" : "#786651"} metalness={0.65} roughness={0.4} />
+    {Array.from({ length: mobile ? 4 : 7 }, (_, ring) => <mesh key={ring} rotation={[ring * 0.13, ring * 0.19, 0]}>
+      <torusGeometry args={[1.1 + ring * 0.045, 0.012, 5, mobile ? 48 : 96]} />
+      {mobile ? <meshLambertMaterial color={selected ? "#dfc8a3" : "#786651"} /> : <meshStandardMaterial color={selected ? "#dfc8a3" : "#786651"} metalness={0.65} roughness={0.4} />}
     </mesh>)}
   </group>;
 }
@@ -107,10 +107,10 @@ export default function UniverseCanvas(props: Props) {
     <Strings count={quality.strings} />
     <Dust count={quality.particles} />
     {[0, 1, 2, 3, 4].map((index) => <mesh key={index} position={[0, -1.3, -index * 12]} rotation={[0.15, 0, 0.12]}>
-      <torusGeometry args={[5.7, 0.14, 8, 80, Math.PI * 1.35]} />
-      <meshStandardMaterial color="#322b23" metalness={0.4} roughness={0.6} />
+      <torusGeometry args={[5.7, 0.14, mobile ? 5 : 8, mobile ? 40 : 80, Math.PI * 1.35]} />
+      {mobile ? <meshLambertMaterial color="#322b23" /> : <meshStandardMaterial color="#322b23" metalness={0.4} roughness={0.6} />}
     </mesh>)}
-    {Array.from({ length: workCount }, (_, index) => <Resonance key={index} index={index} selected={selected === index} />)}
+    {Array.from({ length: workCount }, (_, index) => <Resonance key={index} index={index} selected={selected === index} mobile={mobile} />)}
     <CameraRig motion={motion} />
     <Ready onReady={onReady} />
   </Canvas>;

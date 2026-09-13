@@ -3,12 +3,12 @@
 .stage canvas{position:relative;opacity:0;transition:opacity 1s}
 .universe[data-enhanced="true"] .stage canvas{opacity:1}
 .fallbackArt{position:absolute;inset:0;background:radial-gradient(ellipse at 80% 40%,#3a2b1d55,transparent 55%),repeating-linear-gradient(106deg,transparent 0,transparent 85px,#b89c7010 86px,transparent 87px),#060608}
-.content{position:relative;margin-top:-100svh}
+.content{position:relative;z-index:1;margin-top:-100svh}
 .controls{position:absolute;top:120px;left:6%;right:6%;z-index:2;display:flex;justify-content:space-between;gap:1rem;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#b7b5b1}
 .controls button{border-bottom:1px solid #b7b5b1;padding:0 0 5px;letter-spacing:.08em}
 .chapter{min-height:125svh;padding:15svh 8%;display:flex;align-items:center;position:relative;scroll-margin-top:90px}
 .entry{min-height:115svh}
-.copy{max-width:620px;width:100%}
+.copy{position:relative;z-index:1;isolation:isolate;max-width:620px;width:100%;text-shadow:0 2px 10px rgba(0,0,0,.95),0 0 25px rgba(0,0,0,.9),0 0 50px rgba(0,0,0,.7)}
 .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.24em;color:#d5ae88;margin-bottom:2rem}
 .chapter h1,.chapter h2{font-family:var(--font-serif),Georgia,serif;font-weight:400;line-height:.96;letter-spacing:-.045em;text-wrap:balance}
 .chapter h1{font-size:clamp(4.5rem,10vw,10rem)}
@@ -24,17 +24,16 @@
   isolation:isolate;
   max-width:540px;
   background:none;
-  text-shadow:0 2px 20px rgba(0,0,0,.8),0 0 8px rgba(0,0,0,.6);
 }
 /* A feathered scrim travels with the text plane and dims strings behind it.
    No backdrop filter or extra WebGL pass is needed. */
-.biography .copy::before{
+.copy::before{
   content:"";
   position:absolute;
   z-index:-1;
   inset:-3rem calc(-1 * clamp(18px,4vw,64px));
   pointer-events:none;
-  background:radial-gradient(ellipse at 45% 50%,rgba(6,6,8,.85) 0%,rgba(6,6,8,.75) 55%,rgba(6,6,8,.35) 78%,transparent 100%);
+  background:radial-gradient(ellipse at center,rgba(6,6,8,.92) 0%,rgba(6,6,8,.7) 55%,transparent 100%);
 }
 .biography .copy .body{color:#eae5dc;font-weight:400}
 .biography .copy .eyebrow,.biography .copy .link{color:#d5ae88}
