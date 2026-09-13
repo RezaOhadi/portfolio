@@ -1,5 +1,6 @@
 "use client";
 import {
+  createElement,
   useEffect,
   useRef,
   type ElementType,
@@ -43,15 +44,12 @@ export function Reveal({
     observer.observe(node);
     return () => observer.disconnect();
   }, [amount, once]);
-  return (
-    <Tag
-      ref={ref}
-      className={"scroll-reveal " + className}
-      style={{ "--reveal-delay": delay + "s" } as CSSProperties}
-    >
-      {children}
-    </Tag>
-  );
+  // createElement avoids a union of DOM and R3F intrinsic JSX signatures.
+  return createElement(Tag, {
+    ref,
+    className: "scroll-reveal " + className,
+    style: { "--reveal-delay": delay + "s" } as CSSProperties,
+  }, children);
 }
 export function Stagger({
   children,
@@ -83,5 +81,5 @@ export function StaggerItem({
   className?: string;
   as?: ElementType;
 }) {
-  return <Tag className={className}>{children}</Tag>;
+  return createElement(Tag, { className }, children);
 }
