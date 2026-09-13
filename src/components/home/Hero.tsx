@@ -2,24 +2,27 @@ import Link from "next/link";
 import { ArrowDown, ArrowUpRight, Play } from "lucide-react";
 import type { HeroContent } from "@/lib/types";
 import { HeroPortrait } from "@/components/home/HeroPortrait";
+import { HeroScrub, HeroStage } from "@/components/home/HeroStage";
+import { heroPortraitSrc, isUnoptimizedSource } from "@/config/site";
 import heroGenerated from "@/config/hero.generated.json";
 
+/**
+ * Resolution order is documented on `heroPortraitSrc` in config/site.ts: an
+ * admin upload wins, then the editable constant / env override, then the
+ * build-time scan of public/assets/images, then the legacy profile shot.
+ */
+function resolvePortrait(hero: HeroContent): string {
+  if (hero.image && !hero.image.startsWith("/placeholders/")) return hero.image;
+  if (heroPortraitSrc) return heroPortraitSrc;
+  return heroGenerated.portrait;
+}
+
 export function Hero({ hero }: { hero: HeroContent }) {
-  // An admin-uploaded hero image wins; otherwise the build-time resolved local
-  // portrait (public/assets/images/hero-portrait.*), falling back to profile.jpg.
-  const portrait =
-    hero.image && !hero.image.startsWith("/placeholders/")
-      ? hero.image
-      : heroGenerated.portrait;
+  const portrait = resolvePortrait(hero);
   return (
-    <section
-      id="home"
-      data-nav-section
-      className="portfolio-hero"
-      aria-labelledby="hero-title"
-    >
+    <HeroStage>
       <div className="container-editorial hero-layout">
-        <div className="hero-copy">
+        <HeroScrub className="hero-copy" from={0.3} to={0.72} lift={130}>
           <p className="eyebrow">Concert pianist · Composer · Technologist</p>
           <h1 id="hero-title" className="hero-title">
             {hero.headline}
@@ -34,20 +37,21 @@ export function Hero({ hero }: { hero: HeroContent }) {
               Discover sheet music <ArrowUpRight size={18} aria-hidden />
             </Link>
           </div>
-        </div>
+        </HeroScrub>
         <HeroPortrait
           src={portrait}
           alt="Portrait of Reza Ohadi"
           caption="Reza Ohadi"
           subcaption="At the piano"
+          unoptimized={isUnoptimizedSource(portrait)}
         />
-        <div className="hero-baseline">
+        <HeroScrub className="hero-baseline" from={0.18} to={0.54} lift={80}>
           <span>Classical roots. An open horizon.</span>
           <a href="#about">
             Discover <ArrowDown size={16} aria-hidden />
           </a>
-        </div>
+        </HeroScrub>
       </div>
-    </section>
+    </HeroStage>
   );
 }

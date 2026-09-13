@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { ArtistJsonLd } from "@/components/seo/ArtistJsonLd";
@@ -11,6 +12,10 @@ import {
   SectionIndicator,
   StaggerLines,
 } from "@/components/motion/ScrollScene";
+import {
+  HorizontalShowcase,
+  ShowcaseCard,
+} from "@/components/motion/HorizontalShowcase";
 import { YouTubeEmbed } from "@/components/media/YouTubeEmbed";
 import { SpotifyEmbed } from "@/components/media/SpotifyEmbed";
 import { SocialLinks } from "@/components/media/SocialLinks";
@@ -43,7 +48,7 @@ export default async function HomePage() {
       <section
         id="media"
         data-nav-section
-        className="portfolio-section"
+        className="portfolio-section portfolio-section--reel"
         aria-labelledby="media-title"
       >
         <div className="container-editorial">
@@ -61,30 +66,37 @@ export default async function HomePage() {
             </Link>
           </Reveal>
           <SectionIndicator />
-          <div className="media-grid">
-            {videos.map((item, i) => (
-              <ScrollScene
-                key={item.id}
-                className="media-card"
-                depth={0.55 + i * 0.3}
-              >
-                <YouTubeEmbed
-                  url={item.youtubeUrl}
-                  title={item.title}
-                  poster={item.poster}
-                />
-                <span className="media-meta">{item.category}</span>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </ScrollScene>
-            ))}
-          </div>
-          {!videos.length ? (
+        </div>
+        {/* Pinned horizontal reel: vertical wheel travel drives the rail
+            sideways, then the page resumes vertical flow below the track. */}
+        <HorizontalShowcase label="Performance reel">
+          <ShowcaseCard span={0.75} className="showcase-card--intro">
+            <span className="section-number">The reel</span>
+            <h3>Keep scrolling — the room moves sideways.</h3>
             <p className="section-lead">
-              New performances will be shared here soon.
+              Recitals, studio sessions and the record, laid out end to end.
             </p>
+          </ShowcaseCard>
+          {videos.map((item) => (
+            <ShowcaseCard key={item.id} className="media-card" span={1.15}>
+              <YouTubeEmbed
+                url={item.youtubeUrl}
+                title={item.title}
+                poster={item.poster}
+              />
+              <span className="media-meta">{item.category}</span>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </ShowcaseCard>
+          ))}
+          {!videos.length ? (
+            <ShowcaseCard span={1.15}>
+              <p className="section-lead">
+                New performances will be shared here soon.
+              </p>
+            </ShowcaseCard>
           ) : null}
-          <div className="spotify-panel">
+          <ShowcaseCard span={1.5} className="showcase-card--record">
             <div>
               <span className="section-number">On record</span>
               <h3>A closer listen.</h3>
@@ -98,8 +110,50 @@ export default async function HomePage() {
             <SpotifyEmbed
               url={content.social.spotify || mediaConfig.spotifyUrl}
             />
-          </div>
-        </div>
+          </ShowcaseCard>
+          {gallery.slice(0, 3).map((photo) => (
+            <ShowcaseCard key={photo.id} span={0.7} className="showcase-photo">
+              <Link href="/gallery" aria-label={photo.caption || "Open gallery"}>
+                <span className="showcase-photo-frame">
+                  <Image
+                    src={photo.imageUrl}
+                    alt={photo.caption || "Gallery photograph"}
+                    fill
+                    sizes="(min-width: 761px) 32vw, 80vw"
+                  />
+                </span>
+                <span className="gallery-caption">
+                  {photo.caption || "At the piano"}
+                  <ArrowUpRight size={18} aria-hidden />
+                </span>
+              </Link>
+            </ShowcaseCard>
+          ))}
+          <ShowcaseCard span={0.95} className="showcase-card--outro">
+            <span className="section-number">03 / On stage</span>
+            <h3>Next at the piano.</h3>
+            {content.home.performances.length ? (
+              <ul className="showcase-dates">
+                {content.home.performances.slice(0, 3).map((performance, i) => (
+                  <li key={performance.date + i}>
+                    <time dateTime={performance.date}>
+                      {formatDate(performance.date)}
+                    </time>
+                    <span>{performance.title}</span>
+                    <span>{performance.venue}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="section-lead">
+                New concert dates will be announced here.
+              </p>
+            )}
+            <Link href="/contact" className="action-text">
+              Booking inquiries <ArrowUpRight size={18} aria-hidden />
+            </Link>
+          </ShowcaseCard>
+        </HorizontalShowcase>
       </section>
       <section
         id="concerts"
