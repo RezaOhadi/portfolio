@@ -17,6 +17,7 @@ export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, ena
     let entryTime = window.scrollY < 100 ? 0 : 2;
     let disposed = false;
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const mobileLayout = window.matchMedia("(max-width: 1024px)");
     const tick = (time: number) => {
       frame = 0;
       if (document.hidden) return;
@@ -37,8 +38,9 @@ export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, ena
         if (tiltX !== chapter.tiltX) chapter.panel.style.setProperty("--tilt-x", chapter.tiltX = tiltX);
         if (tiltY !== chapter.tiltY) chapter.panel.style.setProperty("--tilt-y", chapter.tiltY = tiltY);
         for (const beat of chapter.beats) {
-          const enter = ease(clamp((chapter.current - beat.enter) / 0.12));
-          const exit = ease(clamp((chapter.current - beat.exit) / 0.12));
+          // Mobile reading never depends on hitting a narrow animation window.
+          const enter = mobileLayout.matches ? 1 : ease(clamp((chapter.current - beat.enter) / 0.12));
+          const exit = mobileLayout.matches ? 0 : ease(clamp((chapter.current - beat.exit) / 0.12));
           const nextEnter = enter.toFixed(4), nextExit = exit.toFixed(4);
           if (nextEnter !== beat.lastEnter) beat.node.style.setProperty("--enter", beat.lastEnter = nextEnter);
           if (nextExit !== beat.lastExit) beat.node.style.setProperty("--exit", beat.lastExit = nextExit);
@@ -57,7 +59,8 @@ export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, ena
       for (const chapter of chapters) {
         const height = chapter.panel.offsetHeight;
         chapter.element.style.setProperty("--panel-height", `${height}px`);
-        chapter.element.style.setProperty("--pin-top", `${Math.min(100, window.innerHeight - height - 30)}px`);
+        chapter.element.dataset.tall = String(height > window.innerHeight - 128);
+        chapter.element.style.setProperty("--pin-top", mobileLayout.matches ? "max(6rem, env(safe-area-inset-top))" : `${Math.min(100, window.innerHeight - height - 30)}px`);
       }
       for (const chapter of chapters) {
         chapter.top = chapter.element.getBoundingClientRect().top + window.scrollY;
@@ -95,6 +98,7 @@ export function useEditorialTimeline(root: RefObject<HTMLDivElement | null>, ena
       delete host.dataset.editorial;
       chapters.forEach(({ element, panel, beats }) => {
         delete element.dataset.animating;
+        delete element.dataset.tall;
         element.style.removeProperty("--panel-height"); element.style.removeProperty("--pin-top");
         panel.style.removeProperty("--tilt-x"); panel.style.removeProperty("--tilt-y");
         beats.forEach(({ node }) => { node.style.removeProperty("--enter"); node.style.removeProperty("--exit"); node.style.pointerEvents = ""; });

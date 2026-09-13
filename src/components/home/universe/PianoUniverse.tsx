@@ -38,19 +38,11 @@ export function PianoUniverse({ data }: { data: HomeUniverseData }) {
       setIntroComplete(true);
       return;
     }
-    const body = document.body;
-    const saved = { position: body.style.position, top: body.style.top, width: body.style.width, overflow: body.style.overflow };
-    const y = window.scrollY;
-    body.style.position = "fixed";
-    body.style.top = `${-y}px`;
-    body.style.width = "100%";
-    body.style.overflow = "hidden";
-    // A failed import or stalled GPU must never leave the page locked.
+    // Native scrolling stays available during the prelude, including momentum.
+    // A failed import or stalled GPU must never leave content hidden.
     const timeout = window.setTimeout(() => { setIntroComplete(true); setFailed(true); }, 10000);
     return () => {
       clearTimeout(timeout);
-      Object.assign(body.style, saved);
-      window.scrollTo({ top: y, behavior: "instant" });
     };
   }, [introComplete, allowed, staticMode, failed]);
 
