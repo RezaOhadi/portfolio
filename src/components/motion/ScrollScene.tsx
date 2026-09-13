@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ElementType, type ReactNode } from "react";
+import { createElement, useRef, type ElementType, type ReactNode } from "react";
 import {
   motion,
   useReducedMotion,
@@ -64,11 +64,7 @@ export function ScrollScene({
 
   if (reduce) {
     const Tag = as as ElementType;
-    return (
-      <Tag ref={ref} className={className}>
-        {children}
-      </Tag>
-    );
+    return createElement(Tag, { ref, className }, children);
   }
 
   return (
@@ -129,11 +125,7 @@ export function StaggerLines({
   const Tag = as as ElementType;
 
   if (reduce) {
-    return (
-      <Tag id={id} className={className}>
-        {lines.join(" ")}
-      </Tag>
-    );
+    return createElement(Tag, { id, className }, lines.join(" "));
   }
 
   const MotionTag = motion(Tag);

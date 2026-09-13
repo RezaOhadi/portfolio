@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { ArtistJsonLd } from "@/components/seo/ArtistJsonLd";
-import { Hero } from "@/components/home/Hero";
+import { PianoUniverse } from "@/components/home/universe/PianoUniverse";
+import { getHomeUniverseData } from "@/lib/data/home-universe";
 import { FeaturedComposition } from "@/components/home/FeaturedComposition";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Reveal } from "@/components/motion/Reveal";
@@ -39,41 +39,7 @@ export default async function HomePage() {
   return (
     <>
       <ArtistJsonLd social={content.social} />
-      <Hero hero={content.hero} />
-      <section
-        id="about"
-        data-nav-section
-        className="portfolio-section"
-        aria-labelledby="about-title"
-      >
-        <div className="container-editorial about-grid">
-          <div className="about-sticky">
-            <span className="section-number">01 / The artist</span>
-            <StaggerLines
-              id="about-title"
-              className="section-title"
-              lines={["A life at", "the piano."]}
-            />
-            <SectionIndicator />
-          </div>
-          <ScrollScene className="about-copy">
-            <p className="section-lead">{content.bio.intro}</p>
-            <blockquote>{content.home.artistStatement}</blockquote>
-            {content.bio.signatureImage ? (
-              <Image
-                src={content.bio.signatureImage}
-                alt="Reza Ohadi signature"
-                width={200}
-                height={64}
-                className="mb-6 h-12 w-auto"
-              />
-            ) : null}
-            <Link href="/biography" className="action-text">
-              Read the full biography <ArrowUpRight size={18} aria-hidden />
-            </Link>
-          </ScrollScene>
-        </div>
-      </section>
+      <PianoUniverse data={getHomeUniverseData(content, products)} />
       <section
         id="media"
         data-nav-section
