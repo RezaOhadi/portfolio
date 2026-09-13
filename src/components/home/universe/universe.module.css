@@ -19,7 +19,26 @@
 .link:hover{border-color:#f2eee6}
 .marginNote{position:absolute;bottom:7vh;right:8%;font-size:9px;text-transform:uppercase;letter-spacing:.3em;color:#b7b5b1}
 .biography{gap:8%;justify-content:space-between}
-.biography .copy{max-width:540px}
+.biography .copy{
+  position:relative;
+  isolation:isolate;
+  max-width:540px;
+  background:none;
+  text-shadow:0 2px 20px rgba(0,0,0,.8),0 0 8px rgba(0,0,0,.6);
+}
+/* A feathered scrim travels with the text plane and dims strings behind it.
+   No backdrop filter or extra WebGL pass is needed. */
+.biography .copy::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:-3rem calc(-1 * clamp(18px,4vw,64px));
+  pointer-events:none;
+  background:radial-gradient(ellipse at 45% 50%,rgba(6,6,8,.85) 0%,rgba(6,6,8,.75) 55%,rgba(6,6,8,.35) 78%,transparent 100%);
+}
+.biography .copy .body{color:#eae5dc;font-weight:400}
+.biography .copy .eyebrow,.biography .copy .link{color:#d5ae88}
+.biography .copy .link:hover{color:#ead1b6}
 .body{font-size:15px;line-height:1.9;color:#d1cac0;margin:2rem 0;max-width:510px}
 .portrait{width:30%;flex-shrink:0;transform:rotate(-3deg);margin-top:10vh}
 .photo{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;filter:grayscale(1);border:1px solid #b59b7833}
