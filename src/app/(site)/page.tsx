@@ -101,7 +101,7 @@ export default async function HomePage() {
               </p>
             </ShowcaseCard>
           ) : null}
-          <ShowcaseCard span={1.5} className="showcase-card--record" cursor="listen">
+          <ShowcaseCard span={1.5} className="showcase-card--record">
             <div>
               <span className="section-number">On record</span>
               <h3>A closer listen.</h3>

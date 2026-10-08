@@ -38,7 +38,10 @@ export function useChapterDepth(
 ) {
   useLayoutEffect(() => {
     const host = root.current;
-    if (!host || !enabled) return;
+    // The journey state is one long-lived object mutated in place; capture it
+    // so the cleanup resets the same object the subscriber wrote to.
+    const state = motion.current;
+    if (!host || !state || !enabled) return;
     const nodes = Array.from(
       host.querySelectorAll<HTMLElement>("[data-editorial-chapter]"),
     );
@@ -69,7 +72,6 @@ export function useChapterDepth(
     host.addEventListener("pointermove", pointerWake, { passive: true });
 
     const unsubscribe = subscribe(({ scroll, vh, dt, velocity }) => {
-      const state = motion.current;
       state.velocity = velocity;
 
       for (const c of chapters) {
@@ -122,7 +124,7 @@ export function useChapterDepth(
         c.node.style.removeProperty("--enter");
         c.node.style.removeProperty("--leave");
       }
-      motion.current.velocity = 0;
+      state.velocity = 0;
     };
   }, [root, glow, motion, enabled]);
 }

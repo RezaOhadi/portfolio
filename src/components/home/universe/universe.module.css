@@ -143,7 +143,8 @@
 .works li[data-selected="true"]::before{transform:scaleX(1)}
 .works li .workTitle span{display:inline-block;transition:transform .5s cubic-bezier(.16,1,.3,1)}
 .works li[data-selected="true"] .workTitle span{transform:translate(4px,-4px)}
-@media(max-width:1024px),(any-pointer:coarse){.stageLight{display:none}}
+/* Phones/tablets: no extra full-screen layers over a canvas that redraws every frame (fill-rate). */
+@media(max-width:1024px),(any-pointer:coarse){.stageLight,.stageVignette{display:none}.universe::after{content:none}}
 @media(max-width:1024px){
   .universe[data-depth="true"] .copy{translate:0 calc((1 - var(--enter,1)) * 4vh - var(--leave,0) * 5vh);scale:none}
   .universe[data-depth="true"] .entry h1{scale:none}

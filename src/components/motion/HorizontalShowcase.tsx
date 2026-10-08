@@ -274,6 +274,9 @@ export function ShowcaseCard({
     Math.max(-1, Math.min(1, d)) * -9,
   );
   const opacity = useTransform(focus, [0, 1], [0.42, 1]);
+  // 0 is framer's default, so off the pin no perspective (and no 3D layer)
+  // is emitted at all.
+  const perspective = useTransform(pinned, (on) => (on ? 1700 : 0));
 
   return (
     <motion.div
@@ -285,6 +288,11 @@ export function ShowcaseCard({
         flexShrink: span,
         scale,
         rotateY,
+        // Each card carries its own perspective. A shared 3D context
+        // (perspective on the viewport + preserve-3d on the rail) put half of
+        // every turned card behind the rail's plane, where the rail swallowed
+        // its clicks; a per-card perspective keeps hit-testing flat.
+        transformPerspective: perspective,
         opacity,
         // Consumed by CSS for type parallax, image drift and gold accents.
         ["--d" as string]: distance,

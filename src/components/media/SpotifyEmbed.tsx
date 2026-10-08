@@ -32,6 +32,7 @@ export function SpotifyEmbed({
             <button
               className="action-primary"
               type="button"
+              data-cursor="listen"
               onClick={() => setLoaded(true)}
             >
               Load Spotify player

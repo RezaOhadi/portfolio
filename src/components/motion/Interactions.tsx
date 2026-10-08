@@ -71,11 +71,16 @@ export function Interactions() {
 
       /** Cursor state + tilt surface for whatever is under the pointer. */
       const resolve = (target: Element | null) => {
-        const labelled = target?.closest?.<HTMLElement>("[data-cursor]");
+        // A label describes a click, so it only shows over something
+        // clickable: the nearest labelled zone around the interactive element
+        // under the pointer (or that element itself). Plain text inside a
+        // labelled card keeps the neutral ring.
+        const interactive = target?.closest?.<HTMLElement>(INTERACTIVE);
+        const labelled = interactive?.closest<HTMLElement>("[data-cursor]");
         if (target?.closest?.(TEXT_ENTRY)) setMode("hidden");
         else if (labelled?.dataset.cursor)
           setMode("label", labelled.dataset.cursor);
-        else if (target?.closest?.(INTERACTIVE)) setMode("link");
+        else if (interactive) setMode("link");
         else setMode("");
 
         const surface = target?.closest?.<HTMLElement>("[data-tilt]") ?? null;
