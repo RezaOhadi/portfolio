@@ -78,7 +78,12 @@ export default async function HomePage() {
             </p>
           </ShowcaseCard>
           {videos.map((item) => (
-            <ShowcaseCard key={item.id} className="media-card" span={1.15}>
+            <ShowcaseCard
+              key={item.id}
+              className="media-card"
+              span={1.15}
+              cursor="play"
+            >
               <YouTubeEmbed
                 url={item.youtubeUrl}
                 title={item.title}
@@ -112,7 +117,12 @@ export default async function HomePage() {
             />
           </ShowcaseCard>
           {gallery.slice(0, 3).map((photo) => (
-            <ShowcaseCard key={photo.id} span={0.7} className="showcase-photo">
+            <ShowcaseCard
+              key={photo.id}
+              span={0.7}
+              className="showcase-photo"
+              cursor="view"
+            >
               <Link href="/gallery" aria-label={photo.caption || "Open gallery"}>
                 <span className="showcase-photo-frame">
                   <Image

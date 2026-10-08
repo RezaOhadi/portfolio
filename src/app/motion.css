@@ -1,0 +1,617 @@
+/* ==========================================================================
+   Motion & interaction layer
+   Everything here is presentation only, transform/opacity-driven, and keyed
+   off state the JS layer exposes (CSS variables / data attributes). Defaults
+   are always the resting state, so no-JS and reduced-motion views are intact.
+   ========================================================================== */
+:root {
+  --gold: #c9a45c;
+  --gold-soft: #e3c891;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* Lenis owns wheel easing; native smooth scrolling would double-ease it. */
+html.has-smooth-scroll {
+  scroll-behavior: auto;
+}
+
+/* --- page arrival / departure -------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  /* `backwards`, never `both`: a fill that outlives the animation keeps each
+     page block (the WebGL universe included) on its own compositing surface,
+     re-blended every frame — measured at ~20% fewer frames on phones. */
+  :where(#main > *) {
+    animation: page-arrive 0.9s var(--ease-out-expo) backwards;
+  }
+  html.is-leaving #main {
+    opacity: 0.35;
+    transition: opacity 0.35s var(--ease-in-out-quart);
+  }
+}
+@keyframes page-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- contextual cursor ----------------------------------------------------- */
+.site-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 120;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  will-change: transform;
+}
+html.has-cursor .site-cursor[data-visible="true"] {
+  opacity: 1;
+}
+.site-cursor-ring {
+  position: absolute;
+  left: -18px;
+  top: -18px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid #f2eee659;
+  transition:
+    transform 0.45s var(--ease-out-expo),
+    background-color 0.35s,
+    border-color 0.35s,
+    opacity 0.25s;
+}
+.site-cursor-dot {
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  transform: translate3d(var(--dot-x, 0), var(--dot-y, 0), 0);
+  transition: opacity 0.2s;
+}
+.site-cursor-label {
+  font:
+    500 9px/1 var(--font-sans),
+    sans-serif;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.25s,
+    transform 0.45s var(--ease-out-expo);
+}
+.site-cursor[data-mode="link"] .site-cursor-ring {
+  transform: scale(1.45);
+  border-color: var(--gold);
+}
+.site-cursor[data-mode="label"] .site-cursor-ring {
+  transform: scale(2.4);
+  background: #c9a45ce6;
+  border-color: transparent;
+}
+.site-cursor[data-mode="label"] .site-cursor-label {
+  opacity: 1;
+  /* Counter the ring's scale so the type stays crisp at its true size. */
+  transform: scale(calc(1 / 2.4));
+}
+.site-cursor[data-mode="label"] .site-cursor-dot,
+.site-cursor[data-mode="hidden"] .site-cursor-dot,
+.site-cursor[data-mode="hidden"] .site-cursor-ring {
+  opacity: 0;
+}
+.site-cursor[data-pressed] .site-cursor-ring {
+  transform: scale(0.82);
+}
+.site-cursor[data-pressed][data-mode="label"] .site-cursor-ring {
+  transform: scale(2.1);
+}
+/* The native arrow hides exactly where the labelled disc shows: over the
+   clickable element inside (or forming) a labelled zone. */
+html.has-cursor :is(a, button, [role="button"])[data-cursor],
+html.has-cursor [data-cursor] :is(a, button, [role="button"]) {
+  cursor: none;
+}
+
+/* --- pointer depth surfaces ------------------------------------------------ */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  [data-tilt] {
+    transform: perspective(1100px) rotateX(calc(var(--ty, 0) * -3.2deg))
+      rotateY(calc(var(--tx, 0) * 4.2deg));
+    transition:
+      transform 0.9s var(--ease-out-expo),
+      box-shadow 0.7s var(--ease-out-expo);
+  }
+  [data-tilt][data-tilt-active] {
+    transition:
+      transform 0.35s var(--ease-out-expo),
+      box-shadow 0.7s var(--ease-out-expo);
+  }
+  /* Champagne highlight that follows the pointer across the surface. */
+  .gallery-tile[data-tilt] .gallery-image::after,
+  .group [data-tilt]::after,
+  .showcase-photo-frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: radial-gradient(
+      60% 60% at var(--mx, 50%) var(--my, 50%),
+      #e3c8912e,
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.6s var(--ease-out-expo);
+  }
+  .gallery-tile[data-tilt-active] .gallery-image::after,
+  .group [data-tilt-active]::after,
+  .showcase-photo a:hover .showcase-photo-frame::after {
+    opacity: 1;
+  }
+  .gallery-tile[data-tilt-active] .gallery-image img {
+    transform: scale(1.045)
+      translate3d(calc(var(--tx, 0) * -0.8%), calc(var(--ty, 0) * -0.8%), 0);
+  }
+}
+.gallery-image img {
+  transition:
+    transform 0.9s var(--ease-out-expo),
+    filter 0.9s var(--ease-out-expo);
+}
+.gallery-caption svg,
+.action-text svg {
+  transition: transform 0.5s var(--ease-out-expo);
+}
+.gallery-tile:hover .gallery-caption svg,
+.action-text:hover svg,
+.showcase-photo a:hover .gallery-caption svg {
+  transform: translate(3px, -3px);
+}
+
+/* --- the reel: a camera dolly through an exhibition ------------------------- */
+.showcase-meter {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.showcase-meter .showcase-progress {
+  flex: 1 1 auto;
+}
+.showcase-counter {
+  flex: 0 0 auto;
+  min-width: 4.5em;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+.showcase-progress span {
+  background: linear-gradient(90deg, #8a6d3b, var(--gold) 70%, #f2d9a6);
+}
+.showcase-atmosphere {
+  display: none;
+}
+@media (min-width: 761px) and (min-height: 640px) {
+  .showcase-meter {
+    margin-inline: clamp(24px, 5vw, 96px);
+  }
+  .showcase-meter .showcase-progress {
+    margin-inline: 0;
+  }
+  .showcase-card {
+    transform-origin: 50% 50%;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+  /* Type travels a touch slower than its card: direction-aware parallax that
+     resolves to zero exactly when the card is in focus. */
+  .showcase-card h3,
+  .showcase-card .section-number,
+  .showcase-card .media-meta {
+    translate: calc(var(--d, 0) * 46px) 0;
+  }
+  .showcase-card p,
+  .showcase-dates {
+    translate: calc(var(--d, 0) * 28px) 0;
+  }
+  /* Imagery drifts inside its frame like a window onto a deeper room. */
+  .showcase-photo-frame img,
+  .media-card .aspect-video img {
+    scale: 1.12;
+    translate: calc(var(--d, 0) * -5%) 0;
+  }
+  /* A gold hairline lights up as each piece arrives at the focal position. */
+  .media-card,
+  .showcase-photo,
+  .showcase-card--record {
+    position: relative;
+  }
+  .media-card::before,
+  .showcase-photo::before,
+  .showcase-card--record::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -14px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold) 30%, #f2d9a6 50%, var(--gold) 70%, transparent);
+    transform: scaleX(var(--focus, 0));
+    opacity: var(--focus, 0);
+  }
+  .showcase-card--intro,
+  .showcase-card--outro {
+    border-left-color: color-mix(in srgb, var(--gold) calc(var(--focus, 0) * 100%), #ffffff1f);
+  }
+  /* Atmosphere: a faint musical staff and a warm pool of light, drifting at a
+     third of the rail's speed behind everything. */
+  .showcase-atmosphere {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 160%;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(28% 46% at 22% 52%, #c9a45c12, transparent 70%),
+      radial-gradient(24% 40% at 64% 44%, #c9a45c0d, transparent 70%);
+    will-change: transform;
+  }
+  .showcase-staff {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 26%;
+    height: 48px;
+    opacity: 0.55;
+    background: repeating-linear-gradient(
+      to bottom,
+      #c9a45c1c 0 1px,
+      transparent 1px 12px
+    );
+    mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent);
+  }
+  .showcase-viewport,
+  .showcase-meter {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* --- concerts: a quiet, premium timeline ----------------------------------- */
+.concert-row {
+  position: relative;
+  border-top-color: transparent;
+  transition:
+    background-color 0.6s var(--ease-out-expo),
+    padding-inline 0.6s var(--ease-out-expo);
+}
+.concert-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -1px;
+  height: 1px;
+  background: #ffffff25;
+}
+.concert-row::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), #f2d9a6 35%, transparent 80%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.1s var(--ease-out-expo);
+}
+.concert-row:hover::after,
+.concert-row:focus-within::after {
+  transform: scaleX(1);
+}
+.concert-row time {
+  transition: letter-spacing 0.8s var(--ease-out-expo), color 0.4s;
+}
+@media (hover: hover) {
+  .concert-row:hover {
+    background: linear-gradient(90deg, #c9a45c0a, transparent 70%);
+    padding-inline: 14px;
+  }
+  .concert-row:hover time {
+    color: var(--gold-soft);
+  }
+}
+/* A short gold lead-in marks each date; it runs the full rule on hover/focus.
+   (Static on purpose: scroll-driven CSS timelines cost a style pass a frame.) */
+.concert-row::after {
+  transform: scaleX(0.18);
+}
+
+/* --- buttons: lacquer and champagne --------------------------------------- */
+.action-primary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    background 0.5s var(--ease-out-expo),
+    color 0.3s,
+    transform 0.5s var(--ease-out-expo),
+    box-shadow 0.6s var(--ease-out-expo);
+}
+.action-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    #ffffff8c 48%,
+    transparent 66%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.9s var(--ease-out-expo);
+}
+.action-primary:hover::before,
+.action-primary:focus-visible::before {
+  transform: translateX(120%);
+}
+.action-primary:hover {
+  box-shadow: 0 14px 40px -18px #c9a45ca6;
+}
+.action-primary:active {
+  transform: translateY(0) scale(0.985);
+  transition-duration: 0.12s;
+}
+.action-text {
+  position: relative;
+}
+.action-text::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.7s var(--ease-out-expo);
+}
+.action-text:hover::after,
+.action-text:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+.nav-store {
+  transition:
+    border-color 0.5s var(--ease-out-expo),
+    color 0.3s,
+    background-color 0.5s var(--ease-out-expo);
+}
+.nav-store:hover {
+  border-color: var(--gold);
+  background: #c9a45c12;
+}
+.desktop-nav a::after {
+  transform-origin: right;
+  transition: transform 0.6s var(--ease-out-expo);
+}
+.desktop-nav a:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+.social-links a {
+  transition:
+    border-color 0.5s var(--ease-out-expo),
+    color 0.3s,
+    background-color 0.5s var(--ease-out-expo);
+}
+.social-links a:hover {
+  background: #c9a45c0d;
+}
+
+/* --- menu: the panel opens like a fallboard -------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .navigation-dialog[open] {
+    animation: menu-open 0.7s var(--ease-out-expo) backwards;
+  }
+  .navigation-dialog[open]::backdrop {
+    animation: backdrop-in 0.5s ease backwards;
+  }
+  .navigation-dialog[open] nav a {
+    animation: menu-item 0.8s var(--ease-out-expo) backwards;
+  }
+  .navigation-dialog[open] nav a:nth-child(1) { animation-delay: 0.08s; }
+  .navigation-dialog[open] nav a:nth-child(2) { animation-delay: 0.12s; }
+  .navigation-dialog[open] nav a:nth-child(3) { animation-delay: 0.16s; }
+  .navigation-dialog[open] nav a:nth-child(4) { animation-delay: 0.2s; }
+  .navigation-dialog[open] nav a:nth-child(5) { animation-delay: 0.24s; }
+  .navigation-dialog[open] nav a:nth-child(6) { animation-delay: 0.28s; }
+  .navigation-dialog[open] nav a:nth-child(7) { animation-delay: 0.32s; }
+  .navigation-dialog[open] nav a:nth-child(n + 8) { animation-delay: 0.36s; }
+  .photo-dialog[open] {
+    animation: menu-open 0.6s var(--ease-out-expo) backwards;
+  }
+  .photo-dialog[open]::backdrop {
+    animation: backdrop-in 0.5s ease backwards;
+  }
+  .photo-stage img {
+    animation: photo-in 0.8s var(--ease-out-expo) backwards;
+  }
+}
+@keyframes menu-open {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes menu-item {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes photo-in {
+  from {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+}
+.navigation-dialog nav a {
+  position: relative;
+  transition:
+    color 0.4s,
+    padding-left 0.6s var(--ease-out-expo);
+}
+.navigation-dialog nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.7s var(--ease-out-expo);
+}
+.navigation-dialog nav a:hover,
+.navigation-dialog nav a:focus-visible {
+  padding-left: 10px;
+  color: var(--gold-soft);
+}
+.navigation-dialog nav a:hover::after,
+.navigation-dialog nav a:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* --- embeds ---------------------------------------------------------------- */
+.spotify-frame {
+  transition:
+    box-shadow 0.8s var(--ease-out-expo),
+    transform 0.8s var(--ease-out-expo);
+}
+.spotify-frame:hover {
+  box-shadow:
+    0 0 0 1px #c9a45c40,
+    0 30px 60px -30px #000;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .spotify-frame iframe {
+    animation: page-arrive 0.9s var(--ease-out-expo) backwards;
+  }
+}
+.media-card .aspect-video .rounded-full {
+  transition:
+    transform 0.6s var(--ease-out-expo),
+    border-color 0.4s,
+    background-color 0.4s;
+}
+.media-card .aspect-video button:hover .rounded-full,
+.media-card .aspect-video button:focus-visible .rounded-full {
+  transform: scale(1.12);
+  border-color: var(--gold);
+  background-color: #0a0a0ccc;
+}
+
+/* --- contact: gold focus that draws, never shouts -------------------------- */
+.contact-form :is(input, select, textarea) {
+  transition:
+    border-color 0.5s var(--ease-out-expo),
+    box-shadow 0.6s var(--ease-out-expo),
+    background-color 0.5s;
+}
+.contact-form :is(input, select, textarea):hover {
+  border-color: #ffffff59;
+}
+.contact-form :is(input, select, textarea):focus-visible {
+  border-color: var(--gold);
+  outline-color: var(--gold);
+  box-shadow:
+    0 0 0 4px #c9a45c1a,
+    0 18px 40px -28px #c9a45c80;
+  background-color: #0c0b0a;
+}
+.contact-form [aria-invalid="true"] {
+  border-color: #e07a6a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-cursor {
+    display: none;
+  }
+  .action-primary::before,
+  .action-text::after,
+  .concert-row::after {
+    transition: none;
+  }
+  .showcase-card {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* --- purchase: the one gold moment on the product page --------------------- */
+.purchase-sheen {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.purchase-sheen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 25%, #e3c89199 50%, transparent 75%);
+  transform: translateX(-120%);
+  transition: transform 1s var(--ease-out-expo);
+}
+.purchase-sheen:not(:disabled):hover::before,
+.purchase-sheen:not(:disabled):focus-visible::before {
+  transform: translateX(120%);
+}
+.purchase-sheen:not(:disabled):hover {
+  box-shadow: 0 18px 44px -20px #c9a45cb3;
+}
+
+/* --- chapter seam: universe → reel ------------------------------------------ */
+.portfolio-section--reel {
+  background: linear-gradient(to bottom, #060608, #06060800 min(42vh, 380px));
+}
+
+/* Modal dialogs (menu, photo viewer) freeze the page behind them. The body
+   lock in JS can't reach the viewport while <html> has its own overflow-x
+   clip, and smooth-wheel deliberately hands dialog wheels back to the
+   browser — so lock the root scroller itself. Position is preserved and the
+   stable scrollbar gutter prevents any layout shift. */
+:root:has(dialog[open]:modal) {
+  overflow: hidden;
+}

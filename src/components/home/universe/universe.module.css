@@ -104,3 +104,53 @@
   .universe[data-editorial="true"] [data-beat]{opacity:1;transform:none;transition:none;will-change:auto}
   .universe[data-editorial="true"] .drawLink::after{transform:none;transition:none}
 }
+
+/* --- Camera-continuity layer -------------------------------------------------
+   Champagne stage light + lacquer vignette sit above the canvas, below the copy.
+   The light is moved by transform/opacity only (useChapterDepth). */
+.stageLight{position:absolute;left:50%;top:50%;width:120vmax;height:120vmax;margin:-60vmax 0 0 -60vmax;border-radius:50%;opacity:0;
+  background:radial-gradient(closest-side,#c9a45c24,#c9a45c0f 38%,transparent 70%);will-change:transform,opacity;transform:translate3d(22vw,-20vh,0)}
+.stageVignette{position:absolute;inset:0;background:radial-gradient(130% 95% at 50% 45%,transparent 55%,#000000a6 100%)}
+/* The universe no longer ends on a hard edge: its last viewport dissolves to
+   its own black, and the reel section opens from that same black (motion.css),
+   so the reel reads as the next room rather than a new document. */
+.universe::after{content:"";position:absolute;left:0;right:0;bottom:0;height:min(45vh,420px);z-index:0;pointer-events:none;
+  background:linear-gradient(to bottom,transparent,#060608d9 62%,#060608)}
+
+/* Chapter depth. Defaults are the resting state, so without JS (or with
+   reduced motion) nothing moves. `translate`/`scale` are independent of the
+   `transform` used by the editorial reveals, so the two compose cleanly. */
+.universe[data-depth="true"] .copy{
+  translate:0 calc((1 - var(--enter,1)) * 7vh - var(--leave,0) * 9vh);
+  scale:calc(1 - (1 - var(--enter,1)) * .035 - var(--leave,0) * .06);
+  opacity:calc(1 - var(--leave,0) * .9);
+  transform-origin:30% 40%;will-change:translate,scale,opacity}
+/* The prelude parts through depth: each layer recedes at its own speed. */
+.universe[data-depth="true"] .entry .eyebrow{translate:0 calc(var(--leave,0) * -16vh)}
+.universe[data-depth="true"] .entry h1{translate:0 calc(var(--leave,0) * -4vh);scale:calc(1 - var(--leave,0) * .05);transform-origin:0 100%}
+.universe[data-depth="true"] .entry .tagline{translate:0 calc(var(--leave,0) * -10vh)}
+.universe[data-depth="true"] .entry .scrollCue,.universe[data-depth="true"] .entry .link{translate:0 calc(var(--leave,0) * -18vh)}
+.universe[data-depth="true"] .entry .marginNote{translate:calc(var(--leave,0) * 6vw) 0;opacity:calc(1 - var(--leave,0) * 1.4)}
+.universe[data-depth="true"] .entry .copy{translate:0 calc(var(--leave,0) * -6vh)}
+/* Gold hairline under each chapter heading draws in with its arrival. */
+.universe[data-depth="true"] .biography h2,.universe[data-depth="true"] .music h2{position:relative}
+.universe[data-depth="true"] .biography h2::after,.universe[data-depth="true"] .music h2::after{content:"";position:absolute;left:0;bottom:-.35em;width:min(9rem,40%);height:1px;
+  background:linear-gradient(90deg,#c9a45c,#c9a45c00);transform-origin:left;transform:scaleX(var(--enter,1));opacity:calc(var(--enter,1) - var(--leave,0))}
+/* Selected works: a gold light runs along the rule of the active piece. */
+.works li{position:relative}
+.works li::before{content:"";position:absolute;left:0;top:-1px;height:1px;width:100%;background:linear-gradient(90deg,#c9a45c,#f2d9a6 40%,#c9a45c00);
+  transform:scaleX(0);transform-origin:left;transition:transform .9s cubic-bezier(.16,1,.3,1)}
+.works li[data-selected="true"]::before{transform:scaleX(1)}
+.works li .workTitle span{display:inline-block;transition:transform .5s cubic-bezier(.16,1,.3,1)}
+.works li[data-selected="true"] .workTitle span{transform:translate(4px,-4px)}
+/* Phones/tablets: no extra full-screen layers over a canvas that redraws every frame (fill-rate). */
+@media(max-width:1024px),(any-pointer:coarse){.stageLight,.stageVignette{display:none}.universe::after{content:none}}
+@media(max-width:1024px){
+  .universe[data-depth="true"] .copy{translate:0 calc((1 - var(--enter,1)) * 4vh - var(--leave,0) * 5vh);scale:none}
+  .universe[data-depth="true"] .entry h1{scale:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .stageLight{display:none}
+  .universe[data-depth] .copy,.universe[data-depth] .entry :is(.eyebrow,h1,.tagline,.scrollCue,.link,.marginNote){translate:none!important;scale:none!important;opacity:1!important}
+  .works li::before,.works li .workTitle span{transition:none}
+}

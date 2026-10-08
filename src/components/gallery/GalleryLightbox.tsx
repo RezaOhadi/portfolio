@@ -45,6 +45,8 @@ export function GalleryLightbox({ images }: { images: GalleryImage[] }) {
             <button
               type="button"
               className="gallery-tile"
+              data-cursor="view"
+              data-tilt
               onClick={(event) => {
                 trigger.current = event.currentTarget;
                 setIndex(i);
@@ -123,7 +125,7 @@ export function GalleryLightbox({ images }: { images: GalleryImage[] }) {
         </div>
         {current ? (
           <>
-            <div className="photo-stage">
+            <div className="photo-stage" key={index}>
               <Image
                 src={current.imageUrl}
                 alt={current.caption || "Gallery photograph"}

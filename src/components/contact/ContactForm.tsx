@@ -67,7 +67,11 @@ export function ContactForm() {
       </span>
     ) : null;
   return (
-    <form ref={form} action={action} className="flex flex-col gap-6">
+    <form
+      ref={form}
+      action={action}
+      className="contact-form flex flex-col gap-6"
+    >
       <div hidden aria-hidden="true">
         <label>
           Company

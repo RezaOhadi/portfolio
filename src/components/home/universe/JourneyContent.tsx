@@ -18,7 +18,7 @@ export function JourneyContent({ data, selected, onSelect }: {
           <h1 id="hero-title" className={styles.headlineMask}><span {...beat("mask")}>{data.name}</span></h1>
           <p className={styles.tagline} {...beat("body")}>{data.supporting}</p>
           <p className={styles.scrollCue} {...beat("accent")}>Scroll to explore <span aria-hidden>↓</span></p>
-          <a className={`${styles.link} ${styles.drawLink}`} href="#about" {...beat("accent")}>Enter the piano universe <span aria-hidden>↓</span></a>
+          <a className={`${styles.link} ${styles.drawLink}`} href="#about" data-cursor="explore" {...beat("accent")}>Enter the piano universe <span aria-hidden>↓</span></a>
         </div>
         <span className={styles.marginNote} aria-hidden {...beat("accent")}>Memory / Silence / Resonance</span>
       </div>

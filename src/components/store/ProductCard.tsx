@@ -25,9 +25,10 @@ export function ProductCard({
       <Link
         href={`/store/${product.slug}`}
         className="block focus-visible:outline-none"
+        data-cursor="open"
         aria-label={`View score — ${product.title}, ${formatPrice(product.priceCents, product.currency)}`}
       >
-        <div className="relative aspect-[3/4] overflow-hidden bg-charcoal-900 ring-1 ring-white/10 transition-all duration-700 ease-cinematic group-hover:ring-white/25">
+        <div data-tilt className="relative aspect-[3/4] overflow-hidden bg-charcoal-900 ring-1 ring-white/10 transition-all duration-700 ease-cinematic group-hover:ring-white/25">
           <Image
             src={product.coverImage}
             alt={`${product.title} — cover artwork`}

@@ -2,6 +2,8 @@ import { Nav } from "@/components/layout/Nav";
 import { Footer } from "@/components/layout/Footer";
 import { ScrollMouseIndicator } from "@/components/layout/ScrollMouseIndicator";
 import { MotionProvider } from "@/components/motion/MotionProvider";
+import { SmoothScroll } from "@/components/motion/SmoothScroll";
+import { Interactions } from "@/components/motion/Interactions";
 import { getSocialLinks } from "@/lib/data/content";
 
 export default async function SiteLayout({
@@ -29,6 +31,9 @@ export default async function SiteLayout({
       <Footer social={social} />
       {/* Sitewide back-to-top; the downward "scroll" cue shows on the home page only. */}
       <ScrollMouseIndicator targetId="about" cuePath="/" />
+      {/* One motion clock: wheel easing + contextual cursor / pointer depth. */}
+      <SmoothScroll />
+      <Interactions />
     </MotionProvider>
   );
 }
