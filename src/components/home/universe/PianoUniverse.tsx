@@ -7,6 +7,7 @@ import type { JourneyMotion } from "./CameraRig";
 import { JourneyContent } from "./JourneyContent";
 import styles from "./universe.module.css";
 import { useEditorialTimeline } from "./useEditorialTimeline";
+import { useChapterDepth } from "./useChapterDepth";
 
 const UniverseCanvas = dynamic(() => import("./UniverseCanvas"), { ssr: false });
 
@@ -19,7 +20,8 @@ class CanvasBoundary extends Component<{ children: ReactNode; onFailure: () => v
 
 export function PianoUniverse({ data }: { data: HomeUniverseData }) {
   const root = useRef<HTMLDivElement>(null);
-  const motion = useRef<JourneyMotion>({ progress: 0, pointerX: 0, pointerY: 0, snap: true });
+  const motion = useRef<JourneyMotion>({ progress: 0, pointerX: 0, pointerY: 0, velocity: 0, snap: true });
+  const glow = useRef<HTMLDivElement>(null);
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [staticMode, setStaticMode] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -113,6 +115,7 @@ export function PianoUniverse({ data }: { data: HomeUniverseData }) {
 
   const enabled = allowed && !staticMode && !failed;
   useEditorialTimeline(root, Boolean(enabled && ready && introComplete));
+  useChapterDepth(root, glow, motion, Boolean(enabled && introComplete));
   return <div ref={root} className={styles.universe} data-intro={introComplete ? "complete" : "pending"} data-enhanced={Boolean(enabled && ready)} data-static={allowed === false || staticMode || failed}>
     <div className={styles.stage} aria-hidden="true">
       <div className={styles.fallbackArt} />
@@ -120,6 +123,9 @@ export function PianoUniverse({ data }: { data: HomeUniverseData }) {
         <UniverseCanvas motion={motion} mobile={mobile} active={active} selected={selected}
           workCount={data.works.length} onReady={onReady} onFailure={onFailure} onIntroComplete={onIntroComplete} />
       </CanvasBoundary>}
+      {/* Champagne stage light: follows the pointer and the journey. */}
+      <div ref={glow} className={styles.stageLight} />
+      <div className={styles.stageVignette} />
     </div>
     <div className={styles.content}>
       <div className={styles.controls}>

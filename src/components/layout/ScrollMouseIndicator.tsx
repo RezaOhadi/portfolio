@@ -11,6 +11,7 @@ import {
 import { ChevronUp } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { scrollToTarget } from "@/lib/motion/engine";
 
 const SCROLL_THRESHOLD = 300;
 
@@ -80,13 +81,16 @@ export function ScrollMouseIndicator({
     };
   }, [pathname]);
 
-  const scrollDown = () =>
-    document.getElementById(targetId)?.scrollIntoView({
-      behavior: reduce ? "auto" : "smooth",
-      block: "start",
-    });
-  const scrollTop = () =>
-    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+  // Routed through the motion engine: Lenis eases it on desktop, native
+  // smooth scrolling elsewhere, instant under reduced motion.
+  const scrollDown = () => {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    const padding =
+      parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+    scrollToTarget(target, { offset: -padding, immediate: Boolean(reduce) });
+  };
+  const scrollTop = () => scrollToTarget(0, { immediate: Boolean(reduce) });
 
   return (
     <AnimatePresence mode="wait" initial={false}>

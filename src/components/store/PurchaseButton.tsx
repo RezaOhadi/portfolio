@@ -50,7 +50,7 @@ export function PurchaseButton({
           type="button"
           onClick={purchase}
           disabled={!enabled || loading}
-          className="group inline-flex items-center justify-center gap-2.5 border border-ivory bg-ivory px-8 py-4 font-sans text-[0.72rem] uppercase tracking-widest text-ink transition-all duration-500 ease-cinematic hover:-translate-y-0.5 hover:bg-white disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
+          className="purchase-sheen group inline-flex items-center justify-center gap-2.5 border border-ivory bg-ivory px-8 py-4 font-sans text-[0.72rem] uppercase tracking-widest text-ink transition-all duration-500 ease-cinematic hover:-translate-y-0.5 hover:bg-white disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? (
             <>
