@@ -609,3 +609,12 @@ html.has-cursor [data-cursor] :is(a, button, [role="button"], label) {
 .portfolio-section--reel {
   background: linear-gradient(to bottom, #060608, #06060800 min(42vh, 380px));
 }
+
+/* Modal dialogs (menu, photo viewer) freeze the page behind them. The body
+   lock in JS can't reach the viewport while <html> has its own overflow-x
+   clip, and smooth-wheel deliberately hands dialog wheels back to the
+   browser — so lock the root scroller itself. Position is preserved and the
+   stable scrollbar gutter prevents any layout shift. */
+:root:has(dialog[open]:modal) {
+  overflow: hidden;
+}

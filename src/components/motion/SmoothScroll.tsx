@@ -132,6 +132,27 @@ export function SmoothScroll() {
       }
     };
     window.addEventListener("click", onClick, true);
+
+    /**
+     * Scroll-linked values (framer-motion's useScroll, the reel) cache their
+     * targets' offsets and only re-measure on scroll or window resize. When the
+     * document changes height on its own — late images or fonts, the universe
+     * falling back to its static layout — announce it as a scroll so every
+     * pin and progress value re-measures instead of waiting for input.
+     */
+    let pending = 0;
+    let lastHeight = document.documentElement.scrollHeight;
+    const layout = new ResizeObserver(() => {
+      const height = document.documentElement.scrollHeight;
+      if (height === lastHeight || pending) return;
+      lastHeight = height;
+      pending = requestAnimationFrame(() => {
+        pending = 0;
+        getLenis()?.resize();
+        window.dispatchEvent(new Event("scroll"));
+      });
+    });
+    layout.observe(document.body);
     const settle = () => document.documentElement.classList.remove("is-leaving");
     window.addEventListener("popstate", settle);
     window.addEventListener("pageshow", settle);
@@ -139,6 +160,8 @@ export function SmoothScroll() {
     return () => {
       query.removeEventListener("change", update);
       window.removeEventListener("click", onClick, true);
+      layout.disconnect();
+      cancelAnimationFrame(pending);
       window.removeEventListener("popstate", settle);
       window.removeEventListener("pageshow", settle);
       disable();

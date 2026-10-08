@@ -162,14 +162,28 @@ export function HorizontalShowcase({
     const travel = railEl.offsetWidth * TRAVEL;
     if (travel <= 0) return;
     const stage = viewport.current?.clientWidth ?? window.innerWidth;
-    const needed = card.offsetLeft + card.offsetWidth / 2 - stage / 2;
+    // Centre the focused control itself, not its card: a wide card (the
+    // record panel) can hold links far from its own centre. Rect deltas give
+    // the control's position in rail coordinates whatever the rail's offset.
+    const target = event.target as HTMLElement;
+    const railRect = railEl.getBoundingClientRect();
+    const rect = target.getBoundingClientRect();
+    const inRail =
+      target === card || !rect.width
+        ? card.offsetLeft + card.offsetWidth / 2
+        : rect.left - railRect.left + rect.width / 2;
+    const needed = inRail - stage / 2;
     const ratio = Math.min(Math.max(needed / travel, 0), 1);
     const top = trackEl.getBoundingClientRect().top + window.scrollY;
     const scrollable = trackEl.offsetHeight - window.innerHeight;
-    // The viewport itself may have been nudged by the browser's own focus
-    // scrolling; the rail transform is the only horizontal position.
-    if (viewport.current) viewport.current.scrollLeft = 0;
-    scrollToTarget(top + ratio * scrollable);
+    // The browser runs its own focus scrolling right after this handler (it
+    // nudges the clipped viewport sideways and the page vertically). Let it
+    // finish, undo the sideways nudge — the rail transform is the only
+    // horizontal position — then ease the page to the computed offset.
+    requestAnimationFrame(() => {
+      if (viewport.current) viewport.current.scrollLeft = 0;
+      scrollToTarget(top + ratio * scrollable);
+    });
   };
 
   return (
