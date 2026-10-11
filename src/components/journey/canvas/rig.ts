@@ -1,5 +1,5 @@
 import gsap from "gsap";
-import { Vector3 } from "three";
+import { MathUtils, Vector3 } from "three";
 import { SEGMENTS } from "../config";
 import { journey, range } from "../store";
 
@@ -118,7 +118,8 @@ export function stepRig(elapsed: number, dt: number) {
     rig.after = r[UNBUILT] > 0.04 ? 1 : 0;
   } else {
     rig.assemble = Math.min(1, intro / 3.4);
-    rig.materialize = range(intro, 1.5, 4.4);
+    // On arrival the lacquer burns in; at the end it burns in again as the piano reassembles.
+    rig.materialize = rig.dive >= 0.5 ? ease.settle(range(rig.reassemble, 0.22, 0.88)) : range(intro, 1.5, 4.4);
     rig.piano = damp(rig.piano, r.piano, 6, dt);
     rig.explode = damp(rig.explode, r.explode, 7, dt);
     rig.exploded = damp(rig.exploded, r.exploded, 6, dt);
@@ -132,7 +133,8 @@ export function stepRig(elapsed: number, dt: number) {
   const cutTwist = rig.twist >= 0.5;
   // Portal (World 4 -> 5): into the iris of a hammer strike, out flying along the strings.
   const cutPortal = rig.portal >= 0.5;
-  rig.show.piano = !cutDive;
+  // Reassemble (World 7): the piano comes back, built out of the name.
+  rig.show.piano = !cutDive || rig.reassemble > 0.02;
   rig.show.corridor = cutDive && !cutTwist;
   rig.show.hammers = cutTwist && !cutPortal;
   // Dissolve (World 5 -> 6): one stage, no cut. Strings break into dust that rains onto the board.
@@ -144,7 +146,11 @@ export function stepRig(elapsed: number, dt: number) {
   rig.chain =
     ease.settle(range(rig.dive, 0.28, 0.82)) +
     ease.settle(range(rig.portal, 0.3, 0.85)) +
-    ease.settle(range(rig.dissolve, 0.12, 0.85));
+    ease.settle(range(rig.dissolve, 0.12, 0.85)) +
+    // Morph: sand lifts into a waveform, then the waveform becomes the name.
+    ease.settle(range(rig.morph, 0.04, 0.5)) +
+    ease.settle(range(rig.morph, 0.5, 0.95)) +
+    ease.settle(range(rig.reassemble, 0.06, 0.72));
 
   // Slow-motion hammers; hovering a performance freezes them (bullet time).
   rig.timeScale = damp(rig.timeScale, journey.bullet ? 0.03 : 1, 5, dt);
@@ -166,6 +172,17 @@ export function stepRig(elapsed: number, dt: number) {
   rig.spread = 0.42 * ease.burst(range(e, 0.15, 0.7));
   rig.wave = 0.035 * out * (1 - rig.snap);
   rig.dof = out;
+  // Reassembly settles the constellation before the parts dock.
+  if (rig.reassemble > 0) {
+    const calm = 1 - ease.settle(range(rig.reassemble, 0, 0.4));
+    rig.spin *= calm;
+    rig.orbit *= calm;
+    rig.spread *= calm;
+    rig.wave *= calm;
+    rig.snap = 0;
+    rig.free = 0;
+    rig.lid = MathUtils.lerp(rig.lid, 0.66, ease.settle(range(rig.reassemble, 0.5, 1)));
+  }
 
   // World 1 surprise: only while the piano is whole and a real mouse is present.
   const revealTarget = journey.pointer.mouse && !journey.reduced ? (1 - range(e, 0, 0.04)) * rig.materialize : 0;
@@ -173,10 +190,19 @@ export function stepRig(elapsed: number, dt: number) {
   rig.velocity = damp(rig.velocity, Math.min(1, Math.abs(journey.velocity) / 60), 8, dt);
 }
 
-/** Explode progress of one part, with its stagger. */
+/**
+ * How far a part has docked back during the reassembly. The burst order is
+ * reversed: legs and lyre first, the lid last, the way a piano is built.
+ */
+function docked(delay: number) {
+  const start = 0.18 + (0.26 - delay) * 0.9;
+  return ease.recoil(range(rig.reassemble, start, start + 0.45));
+}
+
+/** Explode progress of one part, with its stagger (undone again by the reassembly). */
 export function partProgress(delay: number) {
-  return ease.burst(range(rig.explode, 0.02 + delay * 0.7, 0.02 + delay * 0.7 + 0.45));
+  return ease.burst(range(rig.explode, 0.02 + delay * 0.7, 0.02 + delay * 0.7 + 0.45)) * (1 - docked(delay));
 }
 export function partTumble(delay: number) {
-  return ease.tumble(range(rig.explode, 0.02 + delay * 0.7, 0.02 + delay * 0.7 + 0.55));
+  return ease.tumble(range(rig.explode, 0.02 + delay * 0.7, 0.02 + delay * 0.7 + 0.55)) * (1 - docked(delay));
 }

@@ -20,11 +20,11 @@ import {
 } from "three";
 import { GPUComputationRenderer } from "three/examples/jsm/misc/GPUComputationRenderer.js";
 import { PALETTE } from "../../config";
-import { journey } from "../../store";
+import { journey, range } from "../../store";
 import { mulberry32, type PianoPart } from "../piano/build";
 import { pointerRay } from "../PianoParts";
 import { rig } from "../rig";
-import { PART_COUNT, positionShader, renderFragment, renderVertex, velocityShader } from "./shaders";
+import { NAME, PART_COUNT, positionShader, renderFragment, renderVertex, velocityShader } from "./shaders";
 import { stringAmp, stringTime } from "../stages/stringLayout";
 import { boardSamples, boardShared } from "../stages/boardLayout";
 import { rimPoints } from "../piano/outline";
@@ -36,6 +36,37 @@ function dataTexture(data: Float32Array, size: number) {
   t.minFilter = t.magFilter = NearestFilter;
   t.needsUpdate = true;
   return t;
+}
+
+/**
+ * Chain step 5: the artist's name, set in the site's own display face (read
+ * from the hero heading), rasterised and sampled into one point per mote.
+ */
+function writeNameSamples(target: Float32Array, size: number) {
+  const hero = document.querySelector("#hero-title");
+  const text = hero?.getAttribute("aria-label") || hero?.textContent?.trim() || "Reza Ohadi";
+  const family = getComputedStyle(document.documentElement).getPropertyValue("--font-serif").trim() || "Georgia, serif";
+  const canvas = document.createElement("canvas");
+  canvas.width = 2048;
+  canvas.height = 512;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+  ctx.font = `300 330px ${family}`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#fff";
+  ctx.fillText(text, 1024, 256);
+  const scale = NAME.width / Math.max(1, ctx.measureText(text).width);
+  const pixels = ctx.getImageData(0, 0, 2048, 512).data;
+  const filled: number[] = [];
+  for (let y = 0; y < 512; y += 2) for (let x = 0; x < 2048; x += 2) if (pixels[(y * 2048 + x) * 4 + 3] > 140) filled.push(x, y);
+  const random = mulberry32(31);
+  const count = filled.length / 2;
+  for (let i = 0; i < size * size; i++) {
+    const k = count ? Math.floor(random() * count) * 2 : 0;
+    const px = (filled[k] ?? 1024) + (random() - 0.5) * 2;
+    const py = (filled[k + 1] ?? 256) + (random() - 0.5) * 2;
+    target.set([(px - 1024) * scale, NAME.y - (py - 256) * scale, NAME.z + (random() - 0.5) * 0.05, 1], i * 4);
+  }
 }
 
 /** Distribute size² particles over the parts by weight and sample their surfaces. */
@@ -100,6 +131,14 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
     const board = new Float32Array(size * size * 4);
     for (let i = 0; i < size * size; i++) board.set([xz[i * 2], xz[i * 2 + 1], 0, 1], i * 4);
     const tBoard = dataTexture(board, size);
+    const nameData = new Float32Array(size * size * 4);
+    writeNameSamples(nameData, size);
+    const tName = dataTexture(nameData, size);
+    // Re-set the name once the display face has certainly loaded.
+    document.fonts?.ready.then(() => {
+      writeNameSamples(nameData, size);
+      tName.needsUpdate = true;
+    });
     const tMeta = dataTexture(meta, size);
     const parts16 = Array.from({ length: PART_COUNT }, () => new Matrix4());
     const shared = {
@@ -119,6 +158,8 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
       uCam: { value: new Vector3() },
       tStrAmp: { value: stringAmp.texture },
       tBoard: { value: tBoard },
+      tName: { value: tName },
+      uWaveTime: { value: 0 },
       ...boardShared,
       uStrTime: stringTime,
     };
@@ -162,7 +203,7 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
     });
     const points = new Points(geometry, material);
     points.frustumCulled = false;
-    return { gpu, posVar, velVar, shared, points, material, geometry, tLocal, tMeta, tBoard, settleFrames: 0 };
+    return { gpu, posVar, velVar, shared, points, material, geometry, tLocal, tMeta, tBoard, tName, settleFrames: 0 };
   }, [parts, size, gl]);
 
   useEffect(
@@ -173,6 +214,7 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
       sim.tLocal.dispose();
       sim.tMeta.dispose();
       sim.tBoard.dispose();
+      sim.tName.dispose();
     },
     [sim],
   );
@@ -187,6 +229,7 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
     shared.uKeySpread.value = rig.spread * (1 - rig.snap * 0.35);
     shared.uWave.value = rig.wave;
     shared.uChain.value = rig.chain;
+    shared.uWaveTime.value = rig.time;
     shared.uCam.value.copy(state.camera.position);
     shared.uDelta.value = dt;
     // Reduced motion renders the resting pose directly, no simulation.
@@ -203,7 +246,10 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
     material.uniforms.tPosition.value = gpu.getCurrentRenderTarget(sim.posVar).texture;
     material.uniforms.tVelocity.value = gpu.getCurrentRenderTarget(velVar).texture;
     material.uniforms.uScale.value = (state.size.height * state.gl.getPixelRatio()) / 2 / Math.tan((camera.fov * Math.PI) / 360);
-    material.uniforms.uOpacity.value = 0.55 * (1 - rig.after * 0.9);
+    // The waveform and the name burn brighter than the dust that made them.
+    const glow = range(rig.chain, 3.4, 4.4) * (1 - range(rig.chain, 5.3, 5.9));
+    material.uniforms.uOpacity.value = (0.55 + glow * 0.4) * (1 - rig.after * 0.9);
+    material.uniforms.uSize.value = 0.0078 * (1 + glow * 0.35);
     material.uniforms.uFree.value = rig.free;
     material.uniforms.uMaxSize.value = 9 * state.gl.getPixelRatio();
   });

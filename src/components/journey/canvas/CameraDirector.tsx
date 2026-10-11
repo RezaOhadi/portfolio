@@ -10,6 +10,14 @@ import { CORRIDOR } from "./stages/Corridor";
 import { HAMMERS } from "./stages/Hammers";
 import { STRINGS } from "./stages/stringLayout";
 import { BOARD } from "./stages/boardLayout";
+import { NAME } from "./particles/shaders";
+
+/** Centre of the assembled piano, the pivot of the final arc. */
+const PIANO_TARGET = new Vector3(0.02, 0.86, -0.92);
+
+/** Dolly zoom: the name keeps its size on screen; portrait frames need a far wider hold to fit it. */
+const nameKeep = (portrait: number) => 6 * Math.tan(MathUtils.degToRad(24)) * MathUtils.lerp(1, 3.2, portrait);
+const nameDistance = (portrait: number) => MathUtils.lerp(1, 2.6, portrait);
 
 /**
  * One camera, a different move per world:
@@ -230,6 +238,46 @@ export function CameraDirector() {
         f.shiftY = MathUtils.lerp(f.shiftY, 0, tilt);
         f.parallax = MathUtils.lerp(f.parallax, 0.4, rise);
       }
+
+      /* ---- Morph, then World 7: tilt up from the board to face the name, then a dolly zoom ---- */
+      if (rig.morph > 0) {
+        const face = ease.recoil(range(rig.morph, 0, 0.85));
+        // Dolly zoom: pull back while the lens narrows, holding the name's size (Vertigo).
+        const d = MathUtils.lerp(6, 13, ease.settle(rig.name)) * nameDistance(portrait);
+        const keep = nameKeep(portrait);
+        const fov = MathUtils.radToDeg(2 * Math.atan(keep / d));
+        s.tmp.set(Math.sin(t * 0.1) * 0.12, NAME.y + 0.1, NAME.z + d);
+        s.near.set(0, NAME.y, NAME.z);
+        f.pos.lerp(s.tmp, face);
+        f.target.lerp(s.near, face);
+        f.fov = MathUtils.lerp(f.fov, fov, face);
+        f.roll *= 1 - face;
+        f.shiftX = MathUtils.lerp(f.shiftX, 0, face);
+        f.shiftY = MathUtils.lerp(f.shiftY, MathUtils.lerp(-0.12, -0.3, portrait), face);
+        f.parallax = MathUtils.lerp(f.parallax, 0.7, face);
+      }
+    }
+
+    /* ---- Reassemble and outro: a wide arc swing round the rebuilt piano, then a slow pendulum ---- */
+    if (rig.reassemble > 0) {
+      const a = ease.recoil(range(rig.reassemble, 0, 0.9));
+      const o2 = s.orbit;
+      const dz = NAME.z + 13 * nameDistance(portrait) - PIANO_TARGET.z;
+      const swing = MathUtils.lerp(0, 2.15, a) - ease.settle(rig.outro) * 1.55;
+      o2.angle = swing + (journey.reduced ? 0 : Math.sin(t * 0.15) * 0.05);
+      o2.radius = MathUtils.lerp(dz, MathUtils.lerp(7.6, 10.5, portrait), a);
+      o2.height = MathUtils.lerp(NAME.y + 0.1, 2.0, a);
+      o2.target.lerpVectors(s.near.set(0, NAME.y, NAME.z), PIANO_TARGET, a);
+      const pos = s.tmp.set(o2.target.x + Math.sin(o2.angle) * o2.radius, o2.height, o2.target.z + Math.cos(o2.angle) * o2.radius);
+      const from = Math.min(1, rig.reassemble * 12);
+      f.pos.lerp(pos, from);
+      f.target.lerp(o2.target, from);
+      const nameFov = MathUtils.radToDeg(2 * Math.atan(nameKeep(portrait) / (13 * nameDistance(portrait))));
+      f.fov = MathUtils.lerp(nameFov, MathUtils.lerp(32, 42, portrait), a);
+      f.roll = 0;
+      f.shiftX = 0;
+      f.shiftY = MathUtils.lerp(-0.12, MathUtils.lerp(0.05, -0.3, portrait), a);
+      f.parallax = 1;
     }
 
     /* ---- apply ---- */

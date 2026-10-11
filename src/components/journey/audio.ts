@@ -64,3 +64,14 @@ export function playNote(midi: number, velocity = 0.6, duration = 2.4) {
   const note = Tone.Frequency(Math.round(midi), "midi").toNote();
   sampler.triggerAttackRelease(note, duration, now, Math.max(0.05, Math.min(1, velocity)));
 }
+
+/** A closing cadence (V - I in Ab), the answer to a sent message. */
+export function playCadence() {
+  if (!enabled || !sampler || !Tone) return;
+  const now = Tone.now();
+  const at = (midis: number[], delay: number, velocity: number, duration: number) =>
+    sampler!.triggerAttackRelease(midis.map((m) => Tone!.Frequency(m, "midi").toNote()), duration, now + delay, velocity);
+  at([39, 51, 55, 58, 63], 0, 0.42, 1.6);
+  at([32, 44, 56, 60, 63, 68], 0.9, 0.5, 4.5);
+  at([72], 1.25, 0.32, 3.5);
+}

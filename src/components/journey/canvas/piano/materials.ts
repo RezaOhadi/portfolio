@@ -36,6 +36,8 @@ interface FxOptions {
   reveal?: boolean;
   /** Constant gold fresnel rim, the "rim light" that outlines black lacquer. */
   rim?: number;
+  /** The piano's own parts burn in and out with uMaterialize; stage materials never do. */
+  materialize?: boolean;
   /** Per-instance `aPress` attribute (0..1) glows gold: pressed corridor keys, struck hammers. */
   press?: boolean;
 }
@@ -51,7 +53,7 @@ function inject(material: Material, options: FxOptions): FxMaterial {
   const gold = new Color(PALETTE.goldHot).convertSRGBToLinear();
   material.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
     Object.assign(shader.uniforms, fxShared, { uHighlight: highlight, uGold: { value: gold }, uRim: { value: options.rim ?? 0 } });
-    shader.defines = { ...shader.defines, ...(options.reveal ? { FX_REVEAL: "" } : {}), ...(options.press ? { FX_PRESS: "" } : {}) };
+    shader.defines = { ...shader.defines, ...(options.reveal ? { FX_REVEAL: "" } : {}), ...(options.press ? { FX_PRESS: "" } : {}), ...(options.materialize ? { FX_MATERIALIZE: "" } : {}) };
     shader.vertexShader = shader.vertexShader
       .replace(
         "#include <common>",
@@ -93,11 +95,13 @@ function inject(material: Material, options: FxOptions): FxMaterial {
         float fxN = fxNoise(vFxWorld * 7.0) * 0.65 + fxNoise(vFxWorld * 23.0) * 0.35;
         // Materialize: fragments appear as uMaterialize sweeps through the noise field.
         float fxEdge = 0.0;
+        #ifdef FX_MATERIALIZE
         if (uMaterialize < 1.0) {
           float m = uMaterialize * 1.25 - 0.12;
           if (fxN > m) discard;
           fxEdge = 1.0 - smoothstep(0.0, 0.07, m - fxN);
         }
+        #endif
         #ifdef FX_REVEAL
           if (uRevealAmount > 0.001) {
             float r = uRevealRadius * uRevealAmount;
@@ -118,7 +122,7 @@ function inject(material: Material, options: FxOptions): FxMaterial {
       );
   };
   // Distinct cache keys so reveal and plain variants compile separately.
-  material.customProgramCacheKey = () => `fx${options.reveal ? "-reveal" : ""}${options.press ? "-press" : ""}`;
+  material.customProgramCacheKey = () => `fx${options.reveal ? "-reveal" : ""}${options.press ? "-press" : ""}${options.materialize ? "-mat" : ""}`;
   // Lacquer always carries a faint gold rim; other materials only on hover.
   if (options.rim === undefined && material instanceof MeshPhysicalMaterial && material.clearcoat === 1) options.rim = 0.9;
   return { material, highlight };

@@ -30,10 +30,10 @@ export const SEGMENTS: SegmentDef[] = [
   { id: "strings", kind: "world", motion: "fly-along", built: true },
   { id: "dissolve", kind: "transition", motion: "dissolve", runway: 1.2, built: true },
   { id: "soundboard", kind: "world", motion: "overhead descent", built: true },
-  { id: "morph", kind: "transition", motion: "morph", runway: 1.2, built: false },
-  { id: "name", kind: "world", motion: "dolly zoom", built: false },
-  { id: "reassemble", kind: "transition", motion: "reassemble + swing", runway: 1.3, built: false },
-  { id: "outro", kind: "world", motion: "arc swing", built: false },
+  { id: "morph", kind: "transition", motion: "morph", runway: 1.4, built: true },
+  { id: "name", kind: "world", motion: "dolly zoom", built: true },
+  { id: "reassemble", kind: "transition", motion: "reassemble + swing", runway: 1.5, built: true },
+  { id: "outro", kind: "world", motion: "arc swing", built: true },
 ];
 
 export type SegmentId = (typeof SEGMENTS)[number]["id"];

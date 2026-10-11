@@ -8,7 +8,8 @@ import { SoundControls } from "./SoundControls";
 import { useTextChoreography } from "./text/useTextChoreography";
 import styles from "./journey.module.css";
 import { PartLabels } from "./PartLabels";
-import { journey } from "./store";
+import { emitSparks, journey } from "./store";
+import { playCadence } from "./audio";
 import { useJourneyScroll } from "./useJourneyScroll";
 
 const JourneyCanvas = dynamic(() => import("./canvas/JourneyCanvas"), { ssr: false });
@@ -133,11 +134,21 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
     };
     host.addEventListener("pointerover", over);
     host.addEventListener("focusin", over);
+    // A message sent from the contact form is answered by a closing cadence and a shower of gold.
+    const submitted = (event: Event) => {
+      const form = (event.target as Element | null)?.closest?.("#contact form");
+      if (!form) return;
+      playCadence();
+      const r = form.getBoundingClientRect();
+      emitSparks(r.left + r.width / 2, r.top + r.height / 2, r.width, r.height, 120);
+    };
+    host.addEventListener("submit", submitted);
     window.addEventListener("pointermove", move, { passive: true });
     document.documentElement.addEventListener("pointerleave", leave);
     return () => {
       host.removeEventListener("pointerover", over);
       host.removeEventListener("focusin", over);
+      host.removeEventListener("submit", submitted);
       journey.bullet = false;
       window.removeEventListener("pointermove", move);
       document.documentElement.removeEventListener("pointerleave", leave);

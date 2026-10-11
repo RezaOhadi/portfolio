@@ -366,8 +366,8 @@ export default async function HomePage() {
           </section>
         </World>
         <Transition id="morph" />
-        <World id="name">
-          <section className="portfolio-section" data-fx-scope>
+        <World id="name" className={journeyStyles.nameWorld}>
+          <section className="portfolio-section">
             <div className="container-editorial">
               <blockquote
                 className="mx-auto max-w-3xl text-center font-serif text-3xl italic leading-relaxed"

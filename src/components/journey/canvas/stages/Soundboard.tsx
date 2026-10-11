@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import {
   CanvasTexture,
+  Color,
   CatmullRomCurve3,
   Mesh,
   MeshStandardMaterial,
@@ -13,6 +14,7 @@ import {
   TubeGeometry,
   Vector2,
   Vector3,
+  type PointLight,
   type WebGLProgramParametersWithUniforms,
 } from "three";
 import { playNote } from "../../audio";
@@ -20,7 +22,7 @@ import { journey, range } from "../../store";
 import { createMaterial } from "../piano/materials";
 import { rimPoints } from "../piano/outline";
 import { pointerRay } from "../PianoParts";
-import { rig } from "../rig";
+import { ease, rig } from "../rig";
 import { BOARD, boardRipple, boardShared, boardX, boardZ, dropRipple, RIPPLE_GLSL } from "./boardLayout";
 
 /**
@@ -34,6 +36,8 @@ import { BOARD, boardRipple, boardShared, boardX, boardZ, dropRipple, RIPPLE_GLS
 
 const PLANE = new Plane(new Vector3(0, 1, 0), -BOARD.y);
 const _hit = new Vector3();
+const WOOD = new Color("#6d4c2c");
+const FLOOR = new Color("#24170c");
 const _ndc = new Vector2();
 /** Private ray for the floating photographs, so R3F pointer picking is untouched. */
 const _ray = new Raycaster();
@@ -112,6 +116,7 @@ function rippleBoard(material: MeshStandardMaterial) {
 export function Soundboard() {
   const root = useRef<Mesh>(null);
   const bridge = useRef<Mesh>(null);
+  const lamp = useRef<PointLight>(null);
   const tiles = useRef<{ list: HTMLElement[]; checked: number }>({ list: [], checked: 0 });
   const last = useRef({ ambient: 0 });
 
@@ -124,7 +129,7 @@ export function Soundboard() {
     geometry.translate((bounds.x0 + bounds.x1) / 2, BOARD.y, (bounds.z0 + bounds.z1) / 2);
     const fx = createMaterial("spruce", { rim: 0.4 });
     const material = fx.material as MeshStandardMaterial;
-    material.color.set("#6d4c2c");
+    material.color.copy(WOOD);
     material.alphaMap = texture;
     material.alphaTest = 0.5;
     rippleBoard(material);
@@ -174,9 +179,21 @@ export function Soundboard() {
     if (bridge.current) bridge.current.visible = visible;
     boardShared.uBoardTime.value = rig.time;
     if (!visible) return;
+    // At the end the board rises to become the floor the rebuilt piano stands on.
+    const floor = ease.settle(range(rig.reassemble, 0.35, 1)) * -BOARD.y;
+    mesh.position.y = floor;
+    built.material.color.lerpColors(WOOD, FLOOR, ease.settle(range(rig.reassemble, 0.3, 1)));
+    // A warm pool of light hangs over the board, following the eye; it gives way to the studio at the end.
+    if (lamp.current) {
+      lamp.current.position.set(rig.focus.x + 0.5, BOARD.y + floor + 2.8, rig.focus.z + 0.4);
+      // The lamp dims once the name has formed, so the quote reads against a darker floor.
+      lamp.current.intensity = rig.show.piano ? 0 : 14 * (1 - range(rig.morph, 0.55, 1) * 0.7);
+    }
+    if (bridge.current) bridge.current.position.y = floor;
 
     // The world breathes by itself: notes fall into the board as you read and scroll.
-    const lively = rig.soundboard > 0.01 || rig.dissolve > 0.6;
+    // Notes stop falling once the piano is rebuilt: the board becomes a quiet stage floor.
+    const lively = (rig.soundboard > 0.01 || rig.dissolve > 0.6) && !rig.show.piano;
     const gap = 1.7 - rig.velocity * 1.2;
     if (lively && !journey.reduced && rig.time - last.current.ambient > gap) {
       last.current.ambient = rig.time;
@@ -214,6 +231,7 @@ export function Soundboard() {
     <>
       <mesh ref={root} geometry={built.geometry} material={built.material} visible={false} />
       <mesh ref={bridge} geometry={built.bridgeGeo} material={built.bridgeFx.material} visible={false} />
+      <pointLight ref={lamp} color="#f3d6ae" intensity={0} distance={11} decay={1.5} />
     </>
   );
 }

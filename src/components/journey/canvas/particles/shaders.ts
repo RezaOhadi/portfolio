@@ -10,6 +10,9 @@
 import { STRINGS } from "../stages/stringLayout";
 import { RIPPLE_GLSL } from "../stages/boardLayout";
 
+/** Where the waveform and the name stand: above the board, facing the camera. */
+export const NAME = { y: 1.25, z: -0.6, width: 7.4 } as const;
+
 export const PART_COUNT = 13;
 
 const COMMON = /* glsl */ `
@@ -83,6 +86,23 @@ vec3 boardTarget(vec2 uv){
   return vec3(xz.x, BOARD_Y + boardRipple(xz) + 0.012, xz.y);
 }
 
+/** 4: a living audio waveform, filled between its envelope, standing over the board. */
+uniform float uWaveTime;
+vec3 waveTarget(vec2 uv){
+  float x = (uv.x - 0.5) * 8.6;
+  float env = exp(-x * x * 0.07) * (0.55 + 0.45 * sin(x * 0.9 - uWaveTime * 0.7));
+  float w = env * (0.62 * sin(x * 3.1 + uWaveTime * 1.3) + 0.3 * sin(x * 7.7 - uWaveTime * 2.1) + 0.14 * sin(x * 17.0 + uWaveTime * 4.0));
+  float fill = uv.y * 2.0 - 1.0;
+  return vec3(x, ${NAME.y.toFixed(3)} + w * fill * 0.95, ${NAME.z.toFixed(3)} + (h11(uv * 4.1) - 0.5) * 0.16);
+}
+
+/** 5: the artist's name, sampled from the site's own display face. */
+uniform sampler2D tName;
+vec3 nameTarget(vec2 uv){
+  vec4 n = texture2D(tName, uv);
+  return vec3(n.x, n.y, n.z + sin(uWaveTime * 0.6 + n.x * 1.3) * 0.03);
+}
+
 // Single exit throughout: ANGLE's HLSL backend warns on early returns here.
 vec3 stageTarget(int i, vec2 uv, out float isFree, out vec3 radial){
   isFree = 0.0;
@@ -90,6 +110,10 @@ vec3 stageTarget(int i, vec2 uv, out float isFree, out vec3 radial){
   vec3 t = vec3(0.0);
   if (i == 0 || i >= 6) {
     t = partTarget(uv, isFree, radial);
+  } else if (i == 5) {
+    t = nameTarget(uv);
+  } else if (i == 4) {
+    t = waveTarget(uv);
   } else if (i == 3) {
     t = boardTarget(uv);
   } else if (i == 2) {

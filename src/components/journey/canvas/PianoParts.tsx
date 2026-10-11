@@ -123,7 +123,8 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
       // The dive heads for the keyboard; every other part is flung outward past the lens.
       if (part.id === "keyboard") rig.keyboardPos.copy(g.position);
       else if (rig.dive > 0) {
-        const fling = ease.recoil(range(rig.dive, 0.08, 0.5)) * 5.5;
+        // Flung out by the dive; the reassembly pulls them back in from the dark.
+        const fling = ease.recoil(range(rig.dive, 0.08, 0.5)) * 5.5 * (1 - ease.recoil(range(rig.reassemble, 0, 0.34)));
         g.position.sub(rig.keyboardPos).multiplyScalar(1 + fling).add(rig.keyboardPos);
       }
       g.visible = rig.show.piano;

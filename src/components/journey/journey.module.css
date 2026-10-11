@@ -534,3 +534,18 @@
     top: 0;
   }
 }
+
+/* World 7: the dolly zoom needs room; the quote stays with the name meanwhile. */
+.nameWorld {
+  min-height: 200svh;
+}
+.nameWorld > :global(.portfolio-section) {
+  position: sticky;
+  top: 58svh;
+  border-bottom: 0;
+}
+@media (max-width: 760px) {
+  .nameWorld > :global(.portfolio-section) {
+    top: 52svh;
+  }
+}

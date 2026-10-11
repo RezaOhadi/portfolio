@@ -190,7 +190,7 @@ interface Build {
 }
 
 function makeMesh(build: Build, geometry: BufferGeometry, kind: MaterialKind, reveal = false) {
-  const fx = createMaterial(kind, { reveal });
+  const fx = createMaterial(kind, { reveal, materialize: true });
   build.materials.push(fx);
   const mesh = new Mesh(geometry, fx.material);
   build.meshes.push(mesh);
@@ -198,7 +198,7 @@ function makeMesh(build: Build, geometry: BufferGeometry, kind: MaterialKind, re
 }
 
 function makeInstanced(build: Build, geometry: BufferGeometry, kind: MaterialKind, matrices: Matrix4[]) {
-  const fx = createMaterial(kind);
+  const fx = createMaterial(kind, { materialize: true });
   build.materials.push(fx);
   const mesh = new InstancedMesh(geometry, fx.material as Material, matrices.length);
   matrices.forEach((m, i) => mesh.setMatrixAt(i, m));

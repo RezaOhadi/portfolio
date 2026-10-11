@@ -58,6 +58,7 @@ function RigStep({ onReady }: { onReady: () => void }) {
       s.sent = true;
       onReady();
       if (process.env.NODE_ENV !== "production") {
+        (window as unknown as Record<string, unknown>).__journeyScene = state.scene;
         (window as unknown as Record<string, unknown>).__journeyDebug = () => ({
           rig: { ...rig, focus: rig.focus.toArray() },
           raw: { ...journey.raw },
