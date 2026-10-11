@@ -149,9 +149,26 @@ function number(el: HTMLElement) {
   exitTrigger(el, el, 6);
 }
 
+/**
+ * Links are flex rows (label, gap, icon). Gather the label's text nodes into
+ * one span so its word masks stay a single flex item. The text nodes are
+ * moved, not copied, so React keeps its references to them.
+ */
+function labelOf(el: HTMLElement) {
+  const existing = el.querySelector<HTMLElement>(":scope > [data-fx-label]");
+  if (existing) return existing;
+  const texts = Array.from(el.childNodes).filter((n) => n.nodeType === Node.TEXT_NODE && n.textContent?.trim());
+  if (!texts.length) return el;
+  const label = document.createElement("span");
+  label.dataset.fxLabel = "";
+  el.insertBefore(label, texts[0]);
+  texts.forEach((n) => label.append(n));
+  return label;
+}
+
 function link(el: HTMLElement) {
   // Word masks stay inline, so flex links (label + icon) keep their single line.
-  SplitText.create(el, {
+  SplitText.create(labelOf(el), {
     type: "words",
     mask: "words",
     autoSplit: true,

@@ -250,7 +250,10 @@ function DemandRenderer() {
     let last = "";
     let frame = 0;
     const tick = () => {
-      const key = `${journey.raw.explode > 0.5}|${journey.raw.corridor > 0.5}|${Math.round(journey.raw.exploded * 4)}`;
+      // Every segment, in 5% steps: the still frame follows the visitor through all seven worlds.
+      const key = Object.values(journey.raw)
+        .map((v) => Math.round(v * 20))
+        .join("|");
       if (key !== last) {
         last = key;
         invalidate(4);
