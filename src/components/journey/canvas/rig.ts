@@ -1,0 +1,115 @@
+import gsap from "gsap";
+import { Vector3 } from "three";
+import { journey, range } from "../store";
+
+/**
+ * The choreography state for the whole canvas. Scroll progress arrives raw
+ * (and may jump on touch flings or anchor jumps); here it is integrated with
+ * frame-rate independent damping so every world moves with physical inertia,
+ * and scrolling backwards replays everything in reverse.
+ */
+export const rig = {
+  time: 0,
+  /** First-load choreography, time based. */
+  assemble: 0,
+  materialize: 0,
+  /** Damped segment progress. */
+  piano: 0,
+  explode: 0,
+  exploded: 0,
+  after: 0,
+  /** Derived beats. */
+  anticipation: 0,
+  burst: 0,
+  snap: 0,
+  orbit: 0,
+  free: 0,
+  spread: 0,
+  wave: 0,
+  reveal: 0,
+  /** World 1: lid opening angle (rad), pre-burst tremble, camera arrival. */
+  lid: 0,
+  tremble: 0,
+  arrival: 0,
+  /** World 2: the whole constellation turns as you read. */
+  spin: 0,
+  /** Shared with post-processing. */
+  focus: new Vector3(0, 0.9, -0.95),
+  dof: 0,
+  velocity: 0,
+};
+
+export const ease = {
+  burst: gsap.parseEase("expo.out"),
+  tumble: gsap.parseEase("power3.out"),
+  camera: gsap.parseEase("power2.inOut"),
+  recoil: gsap.parseEase("power3.inOut"),
+  settle: gsap.parseEase("sine.inOut"),
+};
+
+const damp = (current: number, target: number, lambda: number, dt: number) =>
+  current + (target - current) * (1 - Math.exp(-lambda * dt));
+
+const bell = (v: number) => Math.sin(Math.PI * Math.min(1, Math.max(0, v))) ** 2;
+
+/** Smooth up-plateau-down window. */
+const windowed = (v: number, a: number, b: number, c: number, d: number) => {
+  const up = ease.settle(range(v, a, b));
+  const down = ease.settle(range(v, c, d));
+  return up * (1 - down);
+};
+
+let introStart = -1;
+
+export function stepRig(elapsed: number, dt: number) {
+  const r = journey.raw;
+  rig.time = elapsed;
+  if (introStart < 0) introStart = elapsed;
+  const intro = elapsed - introStart;
+
+  if (journey.reduced) {
+    // Still frames: each world shows its resting pose, transitions cut at their midpoint.
+    rig.assemble = rig.materialize = 1;
+    rig.piano = 0.3;
+    rig.explode = r.explode > 0.5 ? 1 : 0;
+    rig.exploded = 0.5;
+    rig.after = r.corridor > 0.04 ? 1 : 0;
+  } else {
+    rig.assemble = Math.min(1, intro / 3.4);
+    rig.materialize = range(intro, 1.5, 4.4);
+    rig.piano = damp(rig.piano, r.piano, 6, dt);
+    rig.explode = damp(rig.explode, r.explode, 7, dt);
+    rig.exploded = damp(rig.exploded, r.exploded, 6, dt);
+    rig.after = damp(rig.after, r.corridor, 4, dt);
+  }
+
+  const e = rig.explode;
+  // World 1: the camera arrives (time), the lid opens on arrival then wide with scroll.
+  rig.arrival = journey.reduced ? 1 : ease.recoil(range(intro, 0.3, 4.2));
+  rig.lid = 0.05 + ease.settle(range(intro, 1.8, 4.6)) * 0.5 + ease.settle(rig.piano) * 0.42;
+  rig.tremble = journey.reduced ? 0 : ease.settle(range(rig.piano, 0.6, 1)) * (1 - range(e, 0.02, 0.08));
+  rig.anticipation = bell(range(e, 0, 0.09));
+  rig.burst = journey.reduced ? 0 : bell(range(e, 0.02, 0.32));
+  rig.snap = journey.reduced ? 0 : windowed(rig.exploded, 0.38, 0.5, 0.62, 0.74);
+  const out = ease.burst(range(e, 0.03, 0.6));
+  rig.orbit = out * (1 - rig.snap);
+  rig.spin = ease.settle(range(rig.exploded, 0.05, 1)) * 2.4;
+  // The nebula gathers back onto the parts as World 2 ends.
+  rig.free = out * (1 - rig.snap * 0.85) * (1 - range(rig.exploded, 0.78, 1) * 0.75) * (1 - rig.after);
+  rig.spread = 0.42 * ease.burst(range(e, 0.15, 0.7));
+  rig.wave = 0.035 * out * (1 - rig.snap);
+  rig.dof = out;
+
+  // World 1 surprise: only while the piano is whole and a real mouse is present.
+  const revealTarget = journey.pointer.mouse && !journey.reduced ? (1 - range(e, 0, 0.04)) * rig.materialize : 0;
+  rig.reveal = damp(rig.reveal, revealTarget, 6, dt);
+  rig.velocity = damp(rig.velocity, Math.min(1, Math.abs(journey.velocity) / 60), 8, dt);
+}
+
+/** Explode progress of one part, with its stagger. */
+export function partProgress(delay: number) {
+  return ease.burst(range(rig.explode, 0.02 + delay * 0.7, 0.02 + delay * 0.7 + 0.45));
+}
+export function partTumble(delay: number) {
+  return ease.tumble(range(rig.explode, 0.02 + delay * 0.7, 0.02 + delay * 0.7 + 0.55));
+}

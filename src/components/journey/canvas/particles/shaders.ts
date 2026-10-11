@@ -1,0 +1,132 @@
+/**
+ * GPGPU particle shaders. Every particle belongs to a part and sits at a
+ * sampled point in that part's local space; the part matrices arrive as a
+ * uniform array, so dust follows the real geometry through the explode.
+ * Motion is a damped spring towards that target (stiffness varies per
+ * particle, so dust trails behind fast parts), plus free-dust nebulae, the
+ * burst impulse and cursor repulsion.
+ */
+
+export const PART_COUNT = 13;
+
+const COMMON = /* glsl */ `
+uniform mat4 uParts[${PART_COUNT}];
+uniform sampler2D tLocal;
+uniform sampler2D tMeta;
+uniform float uTime, uAssemble, uFree, uKeySpread, uWave;
+uniform vec3 uCenter;
+
+float h11(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+vec3 partTarget(vec2 uv, out float isFree, out vec3 radial){
+  vec4 L = texture2D(tLocal, uv);
+  vec4 M = texture2D(tMeta, uv);
+  vec3 lp = L.xyz;
+  if (M.z > 0.5) {
+    float hammers = step(1.5, M.z);
+    lp.x += M.w * uKeySpread;
+    lp.y += sin(M.w * 9.0 + uTime * 1.6 + hammers * 1.2) * uWave * mix(1.0, 0.8, hammers);
+  }
+  vec3 t = (uParts[int(L.w + 0.5)] * vec4(lp, 1.0)).xyz;
+  float h1 = h11(uv * 17.13), h2 = h11(uv * 31.7 + 3.1), h3 = h11(uv * 7.7 + 9.2);
+  isFree = step(h1, 0.24);
+  radial = normalize(t - uCenter + vec3(0.0001));
+  vec3 swirl = vec3(
+    sin(t.y * 2.1 + uTime * 0.35 + h2 * 6.283),
+    sin(t.z * 1.7 + uTime * 0.31 + h3 * 6.283),
+    sin(t.x * 1.9 + uTime * 0.27 + h1 * 6.283));
+  t += isFree * uFree * (radial * (0.2 + h2 * 1.1) + swirl * (0.35 + h3 * 0.5));
+  // First load: dust gathers from a wide shell into the piano.
+  vec3 scatter = uCenter + normalize(vec3(h1 - 0.5, h2 - 0.5, h3 - 0.5) + 0.001) * (4.0 + h2 * 6.0);
+  float a = clamp(uAssemble * 1.6 - h3 * 0.6, 0.0, 1.0);
+  a = a * a * (3.0 - 2.0 * a);
+  return mix(scatter, t, a);
+}
+`;
+
+export const velocityShader = /* glsl */ `
+${COMMON}
+uniform float uDelta, uBurst, uSnapAll, uMouse, uMouseRadius, uMouseStrength;
+uniform vec3 uRayO, uRayD;
+
+void main(){
+  vec2 uv = gl_FragCoord.xy / resolution.xy;
+  vec3 pos = texture2D(texturePosition, uv).xyz;
+  vec3 vel = texture2D(textureVelocity, uv).xyz;
+  if (uSnapAll > 0.5) { gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); return; }
+  float isFree; vec3 radial;
+  vec3 target = partTarget(uv, isFree, radial);
+  float stiff = texture2D(tMeta, uv).x;
+  float k = mix(12.0, 48.0, stiff) * mix(1.0, 0.3, isFree * uFree);
+  float c = 2.0 * sqrt(k) * 0.6;
+  vec3 acc = (target - pos) * k - vel * c;
+  acc += radial * uBurst * (5.0 + stiff * 16.0) * (0.4 + isFree);
+  // Cursor: push away from the pointer ray.
+  vec3 w = pos - uRayO;
+  vec3 cp = uRayO + uRayD * max(dot(w, uRayD), 0.0);
+  vec3 dv = pos - cp;
+  float dist = length(dv);
+  acc += (dv / (dist + 0.0001)) * uMouse * smoothstep(uMouseRadius, 0.0, dist) * uMouseStrength;
+  vel += acc * uDelta;
+  gl_FragColor = vec4(vel, 1.0);
+}
+`;
+
+export const positionShader = /* glsl */ `
+${COMMON}
+uniform float uDelta, uSnapAll;
+
+void main(){
+  vec2 uv = gl_FragCoord.xy / resolution.xy;
+  vec3 pos = texture2D(texturePosition, uv).xyz;
+  vec3 vel = texture2D(textureVelocity, uv).xyz;
+  if (uSnapAll > 0.5) {
+    float isFree; vec3 radial;
+    gl_FragColor = vec4(partTarget(uv, isFree, radial), 1.0);
+    return;
+  }
+  gl_FragColor = vec4(pos + vel * uDelta, 1.0);
+}
+`;
+
+export const renderVertex = /* glsl */ `
+uniform sampler2D tPosition;
+uniform sampler2D tVelocity;
+uniform float uSize, uScale, uOpacity, uFree, uMaxSize;
+attribute vec2 ref;
+varying float vHeat;
+varying float vAlpha;
+
+float h11(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+
+void main(){
+  vec3 p = texture2D(tPosition, ref).xyz;
+  float speed = length(texture2D(tVelocity, ref).xyz);
+  vHeat = smoothstep(0.15, 2.6, speed);
+  float r = h11(ref * 91.7);
+  // Same hash as the simulation: free dust becomes a soft, larger, warmer haze.
+  float haze = step(h11(ref * 17.13), 0.24) * uFree;
+  vHeat = max(vHeat, haze * 0.45);
+  vAlpha = uOpacity * (0.35 + r * 0.65) * (1.0 - haze * 0.45);
+  vec4 mv = modelViewMatrix * vec4(p, 1.0);
+  gl_Position = projectionMatrix * mv;
+  // Close-up dust is capped so depth of field never turns it into screen-filling discs.
+  gl_PointSize = clamp(uSize * (0.55 + r * 0.9) * (1.0 + vHeat * 0.8 + haze * 0.9) * uScale / -mv.z, 1.0, uMaxSize);
+}
+`;
+
+export const renderFragment = /* glsl */ `
+uniform vec3 uGold;
+uniform vec3 uHot;
+varying float vHeat;
+varying float vAlpha;
+
+void main(){
+  vec2 c = gl_PointCoord - 0.5;
+  float d = length(c);
+  if (d > 0.5) discard;
+  float core = smoothstep(0.5, 0.0, d);
+  vec3 col = mix(uGold, uHot, vHeat) * (0.9 + vHeat * 3.2);
+  gl_FragColor = vec4(col * core, core * vAlpha);
+}
+`;
