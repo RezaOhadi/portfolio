@@ -7,6 +7,8 @@ import gsap from "gsap";
 import { journey, range } from "../store";
 import { ease, rig } from "./rig";
 import { CORRIDOR } from "./stages/Corridor";
+import { HAMMERS } from "./stages/Hammers";
+import { STRINGS } from "./stages/stringLayout";
 
 /**
  * One camera, a different move per world:
@@ -179,6 +181,35 @@ export function CameraDirector() {
       // The row runs through the lower part of the frame, below the section title.
       f.shiftY = MathUtils.lerp(0.32, 0.38, portrait);
       f.parallax = 0.8;
+
+      // Portal: the camera flies into the iris that opens around the next strike.
+      rig.portalPoint.set(x + 0.6, HAMMERS.stringY - 0.05, -0.15);
+      if (rig.portal > 0) {
+        const a = plunge(range(rig.portal, 0, 0.5));
+        s.near.copy(rig.portalPoint).add(s.tmp.set(0, 0.16, 0.6));
+        f.pos.lerp(s.near, a);
+        f.target.lerp(rig.portalPoint, a);
+        f.fov = MathUtils.lerp(f.fov, 18, a);
+        f.roll *= 1 - a;
+        f.shiftY *= 1 - a;
+        f.parallax *= 1 - a;
+      }
+    }
+
+    /* ---- World 5: flying low along the strings ---- */
+    if (rig.show.strings) {
+      const out = ease.recoil(range(rig.portal, 0.5, 1));
+      const glide = ease.settle(rig.strings);
+      const z = MathUtils.lerp(STRINGS.z0 + 2.4, STRINGS.z0 - 0.4, out) - glide * 11;
+      const weave = Math.sin(glide * Math.PI * 2) * 1.1;
+      f.pos.set(weave, STRINGS.y + MathUtils.lerp(0.5, 0.72, portrait) + (1 - out) * 0.25, z);
+      f.target.set(weave * 0.55, STRINGS.y - 0.08, z - 4.2);
+      f.fov = MathUtils.lerp(50, 66, portrait) + (1 - out) * 22;
+      f.roll = -Math.cos(glide * Math.PI * 2) * 0.1 * out;
+      f.shiftX = MathUtils.lerp(-0.12, 0, portrait);
+      // The horizon sits low; the concerts read over the dark above it.
+      f.shiftY = MathUtils.lerp(0.4, 0.42, portrait);
+      f.parallax = 0.5;
     }
 
     /* ---- apply ---- */

@@ -25,6 +25,7 @@ import { mulberry32, type PianoPart } from "../piano/build";
 import { pointerRay } from "../PianoParts";
 import { rig } from "../rig";
 import { PART_COUNT, positionShader, renderFragment, renderVertex, velocityShader } from "./shaders";
+import { stringAmp, stringTime } from "../stages/stringLayout";
 
 const CENTER = new Vector3(0, 0.82, -0.95);
 
@@ -107,6 +108,8 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
       uChain: { value: 0 },
       uStagger: { value: 0.65 },
       uCam: { value: new Vector3() },
+      tStrAmp: { value: stringAmp.texture },
+      uStrTime: stringTime,
     };
     Object.assign(posVar.material.uniforms, shared);
     Object.assign(velVar.material.uniforms, shared, {

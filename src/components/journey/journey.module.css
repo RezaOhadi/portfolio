@@ -519,3 +519,18 @@
 .journey :global(.portfolio-section) :is(h2, h3, p, time, li, blockquote, :global(.section-number), :global(.media-meta), :global(.action-text)) {
   text-shadow: var(--shadow);
 }
+
+/* World 5: room to fly along the strings; the concerts stay with you meanwhile. */
+.stringsWorld {
+  min-height: 230svh;
+}
+.stringsWorld > :global(.portfolio-section) {
+  position: sticky;
+  top: 4.5rem;
+}
+@media (max-width: 760px) {
+  .stringsWorld > :global(.portfolio-section) {
+    position: relative;
+    top: 0;
+  }
+}

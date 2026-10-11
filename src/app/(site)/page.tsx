@@ -268,11 +268,10 @@ export default async function HomePage() {
           </section>
         </World>
         <Transition id="portal" />
-        <World id="strings">
+        <World id="strings" className={journeyStyles.stringsWorld}>
           <section
             id="concerts"
             data-nav-section
-            data-fx-scope
             className="portfolio-section"
             aria-labelledby="concerts-title"
           >

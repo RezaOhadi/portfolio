@@ -7,6 +7,8 @@
  * burst impulse and cursor repulsion.
  */
 
+import { STRINGS } from "../stages/stringLayout";
+
 export const PART_COUNT = 13;
 
 const COMMON = /* glsl */ `
@@ -55,10 +57,32 @@ vec3 corridorTarget(vec2 uv){
   return vec3(uCam.x + xy.x * 1.3, uCam.y + xy.y - 0.08, z);
 }
 
+/** 2: motes riding the gold strings, with the strings' own standing waves. */
+uniform sampler2D tStrAmp;
+uniform float uStrTime;
+vec3 stringsTarget(vec2 uv){
+  float s = min(floor(uv.x * ${STRINGS.count}.0), ${STRINGS.count - 1}.0);
+  float along = uv.y;
+  float bass = step(s, ${STRINGS.bass - 1}.0);
+  float a = bass * ${STRINGS.bassAngle.toFixed(4)};
+  float t = along - 0.5;
+  float x = ${STRINGS.x0.toFixed(4)} + s * ${STRINGS.dx.toFixed(4)} + bass * 0.55 + t * ${STRINGS.length}.0 * sin(a);
+  float z = ${(STRINGS.z0 - STRINGS.length / 2).toFixed(4)} + t * ${STRINGS.length}.0 * cos(a);
+  float amp = texture2D(tStrAmp, vec2((s + 0.5) / 256.0, 0.5)).r;
+  float ph = s * 1.71;
+  float wave = amp * 0.05 * (sin(3.14159 * along) * sin(uStrTime * 24.0 + ph) + 0.35 * sin(6.28318 * along) * sin(uStrTime * 48.0 + ph * 1.3));
+  return vec3(x, ${STRINGS.y.toFixed(4)} + bass * ${STRINGS.bassLift.toFixed(4)} - wave + 0.007, z);
+}
+
 vec3 stageTarget(int i, vec2 uv, out float isFree, out vec3 radial){
   isFree = 0.0;
   radial = vec3(0.0, 1.0, 0.0);
   if (i == 0 || i >= 6) return partTarget(uv, isFree, radial);
+  if (i == 2) {
+    vec3 st = stringsTarget(uv);
+    radial = vec3(0.0, 1.0, 0.0);
+    return st;
+  }
   vec3 t = corridorTarget(uv);
   radial = normalize(t - uCam + vec3(0.0001));
   return t;

@@ -122,8 +122,14 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
     };
     // Hovering (or focusing) a performance freezes the hammer world in bullet time.
     const cards = ".showcase-card, .media-card";
+    // Entering a concert row strums a chord across the strings world.
+    let row: Element | null = null;
     const over = (event: Event) => {
-      journey.bullet = Boolean((event.target as Element | null)?.closest?.(cards));
+      const target = event.target as Element | null;
+      journey.bullet = Boolean(target?.closest?.(cards));
+      const next = target?.closest?.(".concert-row") ?? null;
+      if (next && next !== row) window.dispatchEvent(new Event("journey:strum"));
+      row = next;
     };
     host.addEventListener("pointerover", over);
     host.addEventListener("focusin", over);

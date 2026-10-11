@@ -59,7 +59,9 @@ export const rig = {
   /** Full-frame gold flash that masks the cut between two stages (0..1). */
   flash: 0,
   /** Which stage is drawn. Exactly one is true outside a cut. */
-  show: { piano: true, corridor: false, hammers: false },
+  show: { piano: true, corridor: false, hammers: false, strings: false },
+  /** Where the last hammer strikes: the iris of the portal opens around it. */
+  portalPoint: new Vector3(),
   /** Corridor keys swing up off their pivots into blades during the twist (0..1). */
   fin: 0,
   /** Hammer-world time scale: 1 normal slow motion, ~0 bullet time while a performance is hovered. */
@@ -128,13 +130,16 @@ export function stepRig(elapsed: number, dt: number) {
   const cutDive = rig.dive >= 0.5;
   // Twist (World 3 -> 4): the keys swing up into blades as the camera rolls, cut, the hammers rise.
   const cutTwist = rig.twist >= 0.5;
+  // Portal (World 4 -> 5): into the iris of a hammer strike, out flying along the strings.
+  const cutPortal = rig.portal >= 0.5;
   rig.show.piano = !cutDive;
   rig.show.corridor = cutDive && !cutTwist;
-  rig.show.hammers = cutTwist;
+  rig.show.hammers = cutTwist && !cutPortal;
+  rig.show.strings = cutPortal;
   rig.fin = journey.reduced ? 0 : ease.recoil(range(rig.twist, 0.05, 0.5));
   const flash = (v: number) => (journey.reduced ? 0 : bell(range(v, 0.4, 0.6)) * 0.95);
-  rig.flash = Math.max(flash(rig.dive), flash(rig.twist));
-  rig.chain = ease.settle(range(rig.dive, 0.28, 0.82));
+  rig.flash = Math.max(flash(rig.dive), flash(rig.twist), flash(rig.portal));
+  rig.chain = ease.settle(range(rig.dive, 0.28, 0.82)) + ease.settle(range(rig.portal, 0.3, 0.85));
 
   // Slow-motion hammers; hovering a performance freezes them (bullet time).
   rig.timeScale = damp(rig.timeScale, journey.bullet ? 0.03 : 1, 5, dt);
