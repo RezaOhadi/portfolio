@@ -52,11 +52,12 @@ vec3 corridorTarget(vec2 uv){
   float h1 = h11(uv * 13.1 + 1.7), h2 = h11(uv * 29.3 + 4.4), h3 = h11(uv * 5.9 + 8.1);
   float z = uCam.z + 1.5 - fract(h3 + uTime * 0.035) * 28.0;
   vec2 xy = vec2(h1 - 0.5, h2 - 0.5) * 1.5;
-  return vec3(xy.x, 1.0 + xy.y, z);
+  return vec3(uCam.x + xy.x * 1.3, uCam.y + xy.y - 0.08, z);
 }
 
 vec3 stageTarget(int i, vec2 uv, out float isFree, out vec3 radial){
   isFree = 0.0;
+  radial = vec3(0.0, 1.0, 0.0);
   if (i == 0 || i >= 6) return partTarget(uv, isFree, radial);
   vec3 t = corridorTarget(uv);
   radial = normalize(t - uCam + vec3(0.0001));
@@ -65,6 +66,8 @@ vec3 stageTarget(int i, vec2 uv, out float isFree, out vec3 radial){
 
 /** Each step of the chain is staggered per mote so forms dissolve and gather organically. */
 vec3 chainTarget(vec2 uv, out float isFree, out vec3 radial){
+  isFree = 0.0;
+  radial = vec3(0.0, 1.0, 0.0);
   float i = floor(uChain);
   float f = uChain - i;
   if (f < 0.0001) return stageTarget(int(i), uv, isFree, radial);

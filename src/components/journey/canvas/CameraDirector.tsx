@@ -150,7 +150,9 @@ export function CameraDirector() {
     if (rig.show.corridor) {
       // Inside the flash the camera is already over the unfolding keyboard, still moving.
       const enter = ease.settle(range(rig.dive, 0.5, 1));
-      const z = MathUtils.lerp(5.4, 0.6, enter) - rig.corridor * 62;
+      // The twist keeps the camera moving forward while it rolls a quarter turn.
+      const twist = ease.recoil(range(rig.twist, 0, 0.5));
+      const z = MathUtils.lerp(5.4, 0.6, enter) - rig.corridor * 62 - twist * 5;
       const y = CORRIDOR.centerY + Math.sin(z * 0.9) * 0.035;
       f.pos.set(Math.sin(t * 0.37) * 0.04, y, z);
       f.target.set(Math.sin(t * 0.21) * 0.08, CORRIDOR.centerY - 0.06, z - 6);
@@ -158,8 +160,25 @@ export function CameraDirector() {
       // Keep the vanishing point clear of the copy column on the left.
       f.shiftX = MathUtils.lerp(-0.22, 0, portrait);
       f.shiftY = MathUtils.lerp(0, -0.12, portrait);
-      f.roll = (1 - enter) * -0.35 + Math.sin(rig.corridor * Math.PI * 3) * 0.05;
+      f.roll = (1 - enter) * -0.35 + Math.sin(rig.corridor * Math.PI * 3) * 0.05 + twist * Math.PI * 0.5;
+      f.fov += twist * 18;
       f.parallax = 0.6;
+    }
+
+    /* ---- World 4: the roll unwinds into a slow barrel roll along the hammer row ---- */
+    if (rig.show.hammers) {
+      const land = ease.recoil(range(rig.twist, 0.5, 1));
+      const x = MathUtils.lerp(-13.5, 13.5, ease.settle(rig.hammers));
+      const lift = MathUtils.lerp(1.75, 2.2, portrait);
+      f.pos.set(x - 1.3, lift + (1 - land) * 0.6, MathUtils.lerp(4.4, 6.2, portrait) + (1 - land) * 1.5);
+      f.target.set(x + 0.6, 0.45, -0.8);
+      // A quarter-turn arriving from the twist, then a slow roll that breathes as you read.
+      f.roll = (1 - land) * Math.PI * 0.5 + Math.sin(rig.hammers * Math.PI * 2.2) * 0.16;
+      f.fov = MathUtils.lerp(40, 54, portrait) + (1 - land) * 16;
+      f.shiftX = 0;
+      // The row runs through the lower part of the frame, below the section title.
+      f.shiftY = MathUtils.lerp(0.32, 0.38, portrait);
+      f.parallax = 0.8;
     }
 
     /* ---- apply ---- */

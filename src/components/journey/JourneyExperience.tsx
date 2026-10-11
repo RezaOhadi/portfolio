@@ -120,9 +120,19 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
     const leave = () => {
       journey.pointer.mouse = false;
     };
+    // Hovering (or focusing) a performance freezes the hammer world in bullet time.
+    const cards = ".showcase-card, .media-card";
+    const over = (event: Event) => {
+      journey.bullet = Boolean((event.target as Element | null)?.closest?.(cards));
+    };
+    host.addEventListener("pointerover", over);
+    host.addEventListener("focusin", over);
     window.addEventListener("pointermove", move, { passive: true });
     document.documentElement.addEventListener("pointerleave", leave);
     return () => {
+      host.removeEventListener("pointerover", over);
+      host.removeEventListener("focusin", over);
+      journey.bullet = false;
       window.removeEventListener("pointermove", move);
       document.documentElement.removeEventListener("pointerleave", leave);
     };

@@ -226,7 +226,8 @@ export function Corridor() {
             key.sounded = true;
           } else if (key.sounded && p < 0.2) key.sounded = false;
           // Keys pivot at their black-key end, so the near end dips into the wall.
-          const theta = 0.075 * p;
+          // The twist swings every key up off its pivot into a standing blade.
+          const theta = 0.075 * p - rig.fin * 1.2;
           const pivotX = CORRIDOR.half;
           const x = black ? built.blackX : 0;
           _q.setFromAxisAngle(Z_AXIS, theta);

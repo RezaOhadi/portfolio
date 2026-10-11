@@ -14,6 +14,8 @@ export interface JourneyState {
   reduced: boolean;
   tier: QualityTier;
   mobile: boolean;
+  /** A performance card is hovered: the hammer world goes into bullet time. */
+  bullet: boolean;
   /** Part currently under the cursor in the exploded world. */
   hovered: string | null;
   sound: boolean;
@@ -27,6 +29,7 @@ export const journey: JourneyState = {
   tier: "high",
   mobile: false,
   hovered: null,
+  bullet: false,
   sound: false,
 };
 

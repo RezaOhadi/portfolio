@@ -513,3 +513,9 @@
     animation: none;
   }
 }
+
+/* Existing site sections float over the 3D worlds: give their copy the same
+   soft shadow as the overlays so it stays legible over any stage. */
+.journey :global(.portfolio-section) :is(h2, h3, p, time, li, blockquote, :global(.section-number), :global(.media-meta), :global(.action-text)) {
+  text-shadow: var(--shadow);
+}
