@@ -17,6 +17,7 @@ import { Corridor } from "./stages/Corridor";
 import { Hammers } from "./stages/Hammers";
 import { Strings } from "./stages/Strings";
 import { Portal } from "./stages/Portal";
+import { Soundboard } from "./stages/Soundboard";
 import { Atmosphere } from "./Atmosphere";
 import { buildPiano } from "./piano/build";
 import { stepRig, rig } from "./rig";
@@ -171,6 +172,7 @@ function Scene({ tier, setDof, dof, onReady }: { tier: QualityTier; setDof: (on:
       <Hammers />
       <Strings />
       <Portal />
+      <Soundboard />
       <FlashVeil />
       <Effects dof={dof} multisampling={profile.multisampling} />
     </>

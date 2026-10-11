@@ -59,7 +59,7 @@ export const rig = {
   /** Full-frame gold flash that masks the cut between two stages (0..1). */
   flash: 0,
   /** Which stage is drawn. Exactly one is true outside a cut. */
-  show: { piano: true, corridor: false, hammers: false, strings: false },
+  show: { piano: true, corridor: false, hammers: false, strings: false, board: false },
   /** Where the last hammer strikes: the iris of the portal opens around it. */
   portalPoint: new Vector3(),
   /** Corridor keys swing up off their pivots into blades during the twist (0..1). */
@@ -135,11 +135,16 @@ export function stepRig(elapsed: number, dt: number) {
   rig.show.piano = !cutDive;
   rig.show.corridor = cutDive && !cutTwist;
   rig.show.hammers = cutTwist && !cutPortal;
-  rig.show.strings = cutPortal;
+  // Dissolve (World 5 -> 6): one stage, no cut. Strings break into dust that rains onto the board.
+  rig.show.strings = cutPortal && rig.dissolve < 0.9;
+  rig.show.board = cutPortal;
   rig.fin = journey.reduced ? 0 : ease.recoil(range(rig.twist, 0.05, 0.5));
   const flash = (v: number) => (journey.reduced ? 0 : bell(range(v, 0.4, 0.6)) * 0.95);
   rig.flash = Math.max(flash(rig.dive), flash(rig.twist), flash(rig.portal));
-  rig.chain = ease.settle(range(rig.dive, 0.28, 0.82)) + ease.settle(range(rig.portal, 0.3, 0.85));
+  rig.chain =
+    ease.settle(range(rig.dive, 0.28, 0.82)) +
+    ease.settle(range(rig.portal, 0.3, 0.85)) +
+    ease.settle(range(rig.dissolve, 0.12, 0.85));
 
   // Slow-motion hammers; hovering a performance freezes them (bullet time).
   rig.timeScale = damp(rig.timeScale, journey.bullet ? 0.03 : 1, 5, dt);

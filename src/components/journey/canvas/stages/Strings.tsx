@@ -85,6 +85,7 @@ export function Strings() {
 
     const mesh = new InstancedMesh(new CylinderGeometry(0.0055, 0.0055, 1, 5, 48, true), gold.material as Material, STRINGS.count);
     mesh.geometry.setAttribute("aPress", new InstancedBufferAttribute(new Float32Array(STRINGS.count), 1));
+    const base: Matrix4[] = [];
     const bassTint = new Color("#b77a48");
     const white = new Color(1, 1, 1);
     for (let i = 0; i < STRINGS.count; i++) {
@@ -95,6 +96,7 @@ export function Strings() {
       _p.set(stringX(i) + (bass ? 0.55 : 0), STRINGS.y + (bass ? STRINGS.bassLift : 0), STRINGS.z0 - STRINGS.length / 2);
       _m.compose(_p, _q, _s.set(thickness, STRINGS.length, thickness));
       mesh.setMatrixAt(i, _m);
+      base.push(_m.clone());
       mesh.setColorAt(i, bass ? bassTint : white);
     }
     mesh.frustumCulled = false;
@@ -110,7 +112,7 @@ export function Strings() {
 
     const amp = new Float32Array(STRINGS.count);
     const lift = new Float32Array(pairs);
-    return { gold, felt, wood, brass, mesh, dampers, heads, bars, amp, lift, pairs, materials: [gold, felt, wood, brass] };
+    return { gold, felt, wood, brass, mesh, base, dampers, heads, bars, amp, lift, pairs, broken: 0, materials: [gold, felt, wood, brass] };
   }, []);
 
   useEffect(
@@ -188,6 +190,22 @@ export function Strings() {
     }
     attr.needsUpdate = true;
     stringAmp.texture.needsUpdate = true;
+
+    // Dissolve: strings break from the centre outwards, each thinning to nothing as its dust falls.
+    if (rig.dissolve > 0.001 || built.broken > 0.001) {
+      const centre = (STRINGS.count - 1) / 2;
+      for (let i = 0; i < STRINGS.count; i++) {
+        const delay = (Math.abs(i - centre) / centre) * 0.35;
+        const k = Math.max(0.001, 1 - ease.recoil(range(rig.dissolve, 0.06 + delay, 0.26 + delay)));
+        built.base[i].decompose(_p, _q, _s);
+        _s.x *= k;
+        _s.z *= k;
+        _m.compose(_p, _q, _s);
+        built.mesh.setMatrixAt(i, _m);
+      }
+      built.mesh.instanceMatrix.needsUpdate = true;
+      built.broken = rig.dissolve;
+    }
 
     // Dampers: lift while their pair rings, fall to silence it.
     for (let d = 0; d < built.pairs; d++) {

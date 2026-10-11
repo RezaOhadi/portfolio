@@ -9,6 +9,7 @@ import { ease, rig } from "./rig";
 import { CORRIDOR } from "./stages/Corridor";
 import { HAMMERS } from "./stages/Hammers";
 import { STRINGS } from "./stages/stringLayout";
+import { BOARD } from "./stages/boardLayout";
 
 /**
  * One camera, a different move per world:
@@ -196,8 +197,8 @@ export function CameraDirector() {
       }
     }
 
-    /* ---- World 5: flying low along the strings ---- */
-    if (rig.show.strings) {
+    /* ---- World 5: flying low along the strings (the base shot of the whole stage) ---- */
+    if (rig.show.board) {
       const out = ease.recoil(range(rig.portal, 0.5, 1));
       const glide = ease.settle(rig.strings);
       const z = MathUtils.lerp(STRINGS.z0 + 2.4, STRINGS.z0 - 0.4, out) - glide * 11;
@@ -210,6 +211,25 @@ export function CameraDirector() {
       // The horizon sits low; the concerts read over the dark above it.
       f.shiftY = MathUtils.lerp(0.4, 0.42, portrait);
       f.parallax = 0.5;
+
+      /* ---- Dissolve, then World 6: rise into an overhead view and spiral down over the board ---- */
+      if (rig.dissolve > 0) {
+        const rise = ease.recoil(range(rig.dissolve, 0, 0.75));
+        const tilt = ease.settle(range(rig.dissolve, 0, 0.35));
+        const descend = ease.settle(rig.soundboard);
+        const zc = MathUtils.lerp(1.6, -1.8, descend);
+        const h = MathUtils.lerp(9.5, 4.4, descend) * MathUtils.lerp(1, 1.35, portrait);
+        s.tmp.set(0, BOARD.y + h, zc + 0.45);
+        f.pos.lerp(s.tmp, rise);
+        s.near.set(0, BOARD.y, zc);
+        f.target.lerp(s.near, rise);
+        f.fov = MathUtils.lerp(f.fov, MathUtils.lerp(42, 56, portrait), rise);
+        // Looking straight down, the slow turn of the descent is a roll of the view.
+        f.roll = MathUtils.lerp(f.roll, 0.35 + descend * 1.15, rise);
+        f.shiftX = MathUtils.lerp(f.shiftX, MathUtils.lerp(-0.2, 0, portrait), rise);
+        f.shiftY = MathUtils.lerp(f.shiftY, 0, tilt);
+        f.parallax = MathUtils.lerp(f.parallax, 0.4, rise);
+      }
     }
 
     /* ---- apply ---- */

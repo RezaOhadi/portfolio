@@ -8,6 +8,7 @@
  */
 
 import { STRINGS } from "../stages/stringLayout";
+import { RIPPLE_GLSL } from "../stages/boardLayout";
 
 export const PART_COUNT = 13;
 
@@ -74,17 +75,29 @@ vec3 stringsTarget(vec2 uv){
   return vec3(x, ${STRINGS.y.toFixed(4)} + bass * ${STRINGS.bassLift.toFixed(4)} - wave + 0.007, z);
 }
 
+/** 3: sand on the soundboard, lifted and dropped by its resonance ripples. */
+${RIPPLE_GLSL}
+uniform sampler2D tBoard;
+vec3 boardTarget(vec2 uv){
+  vec2 xz = texture2D(tBoard, uv).xy;
+  return vec3(xz.x, BOARD_Y + boardRipple(xz) + 0.012, xz.y);
+}
+
+// Single exit throughout: ANGLE's HLSL backend warns on early returns here.
 vec3 stageTarget(int i, vec2 uv, out float isFree, out vec3 radial){
   isFree = 0.0;
   radial = vec3(0.0, 1.0, 0.0);
-  if (i == 0 || i >= 6) return partTarget(uv, isFree, radial);
-  if (i == 2) {
-    vec3 st = stringsTarget(uv);
-    radial = vec3(0.0, 1.0, 0.0);
-    return st;
+  vec3 t = vec3(0.0);
+  if (i == 0 || i >= 6) {
+    t = partTarget(uv, isFree, radial);
+  } else if (i == 3) {
+    t = boardTarget(uv);
+  } else if (i == 2) {
+    t = stringsTarget(uv);
+  } else {
+    t = corridorTarget(uv);
+    radial = normalize(t - uCam + vec3(0.0001));
   }
-  vec3 t = corridorTarget(uv);
-  radial = normalize(t - uCam + vec3(0.0001));
   return t;
 }
 
@@ -94,13 +107,15 @@ vec3 chainTarget(vec2 uv, out float isFree, out vec3 radial){
   radial = vec3(0.0, 1.0, 0.0);
   float i = floor(uChain);
   float f = uChain - i;
-  if (f < 0.0001) return stageTarget(int(i), uv, isFree, radial);
   float s = uStagger;
   float fp = clamp(f * (1.0 + s) - h11(uv * 3.3 + 0.7) * s, 0.0, 1.0);
   fp = fp * fp * (3.0 - 2.0 * fp);
-  float freeA, freeB; vec3 radA, radB;
+  float freeA = 0.0, freeB = 0.0;
+  vec3 radA = radial, radB = radial;
   vec3 a = stageTarget(int(i), uv, freeA, radA);
-  vec3 b = stageTarget(int(i) + 1, uv, freeB, radB);
+  vec3 b = a;
+  if (f >= 0.0001) b = stageTarget(int(i) + 1, uv, freeB, radB);
+  else { freeB = freeA; radB = radA; fp = 0.0; }
   isFree = mix(freeA, freeB, fp);
   radial = normalize(mix(radA, radB, fp) + vec3(0.0001));
   return mix(a, b, fp);

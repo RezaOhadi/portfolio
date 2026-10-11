@@ -26,6 +26,8 @@ import { pointerRay } from "../PianoParts";
 import { rig } from "../rig";
 import { PART_COUNT, positionShader, renderFragment, renderVertex, velocityShader } from "./shaders";
 import { stringAmp, stringTime } from "../stages/stringLayout";
+import { boardSamples, boardShared } from "../stages/boardLayout";
+import { rimPoints } from "../piano/outline";
 
 const CENTER = new Vector3(0, 0.82, -0.95);
 
@@ -91,6 +93,13 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
     gpu.setVariableDependencies(velVar, [posVar, velVar]);
 
     const tLocal = dataTexture(local, size);
+    // Chain step 3: every mote's resting place on the soundboard (inside the piano's outline).
+    const outline = rimPoints(200).map(({ p }) => ({ x: p.x, d: p.y }));
+    outline.push({ x: 0.74, d: 0 }, { x: -0.74, d: 0 });
+    const xz = boardSamples(size * size, mulberry32(23), outline);
+    const board = new Float32Array(size * size * 4);
+    for (let i = 0; i < size * size; i++) board.set([xz[i * 2], xz[i * 2 + 1], 0, 1], i * 4);
+    const tBoard = dataTexture(board, size);
     const tMeta = dataTexture(meta, size);
     const parts16 = Array.from({ length: PART_COUNT }, () => new Matrix4());
     const shared = {
@@ -109,6 +118,8 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
       uStagger: { value: 0.65 },
       uCam: { value: new Vector3() },
       tStrAmp: { value: stringAmp.texture },
+      tBoard: { value: tBoard },
+      ...boardShared,
       uStrTime: stringTime,
     };
     Object.assign(posVar.material.uniforms, shared);
@@ -151,7 +162,7 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
     });
     const points = new Points(geometry, material);
     points.frustumCulled = false;
-    return { gpu, posVar, velVar, shared, points, material, geometry, tLocal, tMeta, settleFrames: 0 };
+    return { gpu, posVar, velVar, shared, points, material, geometry, tLocal, tMeta, tBoard, settleFrames: 0 };
   }, [parts, size, gl]);
 
   useEffect(
@@ -161,6 +172,7 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
       sim.material.dispose();
       sim.tLocal.dispose();
       sim.tMeta.dispose();
+      sim.tBoard.dispose();
     },
     [sim],
   );
