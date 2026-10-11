@@ -346,6 +346,10 @@
     visibility: visible;
   }
 }
+.journey [data-fx="link"]:not(.break-all) {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 .journey [data-fx="link"] {
   position: relative;
   border-bottom-color: transparent !important;

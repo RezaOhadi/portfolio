@@ -1,5 +1,6 @@
 import gsap from "gsap";
 import { Vector3 } from "three";
+import { SEGMENTS } from "../config";
 import { journey, range } from "../store";
 
 /**
@@ -33,6 +34,32 @@ export const rig = {
   arrival: 0,
   /** World 2: the whole constellation turns as you read. */
   spin: 0,
+  /** Worlds 3 to 7: damped progress of every later segment. */
+  dive: 0,
+  corridor: 0,
+  twist: 0,
+  hammers: 0,
+  portal: 0,
+  strings: 0,
+  dissolve: 0,
+  soundboard: 0,
+  morph: 0,
+  name: 0,
+  reassemble: 0,
+  outro: 0,
+  /**
+   * Particle chain: one value walks every mote through its forms.
+   * 0 piano, 1 corridor motes, 2 strings, 3 soundboard sand, 4 waveform, 5 name, 6 piano.
+   */
+  chain: 0,
+  /** How much studio light reaches the current stage (1 open studio, ~0 closed tunnel). */
+  studio: 1,
+  /** World position of the floating keyboard, the target of the dive. */
+  keyboardPos: new Vector3(0, 1, 1),
+  /** Full-frame gold flash that masks the cut between two stages (0..1). */
+  flash: 0,
+  /** Which stage is drawn. Exactly one is true outside a cut. */
+  show: { piano: true, corridor: false },
   /** Shared with post-processing. */
   focus: new Vector3(0, 0.9, -0.95),
   dof: 0,
@@ -61,6 +88,12 @@ const windowed = (v: number, a: number, b: number, c: number, d: number) => {
 
 let introStart = -1;
 
+type LaterId = "dive" | "corridor" | "twist" | "hammers" | "portal" | "strings" | "dissolve" | "soundboard" | "morph" | "name" | "reassemble" | "outro";
+const LATER: LaterId[] = ["dive", "corridor", "twist", "hammers", "portal", "strings", "dissolve", "soundboard", "morph", "name", "reassemble", "outro"];
+const TRANSITIONS = new Set(SEGMENTS.filter((s) => s.kind === "transition").map((s) => s.id));
+/** The first world not built yet: the canvas recedes as its content arrives. */
+const UNBUILT = SEGMENTS.find((s) => s.kind === "world" && !s.built)?.id ?? "";
+
 export function stepRig(elapsed: number, dt: number) {
   const r = journey.raw;
   rig.time = elapsed;
@@ -73,15 +106,24 @@ export function stepRig(elapsed: number, dt: number) {
     rig.piano = 0.3;
     rig.explode = r.explode > 0.5 ? 1 : 0;
     rig.exploded = 0.5;
-    rig.after = r.corridor > 0.04 ? 1 : 0;
+    for (const id of LATER) rig[id] = TRANSITIONS.has(id) ? (r[id] > 0.5 ? 1 : 0) : r[id] > 0.02 ? 0.5 : 0;
+    rig.after = r[UNBUILT] > 0.04 ? 1 : 0;
   } else {
     rig.assemble = Math.min(1, intro / 3.4);
     rig.materialize = range(intro, 1.5, 4.4);
     rig.piano = damp(rig.piano, r.piano, 6, dt);
     rig.explode = damp(rig.explode, r.explode, 7, dt);
     rig.exploded = damp(rig.exploded, r.exploded, 6, dt);
-    rig.after = damp(rig.after, r.corridor, 4, dt);
+    for (const id of LATER) rig[id] = damp(rig[id], r[id], 6.5, dt);
+    rig.after = UNBUILT ? damp(rig.after, r[UNBUILT], 4, dt) : 0;
   }
+
+  // Dive (World 2 -> 3): approach the keyboard, flash, cut, then the keyboard folds into a tunnel.
+  const cutDive = rig.dive >= 0.5;
+  rig.show.piano = !cutDive;
+  rig.show.corridor = cutDive;
+  rig.flash = journey.reduced ? 0 : bell(range(rig.dive, 0.4, 0.6)) * 0.95;
+  rig.chain = ease.settle(range(rig.dive, 0.28, 0.82));
 
   const e = rig.explode;
   // World 1: the camera arrives (time), the lid opens on arrival then wide with scroll.
@@ -95,7 +137,7 @@ export function stepRig(elapsed: number, dt: number) {
   rig.orbit = out * (1 - rig.snap);
   rig.spin = ease.settle(range(rig.exploded, 0.05, 1)) * 2.4;
   // The nebula gathers back onto the parts as World 2 ends.
-  rig.free = out * (1 - rig.snap * 0.85) * (1 - range(rig.exploded, 0.78, 1) * 0.75) * (1 - rig.after);
+  rig.free = out * (1 - rig.snap * 0.85) * (1 - range(rig.exploded, 0.78, 1) * 0.75) * (1 - range(rig.dive, 0.05, 0.45));
   rig.spread = 0.42 * ease.burst(range(e, 0.15, 0.7));
   rig.wave = 0.035 * out * (1 - rig.snap);
   rig.dof = out;

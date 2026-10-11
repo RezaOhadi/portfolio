@@ -9,7 +9,7 @@ import { emit, journey, range } from "../store";
 import { labelNodes } from "./labels";
 import { applySpread, type PianoPart, type Pose } from "./piano/build";
 import { fxShared } from "./piano/materials";
-import { partProgress, partTumble, rig } from "./rig";
+import { ease, partProgress, partTumble, rig } from "./rig";
 
 export const pointerRay = new Ray(new Vector3(), new Vector3(0, 0, -1));
 const PIANO_CENTER = new Vector3(0, 0.82, -0.95);
@@ -68,7 +68,7 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
     pointerRay.direction.set(journey.pointer.x, journey.pointer.y, 0.5).unproject(camera).sub(pointerRay.origin).normalize();
 
     // Hover picking only exists in the exploded world.
-    const exploded = rig.dof > 0.6 && rig.after < 0.5;
+    const exploded = rig.dof > 0.6 && rig.dive < 0.05;
     raycaster.layers.set(exploded ? 1 : 31);
     if (!exploded && journey.hovered) setHover(null);
 
@@ -120,6 +120,13 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
       }
       push[i].lerp(_push, 0.08);
       g.position.copy(_v).add(push[i]);
+      // The dive heads for the keyboard; every other part is flung outward past the lens.
+      if (part.id === "keyboard") rig.keyboardPos.copy(g.position);
+      else if (rig.dive > 0) {
+        const fling = ease.recoil(range(rig.dive, 0.08, 0.5)) * 5.5;
+        g.position.sub(rig.keyboardPos).multiplyScalar(1 + fling).add(rig.keyboardPos);
+      }
+      g.visible = rig.show.piano;
 
       // Rotation: slerp to the exploded pose, mid-flight tumble, orbit wobble, snap to square.
       _qa.setFromEuler(assembled.rot);

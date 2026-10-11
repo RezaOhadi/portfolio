@@ -3,17 +3,21 @@
 import { useFrame } from "@react-three/fiber";
 import { useMemo } from "react";
 import { MathUtils, Vector3, type PerspectiveCamera } from "three";
+import gsap from "gsap";
 import { journey, range } from "../store";
 import { ease, rig } from "./rig";
+import { CORRIDOR } from "./stages/Corridor";
 
 /**
  * One camera, a different move per world:
- * - World 1, The Piano: slow orbit around the instrument.
- * - Explode: pull-back, the camera recoils as the case bursts (with a short shake).
+ * - World 1, The Piano: orbit around the instrument.
+ * - Explode: pull-back, the camera recoils as the case bursts (with a shock).
  * - World 2, Exploded View: crane, a vertical descent through the floating stack.
+ * - Dive: an accelerating plunge into the floating keyboard, cut inside a flash.
+ * - World 3, Keyboard Corridor: a forward dolly down an endless tunnel of keys.
  * Composition uses an off-axis lens shift so overlays keep their side of the frame.
  */
-interface Shot {
+interface Orbit {
   angle: number;
   radius: number;
   height: number;
@@ -23,9 +27,9 @@ interface Shot {
   shiftY: number;
 }
 
-const shot = (): Shot => ({ angle: 0, radius: 0, height: 0, target: new Vector3(), fov: 30, shiftX: 0, shiftY: 0 });
+const orbit = (): Orbit => ({ angle: 0, radius: 0, height: 0, target: new Vector3(), fov: 30, shiftX: 0, shiftY: 0 });
 
-function mix(out: Shot, a: Shot, b: Shot, t: number) {
+function mixOrbit(out: Orbit, a: Orbit, b: Orbit, t: number) {
   out.angle = MathUtils.lerp(a.angle, b.angle, t);
   out.radius = MathUtils.lerp(a.radius, b.radius, t);
   out.height = MathUtils.lerp(a.height, b.height, t);
@@ -36,8 +40,36 @@ function mix(out: Shot, a: Shot, b: Shot, t: number) {
   return out;
 }
 
+/** The resolved camera for one frame: every world writes into this. */
+interface Frame {
+  pos: Vector3;
+  target: Vector3;
+  fov: number;
+  shiftX: number;
+  shiftY: number;
+  roll: number;
+  /** 0..1, how much mouse parallax this shot allows. */
+  parallax: number;
+}
+
+const plunge = gsap.parseEase("power3.in");
+
 export function CameraDirector() {
-  const s = useMemo(() => ({ orbit: shot(), pull: shot(), crane: shot(), out: shot(), parallax: new Vector3(), right: new Vector3(), up: new Vector3() }), []);
+  const s = useMemo(
+    () => ({
+      orbit: orbit(),
+      pull: orbit(),
+      crane: orbit(),
+      blend: orbit(),
+      frame: { pos: new Vector3(), target: new Vector3(), fov: 30, shiftX: 0, shiftY: 0, roll: 0, parallax: 1 } as Frame,
+      parallax: new Vector3(),
+      right: new Vector3(),
+      up: new Vector3(),
+      near: new Vector3(),
+      tmp: new Vector3(),
+    }),
+    [],
+  );
 
   useFrame((state) => {
     const camera = state.camera as PerspectiveCamera;
@@ -46,10 +78,9 @@ export function CameraDirector() {
     // Portrait screens: pull back and push the subject into the upper half.
     const portrait = MathUtils.clamp((1.25 - aspect) / 0.8, 0, 1);
     const t = rig.time;
+    const f = s.frame;
 
-    // World 1: orbit. Scroll advances the orbit; time keeps it alive at rest.
-    // Arrival: the camera glides in from far and high as the piano materializes.
-    // Scroll: an ~80° orbit that pushes in and drops toward the keyboard.
+    /* ---- World 1 and the explode and World 2 (orbit, pull-back, crane) ---- */
     const o = s.orbit;
     const hero = ease.settle(rig.piano);
     const away = 1 - rig.arrival;
@@ -89,21 +120,57 @@ export function CameraDirector() {
 
     // The crane starts exactly on the pull-back shot, so blending it in never jumps.
     // The recoil leads the burst: quick to leave, long to settle.
-    const out = mix(s.out, o, p, ease.recoil(range(rig.explode, 0, 0.7)));
-    mix(out, out, c, range(rig.explode, 0.4, 1));
+    const out = mixOrbit(s.blend, o, p, ease.recoil(range(rig.explode, 0, 0.7)));
+    mixOrbit(out, out, c, range(rig.explode, 0.4, 1));
+    f.pos.set(out.target.x + Math.sin(out.angle) * out.radius, out.height, out.target.z + Math.cos(out.angle) * out.radius);
+    f.target.copy(out.target);
+    f.fov = out.fov;
+    f.shiftX = out.shiftX;
+    f.shiftY = out.shiftY;
+    f.roll = 0;
+    f.parallax = 1;
 
-    camera.position.set(
-      out.target.x + Math.sin(out.angle) * out.radius,
-      out.height,
-      out.target.z + Math.cos(out.angle) * out.radius,
-    );
-    camera.lookAt(out.target);
+    /* ---- Dive: plunge into the floating keyboard, cut inside the flash ---- */
+    if (rig.dive > 0 && !rig.show.corridor) {
+      const a = plunge(range(rig.dive, 0, 0.5));
+      // Close over the keys, approaching from where the camera already is.
+      s.tmp.subVectors(f.pos, rig.keyboardPos).normalize();
+      s.near.copy(rig.keyboardPos).addScaledVector(s.tmp, 0.32);
+      s.near.y = rig.keyboardPos.y + 0.12;
+      f.pos.lerp(s.near, a);
+      f.target.lerp(rig.keyboardPos, a);
+      f.fov = MathUtils.lerp(f.fov, 20, a);
+      f.shiftX *= 1 - a;
+      f.shiftY *= 1 - a;
+      f.roll = a * 0.35;
+      f.parallax = 1 - a;
+    }
+
+    /* ---- World 3: forward dolly down the endless key corridor ---- */
+    if (rig.show.corridor) {
+      // Inside the flash the camera is already over the unfolding keyboard, still moving.
+      const enter = ease.settle(range(rig.dive, 0.5, 1));
+      const z = MathUtils.lerp(5.4, 0.6, enter) - rig.corridor * 62;
+      const y = CORRIDOR.centerY + Math.sin(z * 0.9) * 0.035;
+      f.pos.set(Math.sin(t * 0.37) * 0.04, y, z);
+      f.target.set(Math.sin(t * 0.21) * 0.08, CORRIDOR.centerY - 0.06, z - 6);
+      f.fov = MathUtils.lerp(62, 78, portrait) + rig.velocity * 12 + (1 - enter) * 14;
+      // Keep the vanishing point clear of the copy column on the left.
+      f.shiftX = MathUtils.lerp(-0.22, 0, portrait);
+      f.shiftY = MathUtils.lerp(0, -0.12, portrait);
+      f.roll = (1 - enter) * -0.35 + Math.sin(rig.corridor * Math.PI * 3) * 0.05;
+      f.parallax = 0.6;
+    }
+
+    /* ---- apply ---- */
+    camera.position.copy(f.pos);
+    camera.lookAt(f.target);
     camera.updateMatrix();
 
     // Mouse parallax in the camera's own plane, and the burst shake.
     s.right.setFromMatrixColumn(camera.matrix, 0);
     s.up.setFromMatrixColumn(camera.matrix, 1);
-    const mouse = journey.pointer.mouse && !journey.reduced ? 1 : 0;
+    const mouse = journey.pointer.mouse && !journey.reduced ? f.parallax : 0;
     s.parallax.lerp(s.right.multiplyScalar(journey.pointer.x * 0.22 * mouse).add(s.up.multiplyScalar(journey.pointer.y * 0.12 * mouse)), 0.05);
     camera.position.add(s.parallax);
     if (rig.burst > 0.01) {
@@ -112,17 +179,18 @@ export function CameraDirector() {
       camera.position.x += Math.sin(t * 41) * shake;
       camera.position.y += Math.sin(t * 37 + 1.3) * shake;
     }
-    camera.lookAt(out.target);
+    camera.lookAt(f.target);
+    if (f.roll) camera.rotateZ(f.roll);
     camera.updateMatrixWorld();
 
-    if (Math.abs(camera.fov - out.fov) > 0.001) camera.fov = out.fov;
+    if (Math.abs(camera.fov - f.fov) > 0.001) camera.fov = f.fov;
     camera.updateProjectionMatrix();
     // Off-axis lens shift: composition without moving the subject in 3D.
-    camera.projectionMatrix.elements[8] = out.shiftX;
-    camera.projectionMatrix.elements[9] = out.shiftY;
+    camera.projectionMatrix.elements[8] = f.shiftX;
+    camera.projectionMatrix.elements[9] = f.shiftY;
     camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
 
-    rig.focus.copy(out.target);
+    rig.focus.copy(f.target);
   }, -2);
 
   return null;

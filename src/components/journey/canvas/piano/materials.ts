@@ -36,6 +36,8 @@ interface FxOptions {
   reveal?: boolean;
   /** Constant gold fresnel rim, the "rim light" that outlines black lacquer. */
   rim?: number;
+  /** Per-instance `aPress` attribute (0..1) glows gold: pressed corridor keys, struck hammers. */
+  press?: boolean;
 }
 
 export interface FxMaterial {
@@ -49,9 +51,17 @@ function inject(material: Material, options: FxOptions): FxMaterial {
   const gold = new Color(PALETTE.goldHot).convertSRGBToLinear();
   material.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
     Object.assign(shader.uniforms, fxShared, { uHighlight: highlight, uGold: { value: gold }, uRim: { value: options.rim ?? 0 } });
-    shader.defines = { ...shader.defines, ...(options.reveal ? { FX_REVEAL: "" } : {}) };
+    shader.defines = { ...shader.defines, ...(options.reveal ? { FX_REVEAL: "" } : {}), ...(options.press ? { FX_PRESS: "" } : {}) };
     shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", "#include <common>\nvarying vec3 vFxWorld;")
+      .replace(
+        "#include <common>",
+        `#include <common>
+        varying vec3 vFxWorld;
+        varying float vFxPress;
+        #ifdef FX_PRESS
+          attribute float aPress;
+        #endif`,
+      )
       .replace(
         "#include <project_vertex>",
         `#include <project_vertex>
@@ -59,13 +69,19 @@ function inject(material: Material, options: FxOptions): FxMaterial {
         #ifdef USE_INSTANCING
           fxW = instanceMatrix * fxW;
         #endif
-        vFxWorld = (modelMatrix * fxW).xyz;`,
+        vFxWorld = (modelMatrix * fxW).xyz;
+        #ifdef FX_PRESS
+          vFxPress = aPress;
+        #else
+          vFxPress = 0.0;
+        #endif`,
       );
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "#include <common>",
         `#include <common>
         varying vec3 vFxWorld;
+        varying float vFxPress;
         uniform float uTime, uMaterialize, uRevealRadius, uRevealAmount, uHighlight, uRim;
         uniform vec2 uCursor;
         uniform vec3 uGold;
@@ -98,11 +114,11 @@ function inject(material: Material, options: FxOptions): FxMaterial {
         float fxFres = pow(fxFacing, 2.4);
         // The constant rim is kept to true silhouettes so lacquer stays black.
         float fxRim = pow(fxFacing, 6.0);
-        gl_FragColor.rgb += uGold * (fxEdge * 7.0 + fxFres * uHighlight * 2.2 + fxRim * uRim + uHighlight * 0.06);`,
+        gl_FragColor.rgb += uGold * (fxEdge * 7.0 + fxFres * uHighlight * 2.2 + fxRim * uRim + uHighlight * 0.06 + vFxPress * (0.9 + fxFres * 2.5));`,
       );
   };
   // Distinct cache keys so reveal and plain variants compile separately.
-  material.customProgramCacheKey = () => (options.reveal ? "fx-reveal" : "fx");
+  material.customProgramCacheKey = () => `fx${options.reveal ? "-reveal" : ""}${options.press ? "-press" : ""}`;
   // Lacquer always carries a faint gold rim; other materials only on hover.
   if (options.rim === undefined && material instanceof MeshPhysicalMaterial && material.clearcoat === 1) options.rim = 0.9;
   return { material, highlight };

@@ -3,6 +3,7 @@
 import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { DirectionalLight } from "three";
 import { PALETTE, QUALITY, type QualityTier } from "../config";
 import { journey } from "../store";
 import { CameraDirector } from "./CameraDirector";
@@ -11,6 +12,9 @@ import { PianoParts } from "./PianoParts";
 import { ParticleField } from "./particles/ParticleField";
 import { Sparks } from "./Sparks";
 import { RimLight } from "./RimLight";
+import { FlashVeil } from "./FlashVeil";
+import { Corridor } from "./stages/Corridor";
+import { Atmosphere } from "./Atmosphere";
 import { buildPiano } from "./piano/build";
 import { stepRig, rig } from "./rig";
 
@@ -93,14 +97,23 @@ function Governor({ tier, setDof }: { tier: QualityTier; setDof: (on: boolean) =
   );
 }
 
+/** Studio lights for the piano worlds; they dim with the atmosphere inside closed stages. */
 function Lights() {
+  const back = useRef<DirectionalLight>(null);
+  const side = useRef<DirectionalLight>(null);
+  const key = useRef<DirectionalLight>(null);
+  useFrame(() => {
+    if (back.current) back.current.intensity = 3.2 * rig.studio;
+    if (side.current) side.current.intensity = 1.1 * rig.studio;
+    if (key.current) key.current.intensity = 0.75 * (0.25 + rig.studio * 0.75);
+  });
   return (
     <>
       <ambientLight intensity={0.05} color={PALETTE.ivory} />
       {/* Gold rim light from behind the instrument. */}
-      <directionalLight position={[-4.5, 3.4, -6]} intensity={3.2} color="#e9bd84" />
-      <directionalLight position={[5, 2.2, -4]} intensity={1.1} color={PALETTE.gold} />
-      <directionalLight position={[2.5, 6, 4.5]} intensity={0.75} color={PALETTE.ivory} />
+      <directionalLight ref={back} position={[-4.5, 3.4, -6]} intensity={3.2} color="#e9bd84" />
+      <directionalLight ref={side} position={[5, 2.2, -4]} intensity={1.1} color={PALETTE.gold} />
+      <directionalLight ref={key} position={[2.5, 6, 4.5]} intensity={0.75} color={PALETTE.ivory} />
     </>
   );
 }
@@ -150,6 +163,9 @@ function Scene({ tier, setDof, dof, onReady }: { tier: QualityTier; setDof: (on:
       <PianoParts parts={parts} />
       <ParticleField parts={parts} size={profile.particles} />
       <Sparks />
+      <Atmosphere />
+      <Corridor />
+      <FlashVeil />
       <Effects dof={dof} multisampling={profile.multisampling} />
     </>
   );

@@ -23,7 +23,7 @@ export function RimLight() {
     l.position.y += 4.6;
     l.target.position.copy(rig.focus);
     l.target.updateMatrixWorld();
-    l.intensity = 1.5 + rig.anticipation * 3 + rig.burst * 2.5;
+    l.intensity = (1.5 + rig.anticipation * 3 + rig.burst * 2.5) * rig.studio;
   }, -1);
   return <directionalLight ref={light} color={PALETTE.goldHot} intensity={2.6} />;
 }

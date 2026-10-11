@@ -104,6 +104,9 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
       uCenter: { value: CENTER },
       uDelta: { value: 0 },
       uSnapAll: { value: 0 },
+      uChain: { value: 0 },
+      uStagger: { value: 0.65 },
+      uCam: { value: new Vector3() },
     };
     Object.assign(posVar.material.uniforms, shared);
     Object.assign(velVar.material.uniforms, shared, {
@@ -168,6 +171,8 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
     shared.uFree.value = rig.free;
     shared.uKeySpread.value = rig.spread * (1 - rig.snap * 0.35);
     shared.uWave.value = rig.wave;
+    shared.uChain.value = rig.chain;
+    shared.uCam.value.copy(state.camera.position);
     shared.uDelta.value = dt;
     // Reduced motion renders the resting pose directly, no simulation.
     shared.uSnapAll.value = journey.reduced ? 1 : 0;

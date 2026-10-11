@@ -42,6 +42,42 @@ vec3 partTarget(vec2 uv, out float isFree, out vec3 radial){
   a = a * a * (3.0 - 2.0 * a);
   return mix(scatter, t, a);
 }
+
+/* ---- the particle chain: one uniform walks every mote through its forms ---- */
+uniform float uChain, uStagger;
+uniform vec3 uCam;
+
+/** 1: motes streaming down the key corridor towards the camera. */
+vec3 corridorTarget(vec2 uv){
+  float h1 = h11(uv * 13.1 + 1.7), h2 = h11(uv * 29.3 + 4.4), h3 = h11(uv * 5.9 + 8.1);
+  float z = uCam.z + 1.5 - fract(h3 + uTime * 0.035) * 28.0;
+  vec2 xy = vec2(h1 - 0.5, h2 - 0.5) * 1.5;
+  return vec3(xy.x, 1.0 + xy.y, z);
+}
+
+vec3 stageTarget(int i, vec2 uv, out float isFree, out vec3 radial){
+  isFree = 0.0;
+  if (i == 0 || i >= 6) return partTarget(uv, isFree, radial);
+  vec3 t = corridorTarget(uv);
+  radial = normalize(t - uCam + vec3(0.0001));
+  return t;
+}
+
+/** Each step of the chain is staggered per mote so forms dissolve and gather organically. */
+vec3 chainTarget(vec2 uv, out float isFree, out vec3 radial){
+  float i = floor(uChain);
+  float f = uChain - i;
+  if (f < 0.0001) return stageTarget(int(i), uv, isFree, radial);
+  float s = uStagger;
+  float fp = clamp(f * (1.0 + s) - h11(uv * 3.3 + 0.7) * s, 0.0, 1.0);
+  fp = fp * fp * (3.0 - 2.0 * fp);
+  float freeA, freeB; vec3 radA, radB;
+  vec3 a = stageTarget(int(i), uv, freeA, radA);
+  vec3 b = stageTarget(int(i) + 1, uv, freeB, radB);
+  isFree = mix(freeA, freeB, fp);
+  radial = normalize(mix(radA, radB, fp) + vec3(0.0001));
+  return mix(a, b, fp);
+}
 `;
 
 export const velocityShader = /* glsl */ `
@@ -55,7 +91,7 @@ void main(){
   vec3 vel = texture2D(textureVelocity, uv).xyz;
   if (uSnapAll > 0.5) { gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); return; }
   float isFree; vec3 radial;
-  vec3 target = partTarget(uv, isFree, radial);
+  vec3 target = chainTarget(uv, isFree, radial);
   float stiff = texture2D(tMeta, uv).x;
   float k = mix(12.0, 48.0, stiff) * mix(1.0, 0.3, isFree * uFree);
   float c = 2.0 * sqrt(k) * 0.6;
@@ -80,9 +116,11 @@ void main(){
   vec2 uv = gl_FragCoord.xy / resolution.xy;
   vec3 pos = texture2D(texturePosition, uv).xyz;
   vec3 vel = texture2D(textureVelocity, uv).xyz;
-  if (uSnapAll > 0.5) {
-    float isFree; vec3 radial;
-    gl_FragColor = vec4(partTarget(uv, isFree, radial), 1.0);
+  float isFree; vec3 radial;
+  vec3 target = chainTarget(uv, isFree, radial);
+  // Reduced motion draws the resting pose; a looping stream re-spawns instead of flying back.
+  if (uSnapAll > 0.5 || (uChain > 0.5 && distance(target, pos) > 9.0 && uChain - floor(uChain) < 0.0001)) {
+    gl_FragColor = vec4(target, 1.0);
     return;
   }
   gl_FragColor = vec4(pos + vel * uDelta, 1.0);

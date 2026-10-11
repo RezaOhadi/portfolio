@@ -21,14 +21,14 @@ export function Effects({ dof, multisampling }: { dof: boolean; multisampling: n
   const offset = useRef(new Vector2());
 
   useFrame(() => {
-    if (bloom.current) bloom.current.intensity = 0.85 + rig.burst * 0.9 + rig.anticipation * 0.6;
-    const ca = rig.velocity * 0.0016 + rig.burst * 0.0024;
+    if (bloom.current) bloom.current.intensity = 0.85 + rig.burst * 0.9 + rig.anticipation * 0.6 + rig.flash * 1.4;
+    const ca = rig.velocity * 0.0016 + rig.burst * 0.0024 + rig.flash * 0.005;
     offset.current.set(ca, ca * 0.6);
     if (aberration.current) aberration.current.offset = offset.current;
     if (depth.current) {
       depth.current.target = rig.focus;
       // Shallow focus while parts float; it closes as the crane reaches eye level.
-      depth.current.bokehScale = rig.dof * (1 - rig.snap * 0.7) * (1 - range(rig.exploded, 0.72, 1) * 0.65) * 3.4;
+      depth.current.bokehScale = rig.dof * (1 - rig.snap * 0.7) * (1 - range(rig.exploded, 0.72, 1) * 0.65) * (1 - range(rig.dive, 0.4, 0.6) * 0.6) * 3.4;
       depth.current.cocMaterial.focusRange = 2.6;
     }
   });

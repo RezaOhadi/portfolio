@@ -150,14 +150,15 @@ function number(el: HTMLElement) {
 }
 
 function link(el: HTMLElement) {
+  // Word masks stay inline, so flex links (label + icon) keep their single line.
   SplitText.create(el, {
-    type: "lines",
-    mask: "lines",
+    type: "words",
+    mask: "words",
     autoSplit: true,
     onSplit(self) {
       const tl = gsap.timeline({ scrollTrigger: { trigger: el, ...ENTER } });
       tl.fromTo(el, { "--fx-line": 0 }, { "--fx-line": 1, duration: 1.1, ease: "expo.inOut" })
-        .from(self.lines, { yPercent: 110, duration: 0.9, ease: "power4.out" }, "-=0.45");
+        .from(self.words, { yPercent: 110, duration: 0.9, ease: "power4.out", stagger: 0.03 }, "-=0.45");
       const icons = el.querySelectorAll("svg");
       if (icons.length) tl.from(icons, { opacity: 0, x: -8, duration: 0.6, ease: "power3.out" }, "<0.15");
       return tl;
