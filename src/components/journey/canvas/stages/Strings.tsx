@@ -21,7 +21,7 @@ import { playNote } from "../../audio";
 import { journey, range } from "../../store";
 import { createMaterial, type FxMaterial } from "../piano/materials";
 import { pointerRay } from "../PianoParts";
-import { ease, rig } from "../rig";
+import { ease, rig, rigOptions } from "../rig";
 import { STRINGS, stringAmp, stringMidi, stringTime } from "./stringLayout";
 
 /**
@@ -176,7 +176,7 @@ export function Strings() {
     }
 
     // The camera's passage stirs the strings ahead of it, harder when you scroll fast.
-    if (!journey.reduced && Math.random() < 0.08 + rig.velocity * 0.6) {
+    if (!journey.reduced && !rigOptions.frozen && Math.random() < 0.08 + rig.velocity * 0.6) {
       pluck(Math.floor(Math.random() * STRINGS.count), 0.18 + rig.velocity * 0.5);
     }
 

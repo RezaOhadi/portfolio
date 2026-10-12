@@ -4,7 +4,7 @@ import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei"
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HalfFloatType, WebGLRenderTarget, type DirectionalLight, type Light, type Object3D, type PointLight } from "three";
-import { PALETTE, QUALITY, type QualityTier } from "../config";
+import { PALETTE, QUALITY, testFlag, type QualityTier } from "../config";
 import { journey } from "../store";
 import { CameraDirector } from "./CameraDirector";
 import { Effects } from "./Effects";
@@ -20,7 +20,10 @@ import { Portal } from "./stages/Portal";
 import { Soundboard } from "./stages/Soundboard";
 import { Atmosphere } from "./Atmosphere";
 import { buildPiano } from "./piano/build";
-import { stepRig, rig } from "./rig";
+import { rigOptions, stepRig, rig } from "./rig";
+
+/** The frozen moment (seconds of journey time) a `?freeze` frame is rendered at. */
+const FREEZE_AT = 12;
 import { materialOptions, touchQuality } from "./quality";
 
 interface Props {
@@ -42,7 +45,9 @@ declare global {
 function RigStep({ onReady }: { onReady: () => void }) {
   const stats = useRef({ frames: 0, acc: 0, count: 0, sent: false, opacity: "" });
   useFrame((state, delta) => {
-    stepRig(state.clock.elapsedTime, Math.min(delta, 1 / 20));
+    // Frozen (test-only): a constant time and step, so every value settles to the same frame.
+    if (rigOptions.frozen) stepRig(FREEZE_AT, 1 / 60);
+    else stepRig(state.clock.elapsedTime, Math.min(delta, 1 / 20));
     // The whole world recedes as the next (not yet built) world's content arrives.
     const layer = state.gl.domElement.parentElement;
     const opacity = (1 - rig.after * 0.88).toFixed(3);
@@ -63,7 +68,7 @@ function RigStep({ onReady }: { onReady: () => void }) {
     if (!s.sent && s.frames > 2) {
       s.sent = true;
       onReady();
-      if (process.env.NODE_ENV !== "production") {
+      if (process.env.NODE_ENV !== "production" || testFlag("probe")) {
         (window as unknown as Record<string, unknown>).__journeyScene = state.scene;
         (window as unknown as Record<string, unknown>).__journeyDebug = () => ({
           rig: { ...rig, focus: rig.focus.toArray() },
@@ -87,38 +92,22 @@ function Governor({ tier, dofOn }: { tier: QualityTier; dofOn: { current: boolea
 }
 
 /**
- * Phones and tablets: when frames stay under 50 fps for a second, step down
- * (pixel ratio 1.5 to 1.0, then fewer particles, then no bloom). Never back up
- * mid-visit, so the picture does not shift while scrolling.
+ * Phones and tablets: a fixed picture. Resolution, particles and bloom never
+ * step down: a step re-created every render target in the middle of a scroll
+ * (a long stall) and lowered the picture for the rest of the visit.
  */
 const TOUCH_DPR = QUALITY.touch.dpr[1];
 
 function TouchGovernor() {
   const setDpr = useThree((s) => s.setDpr);
-  const step = useRef(0);
-  const report = () =>
-    (window.__journey = { ...(window.__journey as NonNullable<Window["__journey"]>), dpr: step.current > 0 ? QUALITY.touch.dpr[0] : Math.min(window.devicePixelRatio || 1, TOUCH_DPR), tier: "touch", dof: false, step: step.current });
   useEffect(() => {
     touchQuality.particles = 1;
     touchQuality.bloom = !journey.weakGpu;
-    setDpr(Math.min(window.devicePixelRatio || 1, TOUCH_DPR));
-    report();
+    const dpr = Math.min(window.devicePixelRatio || 1, TOUCH_DPR);
+    setDpr(dpr);
+    window.__journey = { ...(window.__journey as NonNullable<Window["__journey"]>), dpr, tier: "touch", dof: false, step: 0 };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  return (
-    <PerformanceMonitor
-      ms={250}
-      iterations={4}
-      threshold={0.75}
-      bounds={() => [50, 1000]}
-      onDecline={() => {
-        step.current++;
-        if (step.current === 1) setDpr(QUALITY.touch.dpr[0]);
-        if (step.current === 2) touchQuality.particles = 0.6;
-        if (step.current === 3) touchQuality.bloom = false;
-        report();
-      }}
-    />
-  );
+  return null;
 }
 
 function DesktopGovernor({ tier, dofOn }: { tier: QualityTier; dofOn: { current: boolean } }) {
@@ -254,7 +243,7 @@ function Scene({ tier, onReady }: { tier: QualityTier; onReady: () => void }) {
       <color attach="background" args={[PALETTE.ink]} />
       <fog attach="fog" args={[PALETTE.ink, 9, 26]} />
       <RigStep onReady={onReady} />
-      <Governor tier={tier} dofOn={dofOn} />
+      {!rigOptions.frozen && <Governor tier={tier} dofOn={dofOn} />}
       <CameraDirector />
       <Studio resolution={profile.envResolution} />
       <Lights touch={touch} />
@@ -277,6 +266,7 @@ function Scene({ tier, onReady }: { tier: QualityTier; onReady: () => void }) {
 export default function JourneyCanvas({ tier, active, reduced, eventSource, onReady, onFailure }: Props) {
   // Read by every material built below (the piano, then each stage).
   materialOptions.lite = tier === "touch";
+  rigOptions.frozen = testFlag("freeze");
   const [compiled, setCompiled] = useState(false);
   const onCompiled = useCallback(() => setCompiled(true), []);
   const canvas = useRef<HTMLCanvasElement>(null);

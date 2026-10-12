@@ -15,7 +15,15 @@ export const boardZ = (planDepth: number) => BOARD.front - planDepth * BOARD.sca
 export const boardShared = {
   uRipples: { value: Array.from({ length: BOARD.ripples }, () => new Vector4(0, 0, -100, 0)) },
   uBoardTime: { value: 0 },
+  /** 1 while any ripple is live (age 0..9, strength > 0); 0 lets the board's vertex shader skip the ripple loops. */
+  uLive: { value: 0 },
 };
+
+/** Called once per frame after uBoardTime is written: the same test the shader's loop makes. */
+export function updateLive() {
+  const now = boardShared.uBoardTime.value;
+  boardShared.uLive.value = boardShared.uRipples.value.some((r) => { const age = now - r.z; return age >= 0 && age <= 9 && r.w > 0; }) ? 1 : 0;
+}
 
 const f = (n: number) => n.toFixed(4);
 
@@ -23,8 +31,10 @@ const f = (n: number) => n.toFixed(4);
 export const RIPPLE_GLSL = /* glsl */ `
 uniform vec4 uRipples[${BOARD.ripples}];
 uniform float uBoardTime;
+uniform float uLive;
 float boardRipple(vec2 p){
   float h = 0.0;
+  if (uLive < 0.5) return 0.0;
   for (int i = 0; i < ${BOARD.ripples}; i++) {
     vec4 r = uRipples[i];
     float age = uBoardTime - r.z;

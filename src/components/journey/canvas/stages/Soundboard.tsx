@@ -22,7 +22,8 @@ import { journey, range } from "../../store";
 import { createMaterial } from "../piano/materials";
 import { rimPoints } from "../piano/outline";
 import { pointerRay } from "../PianoParts";
-import { ease, rig } from "../rig";
+import { ease, rig, rigOptions } from "../rig";
+import { updateLive } from "./boardLayout";
 import { BOARD, boardRipple, boardShared, boardX, boardZ, dropRipple, RIPPLE_GLSL } from "./boardLayout";
 
 /**
@@ -178,6 +179,7 @@ export function Soundboard() {
     mesh.visible = visible;
     if (bridge.current) bridge.current.visible = visible;
     boardShared.uBoardTime.value = rig.time;
+    updateLive();
     if (!visible) return;
     // At the end the board rises to become the floor the rebuilt piano stands on.
     const floor = ease.settle(range(rig.reassemble, 0.35, 1)) * -BOARD.y;
@@ -195,7 +197,7 @@ export function Soundboard() {
     // Notes stop falling once the piano is rebuilt: the board becomes a quiet stage floor.
     const lively = (rig.soundboard > 0.01 || rig.dissolve > 0.6) && !rig.show.piano;
     const gap = 1.7 - rig.velocity * 1.2;
-    if (lively && !journey.reduced && rig.time - last.current.ambient > gap) {
+    if (lively && !journey.reduced && !rigOptions.frozen && rig.time - last.current.ambient > gap) {
       last.current.ambient = rig.time;
       const target = rig.focus;
       dropRipple(target.x + (Math.random() - 0.5) * 5, target.z + (Math.random() - 0.5) * 6, 0.8 + rig.velocity);

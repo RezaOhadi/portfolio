@@ -73,6 +73,16 @@ export const QUALITY: Record<QualityTier, QualityProfile> = {
  * handheld-sized screen. Width alone is not enough (a narrow desktop window
  * is still a desktop GPU).
  */
+/**
+ * Test-only flags, inert without the query parameter:
+ * - freeze: time and the intro stand still, nothing random fires, so a frame is
+ *   deterministic and screenshots can be compared pixel for pixel;
+ * - probe: the scene is exposed on window for measurements, as in development.
+ */
+export function testFlag(name: "freeze" | "probe") {
+  return typeof window !== "undefined" && new URLSearchParams(window.location.search).has(name);
+}
+
 export function isTouchDevice() {
   if (typeof window === "undefined") return false;
   const touch = window.matchMedia("(pointer: coarse)").matches && navigator.maxTouchPoints > 0;

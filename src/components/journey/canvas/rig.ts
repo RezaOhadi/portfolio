@@ -95,6 +95,8 @@ const windowed = (v: number, a: number, b: number, c: number, d: number) => {
 };
 
 let introStart = -1;
+/** Test-only (config.testFlag "freeze"): the intro counts as finished and the hammers stand still. */
+export const rigOptions = { frozen: false };
 
 type LaterId = "dive" | "corridor" | "twist" | "hammers" | "portal" | "strings" | "dissolve" | "soundboard" | "morph" | "name" | "reassemble" | "outro";
 const LATER: LaterId[] = ["dive", "corridor", "twist", "hammers", "portal", "strings", "dissolve", "soundboard", "morph", "name", "reassemble", "outro"];
@@ -106,7 +108,7 @@ export function stepRig(elapsed: number, dt: number) {
   const r = journey.raw;
   rig.time = elapsed;
   if (introStart < 0) introStart = elapsed;
-  const intro = elapsed - introStart;
+  const intro = rigOptions.frozen ? 99 : elapsed - introStart;
 
   if (journey.reduced) {
     // Still frames: each world shows its resting pose, transitions cut at their midpoint.
@@ -154,7 +156,7 @@ export function stepRig(elapsed: number, dt: number) {
 
   // Slow-motion hammers; hovering a performance freezes them (bullet time).
   rig.timeScale = damp(rig.timeScale, journey.bullet ? 0.03 : 1, 5, dt);
-  rig.hammerTime += dt * rig.timeScale * (journey.reduced ? 0 : 1);
+  rig.hammerTime += dt * rig.timeScale * (journey.reduced || rigOptions.frozen ? 0 : 1);
 
   const e = rig.explode;
   // World 1: the camera arrives (time), the lid opens on arrival then wide with scroll.
