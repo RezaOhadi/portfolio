@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef } from "react";
 import {
   BoxGeometry,
   Color,
+  MathUtils,
   Group,
   InstancedBufferAttribute,
   InstancedMesh,
@@ -87,6 +88,8 @@ const Z_AXIS = new Vector3(0, 0, 1);
 export function Corridor() {
   const root = useRef<Group>(null);
   const light = useRef<PointLight>(null);
+  // The brightest key glow of the last moments, eased: the twist never lets the corridor fall below 60% of it.
+  const glowPeak = useRef(0);
   const beacon = useRef<Group>(null);
 
   const built = useMemo(() => {
@@ -161,11 +164,19 @@ export function Corridor() {
     group.visible = rig.show.corridor;
     // The lamp lives outside the group and only goes dark: a light leaving the scene
     // changes every lit shader, and they would all recompile in the middle of the cut.
+    // Light changes crossfade instead of switching.
+    const fade = Math.min(delta, 1 / 20);
     if (!group.visible) {
-      if (light.current) light.current.intensity = 0;
+      if (light.current) light.current.intensity = MathUtils.damp(light.current.intensity, 0, 14, fade);
       return;
     }
     const dt = Math.min(delta, 1 / 30);
+    // As the keys swing up into blades their lit faces turn away and their glow settles:
+    // during the twist each key keeps most of the recent peak glow, eased in with the swing, and the
+    // lamp lifts to make up for the faces turning away, so the corridor never falls below 60%.
+    const swing = MathUtils.smoothstep(rig.fin, 0, 0.6);
+    const floor = glowPeak.current * 0.9 * swing;
+    let peak = 0;
     const cam = state.camera.position;
 
     // Endless: the stage advances an octave at a time, invisibly, behind the camera.
@@ -245,7 +256,8 @@ export function Corridor() {
           const atLens = rig.fin > 0.02 && Math.abs(dist) < 0.55;
           _m.compose(_p, _q, atLens ? _gone : _s);
           mesh.setMatrixAt(i, _m);
-          attr.setX(i, p * (black ? 0.8 : 0.55));
+          peak = Math.max(peak, p);
+          attr.setX(i, Math.max(p, floor) * (black ? 0.8 : 0.55));
         }
         mesh.instanceMatrix.needsUpdate = true;
         attr.needsUpdate = true;
@@ -254,10 +266,13 @@ export function Corridor() {
       update(side.black, side.blacks, true);
     }
 
+    // The peak is held through the twist and only tracked while the keys lie flat.
+    if (rig.fin < 0.02) glowPeak.current = MathUtils.damp(glowPeak.current, peak, 3, dt);
+
     // A travelling gold lamp, and a light at the far end of the corridor.
     if (light.current) {
       light.current.position.set(0, CORRIDOR.centerY + 0.2, cam.z - 1.6);
-      light.current.intensity = 2.6 + rig.velocity * 3;
+      light.current.intensity = MathUtils.damp(light.current.intensity, (2.6 + rig.velocity * 3) * (1 + swing * 0.9), 14, fade);
     }
     if (beacon.current) beacon.current.position.set(0, CORRIDOR.centerY, cam.z - 24 - group.position.z);
   }, -1);

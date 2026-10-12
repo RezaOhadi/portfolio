@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import {
   AdditiveBlending,
+  MathUtils,
   BoxGeometry,
   BufferAttribute,
   BufferGeometry,
@@ -189,7 +190,7 @@ export function Hammers() {
     if (!group) return;
     group.visible = rig.show.hammers;
     // The lamp lives outside the group and only goes dark (see Corridor): the light count never changes.
-    if (lamp.current) lamp.current.intensity = group.visible ? 42 : 0;
+    if (lamp.current) lamp.current.intensity = MathUtils.damp(lamp.current.intensity, group.visible ? 42 : 0, 14, Math.min(delta, 1 / 20));
     if (!group.visible) return;
     const dt = Math.min(delta, 1 / 30);
     const camX = state.camera.position.x;
