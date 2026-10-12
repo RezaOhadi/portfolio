@@ -3,15 +3,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X, ArrowUpRight } from "lucide-react";
-import { navItems, utilityNav } from "@/config/site";
+import { utilityNav } from "@/config/site";
 import type { SocialLinks } from "@/lib/types";
-const sections = [
-  { id: "about", label: "About", route: "/biography" },
-  { id: "media", label: "Listen & watch", route: "/media" },
-  { id: "concerts", label: "Concerts", route: "/#concerts" },
-  { id: "gallery", label: "Gallery", route: "/gallery" },
-  { id: "contact", label: "Contact", route: "/contact" },
-];
+import { PianoKeys, WHITE_KEYS } from "@/components/layout/PianoKeys";
 export function Nav({ social }: { social: SocialLinks }) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -68,6 +62,13 @@ export function Nav({ social }: { social: SocialLinks }) {
       document.body.style.overflow = previous;
     };
   }, [open]);
+  // The key that stays pressed: the section in view on the home page, else the current page.
+  const current =
+    pathname === "/"
+      ? active
+      : pathname.startsWith("/store")
+        ? "store"
+        : (WHITE_KEYS.find((key) => key.route === pathname)?.id ?? null);
   const close = () => {
     setOpen(false);
     toggle.current?.focus();
@@ -79,33 +80,14 @@ export function Nav({ social }: { social: SocialLinks }) {
           <Link href="/" className="wordmark" aria-label="Reza Ohadi — home">
             Reza Ohadi<span aria-hidden>.</span>
           </Link>
-          <nav className="desktop-nav" aria-label="Primary">
-            {sections.map((section) => {
-              const selected =
-                pathname === "/"
-                  ? active === section.id
-                  : pathname === section.route;
-              return (
-                <Link
-                  key={section.id}
-                  href={pathname === "/" ? "#" + section.id : section.route}
-                  className={selected ? "is-active" : ""}
-                  aria-current={
-                    selected
-                      ? pathname === "/"
-                        ? "location"
-                        : "page"
-                      : undefined
-                  }
-                >
-                  {section.label}
-                </Link>
-              );
-            })}
+          <nav className="piano-nav" aria-label="Primary">
+            <PianoKeys
+              variant="bar"
+              label="Site sections, one octave from C to B"
+              active={current}
+              onHome={pathname === "/"}
+            />
           </nav>
-          <Link href="/store" className="nav-store">
-            Sheet music <ArrowUpRight size={15} aria-hidden />
-          </Link>
           <button
             ref={toggle}
             type="button"
@@ -141,30 +123,26 @@ export function Nav({ social }: { social: SocialLinks }) {
           </button>
         </div>
         <nav aria-label="Full navigation">
-          {(pathname === "/"
-            ? [
-                { label: "Home", href: "#home", index: "01" },
-                ...sections.map((section, i) => ({
-                  label: section.label,
-                  href: "#" + section.id,
-                  index: String(i + 2).padStart(2, "0"),
-                })),
-                { label: "Sheet Music", href: "/store", index: "07" },
-                ...utilityNav,
-              ]
-            : [...navItems, ...utilityNav]
-          ).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={close}
-              aria-current={pathname === item.href ? "page" : undefined}
-            >
-              <span>{item.index}</span>
-              {item.label}
-              <ArrowUpRight size={22} aria-hidden />
-            </Link>
-          ))}
+          <PianoKeys
+            variant="stack"
+            label="Site sections, one octave from C to B"
+            active={current}
+            onHome={pathname === "/"}
+            onNavigate={close}
+          />
+          <div className="menu-utility">
+            {utilityNav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={close}
+                aria-current={pathname === item.href ? "page" : undefined}
+              >
+                {item.label}
+                <ArrowUpRight size={18} aria-hidden />
+              </Link>
+            ))}
+          </div>
         </nav>
         <a className="menu-email" href={"mailto:" + social.email}>
           {social.email}

@@ -1,0 +1,247 @@
+/* One octave of keys: the main navigation.
+   bar   - the header, keys hang side by side (from 1024px)
+   stack - the menu dialog, keys stacked large and tappable, black keys on the right */
+
+.octave {
+  --ivory: #f2eee6;
+  --key-top: #d6cebf;
+  --key-face: #ebe5da;
+  --label: #2b2721;
+  --ink: #0a0a0c;
+  --gold: #d5ae88;
+  --gold-hot: #f3d6ae;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  display: flex;
+  isolation: isolate;
+}
+
+/* --- white keys: the menu ---------------------------------------------------- */
+.white {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  color: var(--label);
+  border: 1px solid #8f877a;
+  transition:
+    transform 0.35s var(--ease),
+    background-color 0.35s var(--ease),
+    color 0.25s var(--ease),
+    box-shadow 0.35s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.white:hover,
+.white:focus-visible,
+.current {
+  color: var(--ink);
+}
+.white:focus-visible {
+  outline: 2px solid #a8804f;
+  outline-offset: -5px;
+}
+.note {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: #8a6a43;
+}
+.label {
+  font-family: var(--font-sans), sans-serif;
+  white-space: nowrap;
+}
+/* The active section's key rests a little lower, with a thin gold line. */
+.current::after {
+  content: "";
+  position: absolute;
+  background: #a8804f;
+  box-shadow: 0 0 8px rgb(213 174 136 / 0.9);
+}
+
+/* --- black keys: decorative, playable ---------------------------------------- */
+.black {
+  position: absolute;
+  z-index: 3;
+  cursor: pointer;
+  border: 1px solid #000;
+  transition:
+    transform 0.3s var(--ease),
+    filter 0.3s var(--ease);
+}
+.black:hover {
+  filter: brightness(1.35);
+}
+
+/* --- the shared gold light ------------------------------------------------------ */
+.light {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  pointer-events: none;
+  /* Multiply: the gold warms the ivory but never washes out the ink labels. */
+  mix-blend-mode: multiply;
+  will-change: transform, width, height;
+}
+
+/* --- bar: the header octave ----------------------------------------------------- */
+.bar {
+  --kw: clamp(92px, 8vw, 118px);
+  --kh: 52px;
+  --bw: calc(var(--kw) * 0.56);
+  border-top: 1px solid rgb(213 174 136 / 0.22);
+}
+.bar .white {
+  flex: 0 0 var(--kw);
+  height: var(--kh);
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 4px 6px;
+  margin-left: -1px;
+  border-top: 0;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(180deg, var(--key-top), var(--key-face) 38%, #f2ede4 88%, #d9d1c3);
+  box-shadow:
+    inset 0 -3px 0 #cfc6b6,
+    inset 1px 0 0 rgb(255 255 255 / 0.5);
+}
+.bar .note {
+  display: none;
+}
+.bar .label {
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
+.bar .white:hover {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 -2px 0 #cfc6b6,
+    inset 0 4px 5px rgb(0 0 0 / 0.28);
+}
+.bar .current {
+  transform: translateY(1.5px);
+  box-shadow:
+    inset 0 -2px 0 #cfc6b6,
+    inset 0 5px 6px rgb(0 0 0 / 0.32);
+}
+.bar .current::after {
+  left: 22%;
+  right: 22%;
+  bottom: 2px;
+  height: 1px;
+}
+.bar .black {
+  top: 0;
+  left: calc(var(--after) * var(--kw) - var(--after) * 1px - var(--bw) / 2 + var(--shift) * var(--bw));
+  width: var(--bw);
+  height: calc(var(--kh) * 0.48);
+  border-top: 0;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(180deg, #050506, #111114 62%, #2a2a2f 92%, #0b0b0d);
+  box-shadow:
+    0 3px 5px rgb(0 0 0 / 0.65),
+    inset 0 -2px 0 rgb(255 255 255 / 0.07),
+    inset 0 -1px 0 rgb(213 174 136 / 0.3);
+}
+.bar .black:hover {
+  transform: translateY(1px);
+}
+.bar .light {
+  background: radial-gradient(75% 110% at 50% 100%, rgb(206 164 118), rgb(213 174 136 / 0.5) 58%, rgb(213 174 136 / 0) 100%);
+  box-shadow: inset 0 -1px 0 #b8905f;
+  border-radius: 0 0 3px 3px;
+}
+
+/* --- stack: the menu dialog ----------------------------------------------------- */
+.stack {
+  --kh: clamp(58px, 8.6svh, 76px);
+  --bh: calc(var(--kh) * 0.52);
+  flex-direction: column;
+  border-left: 1px solid rgb(213 174 136 / 0.22);
+}
+.stack .white {
+  height: var(--kh);
+  align-items: center;
+  gap: 18px;
+  padding: 0 20px;
+  margin-top: -1px;
+  border-left: 0;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(90deg, #d9d1c3, #f2ede4 12%, var(--key-face) 62%, var(--key-top));
+  box-shadow:
+    inset 3px 0 0 #cfc6b6,
+    inset 0 1px 0 rgb(255 255 255 / 0.5);
+  animation: key-in 0.8s var(--ease) backwards;
+  animation-delay: calc(var(--i) * 45ms + 90ms);
+}
+.stack .note {
+  width: 1.4em;
+}
+.stack .label {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(25px, 3.6svh, 32px);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.stack .white:hover {
+  transform: translateX(2px);
+}
+.stack .current {
+  transform: translateX(3px);
+  box-shadow:
+    inset 2px 0 0 #cfc6b6,
+    inset -6px 0 7px rgb(0 0 0 / 0.3);
+}
+.stack .current::after {
+  left: 6px;
+  top: 24%;
+  bottom: 24%;
+  width: 1px;
+}
+.stack .black {
+  right: 0;
+  top: calc(var(--after) * var(--kh) - var(--after) * 1px - var(--bh) / 2 + var(--shift) * var(--bh));
+  width: 30%;
+  height: var(--bh);
+  border-right: 0;
+  border-radius: 2px 0 0 2px;
+  background: linear-gradient(270deg, #050506, #111114 62%, #2a2a2f 92%, #0b0b0d);
+  box-shadow:
+    -3px 0 6px rgb(0 0 0 / 0.65),
+    inset 2px 0 0 rgb(255 255 255 / 0.07),
+    inset 1px 0 0 rgb(213 174 136 / 0.3);
+  animation: key-in 0.8s var(--ease) backwards;
+  animation-delay: calc(var(--after) * 45ms + 140ms);
+}
+.stack .light {
+  background: radial-gradient(90% 85% at 0% 50%, rgb(213 174 136 / 0.85), rgb(213 174 136 / 0.3) 62%, rgb(213 174 136 / 0) 100%);
+  box-shadow: inset 1px 0 0 #b8905f;
+  border-radius: 0 3px 3px 0;
+}
+@keyframes key-in {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .white,
+  .black {
+    transition: color 0.25s, background-color 0.25s, filter 0.25s;
+  }
+  .bar .white:hover,
+  .stack .white:hover,
+  .bar .black:hover {
+    transform: none;
+  }
+  .stack .white,
+  .stack .black {
+    animation-name: key-fade;
+  }
+}
+@keyframes key-fade {
+  from {
+    opacity: 0;
+  }
+}
