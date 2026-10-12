@@ -24,6 +24,7 @@ import { journey, range } from "../../store";
 import { mulberry32, type PianoPart } from "../piano/build";
 import { pointerRay } from "../PianoParts";
 import { rig } from "../rig";
+import { materialOptions, touchQuality } from "../quality";
 import { NAME, PART_COUNT, positionShader, renderFragment, renderVertex, velocityShader } from "./shaders";
 import { stringAmp, stringTime } from "../stages/stringLayout";
 import { boardSamples, boardShared } from "../stages/boardLayout";
@@ -180,6 +181,18 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
     const geometry = new BufferGeometry();
     const refs = new Float32Array(size * size * 2);
     for (let i = 0; i < size * size; i++) refs.set([((i % size) + 0.5) / size, (Math.floor(i / size) + 0.5) / size], i * 2);
+    // Phones: shuffle the draw order, so drawing fewer (touchQuality) thins every part evenly.
+    if (materialOptions.lite) {
+      const random = mulberry32(7);
+      for (let i = size * size - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        const [ax, ay] = [refs[i * 2], refs[i * 2 + 1]];
+        refs[i * 2] = refs[j * 2];
+        refs[i * 2 + 1] = refs[j * 2 + 1];
+        refs[j * 2] = ax;
+        refs[j * 2 + 1] = ay;
+      }
+    }
     geometry.setAttribute("ref", new BufferAttribute(refs, 2));
     // three requires a position attribute for draw counts; the shader ignores it.
     geometry.setAttribute("position", new BufferAttribute(new Float32Array(size * size * 3), 3));
@@ -220,6 +233,7 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
   );
 
   useFrame((state, delta) => {
+    sim.geometry.setDrawRange(0, Math.floor(size * size * touchQuality.particles));
     const dt = Math.min(delta, 1 / 30);
     const { shared, velVar, gpu, material } = sim;
     parts.forEach((part, i) => shared.uParts.value[i].copy(part.group.matrixWorld));

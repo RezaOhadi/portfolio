@@ -3,7 +3,7 @@
 import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { HalfFloatType, WebGLRenderTarget, type DirectionalLight, type Object3D } from "three";
+import { HalfFloatType, WebGLRenderTarget, type DirectionalLight, type Light, type Object3D, type PointLight } from "three";
 import { PALETTE, QUALITY, type QualityTier } from "../config";
 import { journey } from "../store";
 import { CameraDirector } from "./CameraDirector";
@@ -21,6 +21,7 @@ import { Soundboard } from "./stages/Soundboard";
 import { Atmosphere } from "./Atmosphere";
 import { buildPiano } from "./piano/build";
 import { stepRig, rig } from "./rig";
+import { materialOptions, touchQuality } from "./quality";
 
 interface Props {
   tier: QualityTier;
@@ -33,7 +34,7 @@ interface Props {
 
 declare global {
   interface Window {
-    __journey?: { fps: number; frames: number; dpr: number; tier: QualityTier; dof: boolean };
+    __journey?: { fps: number; frames: number; dpr: number; tier: QualityTier; dof: boolean; step?: number };
   }
 }
 
@@ -76,6 +77,44 @@ function RigStep({ onReady }: { onReady: () => void }) {
  * drop depth of field; recover the same way when there is headroom.
  */
 function Governor({ tier, dofOn }: { tier: QualityTier; dofOn: { current: boolean } }) {
+  if (tier === "touch") return <TouchGovernor />;
+  return <DesktopGovernor tier={tier} dofOn={dofOn} />;
+}
+
+/**
+ * Phones and tablets: when frames stay under 50 fps for a second, step down
+ * (pixel ratio 1.25 to 1.0, then fewer particles, then no bloom). Never back up
+ * mid-visit, so the picture does not shift while scrolling.
+ */
+function TouchGovernor() {
+  const setDpr = useThree((s) => s.setDpr);
+  const step = useRef(0);
+  const report = () =>
+    (window.__journey = { ...(window.__journey as NonNullable<Window["__journey"]>), dpr: step.current > 0 ? 1 : Math.min(window.devicePixelRatio || 1, 1.25), tier: "touch", dof: false, step: step.current });
+  useEffect(() => {
+    touchQuality.particles = 1;
+    touchQuality.bloom = !journey.weakGpu;
+    setDpr(Math.min(window.devicePixelRatio || 1, 1.25));
+    report();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <PerformanceMonitor
+      ms={250}
+      iterations={4}
+      threshold={0.75}
+      bounds={() => [50, 1000]}
+      onDecline={() => {
+        step.current++;
+        if (step.current === 1) setDpr(1);
+        if (step.current === 2) touchQuality.particles = 0.6;
+        if (step.current === 3) touchQuality.bloom = false;
+        report();
+      }}
+    />
+  );
+}
+
+function DesktopGovernor({ tier, dofOn }: { tier: QualityTier; dofOn: { current: boolean } }) {
   const setDpr = useThree((s) => s.setDpr);
   const profile = QUALITY[tier];
   const level = useRef(1);
@@ -102,8 +141,47 @@ function Governor({ tier, dofOn }: { tier: QualityTier; dofOn: { current: boolea
   );
 }
 
+/**
+ * Phones keep two dynamic lights: the gold back light and one stage lamp. The
+ * stages' own lamps stay in the scene but hidden (so the light count never
+ * changes), and the brightest of them is mirrored into this one light.
+ */
+function StageLamp() {
+  const lamp = useRef<PointLight>(null);
+  const sources = useRef<Light[]>([]);
+  const scene = useThree((s) => s.scene);
+  useEffect(() => {
+    const found: Light[] = [];
+    scene.traverse((o) => {
+      if (o.userData.stageLamp) found.push(o as Light);
+    });
+    sources.current = found;
+  }, [scene]);
+  useFrame(() => {
+    const out = lamp.current;
+    if (!out) return;
+    let best: Light | null = null;
+    let level = 0;
+    for (const l of sources.current) {
+      const v = l.intensity * (l.userData.stageLamp as number);
+      if (v > level) {
+        level = v;
+        best = l;
+      }
+    }
+    out.intensity = level;
+    if (!best) return;
+    out.position.copy(best.position);
+    out.color.copy(best.color);
+    const p = best as PointLight;
+    out.distance = p.distance;
+    out.decay = p.decay;
+  });
+  return <pointLight ref={lamp} intensity={0} />;
+}
+
 /** Studio lights for the piano worlds; they dim with the atmosphere inside closed stages. */
-function Lights() {
+function Lights({ touch }: { touch: boolean }) {
   const back = useRef<DirectionalLight>(null);
   const side = useRef<DirectionalLight>(null);
   const key = useRef<DirectionalLight>(null);
@@ -114,11 +192,18 @@ function Lights() {
   });
   return (
     <>
-      <ambientLight intensity={0.05} color={PALETTE.ivory} />
+      <ambientLight intensity={touch ? 0.16 : 0.05} color={PALETTE.ivory} />
       {/* Gold rim light from behind the instrument. */}
       <directionalLight ref={back} position={[-4.5, 3.4, -6]} intensity={3.2} color="#e9bd84" />
-      <directionalLight ref={side} position={[5, 2.2, -4]} intensity={1.1} color={PALETTE.gold} />
-      <directionalLight ref={key} position={[2.5, 6, 4.5]} intensity={0.75} color={PALETTE.ivory} />
+      {touch ? (
+        // Phones: the side and key lights become a little more ambient fill; the lamp is the second light.
+        <StageLamp />
+      ) : (
+        <>
+          <directionalLight ref={side} position={[5, 2.2, -4]} intensity={1.1} color={PALETTE.gold} />
+          <directionalLight ref={key} position={[2.5, 6, 4.5]} intensity={0.75} color={PALETTE.ivory} />
+        </>
+      )}
     </>
   );
 }
@@ -144,6 +229,7 @@ function Scene({ tier, onReady }: { tier: QualityTier; onReady: () => void }) {
     return built;
   }, []);
   const profile = QUALITY[tier];
+  const touch = tier === "touch";
   useEffect(
     () => () => {
       parts.forEach((part) => {
@@ -164,8 +250,8 @@ function Scene({ tier, onReady }: { tier: QualityTier; onReady: () => void }) {
       <Governor tier={tier} dofOn={dofOn} />
       <CameraDirector />
       <Studio resolution={profile.envResolution} />
-      <Lights />
-      <RimLight />
+      <Lights touch={touch} />
+      {!touch && <RimLight />}
       <PianoParts parts={parts} />
       <ParticleField parts={parts} size={profile.particles} />
       <Sparks />
@@ -176,12 +262,14 @@ function Scene({ tier, onReady }: { tier: QualityTier; onReady: () => void }) {
       <Portal />
       <Soundboard />
       <FlashVeil />
-      <Effects dof={profile.dof} dofOn={dofOn} multisampling={profile.multisampling} />
+      <Effects dof={profile.dof} dofOn={dofOn} multisampling={profile.multisampling} lite={touch} />
     </>
   );
 }
 
 export default function JourneyCanvas({ tier, active, reduced, eventSource, onReady, onFailure }: Props) {
+  // Read by every material built below (the piano, then each stage).
+  materialOptions.lite = tier === "touch";
   const [compiled, setCompiled] = useState(false);
   const onCompiled = useCallback(() => setCompiled(true), []);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -237,7 +325,8 @@ function Precompile({ onDone }: { onDone: () => void }) {
     const hidden: Object3D[] = [];
     const culled: Object3D[] = [];
     scene.traverse((o) => {
-      if (!o.visible) hidden.push(o);
+      // Lights keep their state: a hidden lamp (phones mirror them) must not count while compiling.
+      if (!o.visible && !(o as Light).isLight) hidden.push(o);
       if (o.frustumCulled) culled.push(o);
     });
     const target = new WebGLRenderTarget(64, 64, { type: HalfFloatType });

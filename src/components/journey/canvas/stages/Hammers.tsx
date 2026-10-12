@@ -289,7 +289,8 @@ export function Hammers() {
       <mesh geometry={built.rail} material={built.gold.material} />
       <primitive object={built.fibres} />
     </group>
-    <spotLight ref={lamp} color={PALETTE.goldHot} intensity={0} angle={0.5} penumbra={0.85} distance={14} decay={1.6} />
+    {/* Phones: mirrored by the shared stage lamp as a point light, about as bright inside the cone. */}
+    <spotLight ref={lamp} color={PALETTE.goldHot} intensity={0} angle={0.5} penumbra={0.85} distance={14} decay={1.6} visible={journey.tier !== "touch"} userData={{ stageLamp: 0.35 }} />
     </>
   );
 }

@@ -1295,3 +1295,18 @@ body::before {
     margin-block: -12px;
   }
 }
+
+/* Phones and tablets: no backdrop blur anywhere. It is recomputed over the live 3D
+   on every frame; the surfaces that used it get a little more body instead. */
+@media (pointer: coarse) {
+  *,
+  *::before,
+  *::after,
+  ::backdrop {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .glass {
+    background: rgb(12 12 15 / 0.86);
+  }
+}

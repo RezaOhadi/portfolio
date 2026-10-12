@@ -8,6 +8,7 @@ import {
   type WebGLProgramParametersWithUniforms,
 } from "three";
 import { PALETTE } from "../../config";
+import { materialOptions } from "../quality";
 
 /**
  * Uniforms shared by every solid part:
@@ -135,6 +136,13 @@ export type MaterialKind = "lacquer" | "gold" | "string" | "ivory" | "ebony" | "
 export function createMaterial(kind: MaterialKind, options: FxOptions = {}): FxMaterial {
   switch (kind) {
     case "lacquer":
+      // Phones: no clearcoat (a second lighting pass per pixel). A smoother standard
+      // surface with a stronger reflection reads as the same black lacquer; the gold rim stays.
+      if (materialOptions.lite)
+        return inject(
+          new MeshStandardMaterial({ color: "#050507", roughness: 0.1, metalness: 0.05, envMapIntensity: 1.35, ...(options.reveal ? { side: DoubleSide } : {}) }),
+          { rim: 0.9, ...options },
+        );
       return inject(
         new MeshPhysicalMaterial({
           color: "#050507",
@@ -157,6 +165,7 @@ export function createMaterial(kind: MaterialKind, options: FxOptions = {}): FxM
     case "ivory":
       return inject(new MeshStandardMaterial({ color: "#efe8d9", roughness: 0.32, metalness: 0 }), options);
     case "ebony":
+      if (materialOptions.lite) return inject(new MeshStandardMaterial({ color: "#0b0b0d", roughness: 0.22, envMapIntensity: 1.1 }), options);
       return inject(new MeshPhysicalMaterial({ color: "#0b0b0d", roughness: 0.28, clearcoat: 0.6, clearcoatRoughness: 0.2 }), options);
     case "spruce":
       return inject(new MeshStandardMaterial({ color: "#5e4226", roughness: 0.72, metalness: 0, envMapIntensity: 0.45 }), options);

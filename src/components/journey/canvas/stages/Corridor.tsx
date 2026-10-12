@@ -279,7 +279,8 @@ export function Corridor() {
 
   return (
     <>
-    <pointLight ref={light} color={PALETTE.goldHot} intensity={0} distance={9} decay={1.4} />
+    {/* On phones this lamp is hidden and mirrored by the shared stage lamp (JourneyCanvas, StageLamp). */}
+    <pointLight ref={light} color={PALETTE.goldHot} intensity={0} distance={9} decay={1.4} visible={journey.tier !== "touch"} userData={{ stageLamp: 1 }} />
     <group ref={root} visible={false}>
       {built.sides.map((side, i) => (i === 2 ? null : <primitive key={i} object={side.pivot} />))}
       <group ref={beacon}>

@@ -3,7 +3,8 @@
 import { useFrame } from "@react-three/fiber";
 import { Bloom, ChromaticAberration, DepthOfField, EffectComposer, Noise, ToneMapping, Vignette } from "@react-three/postprocessing";
 import { BlendFunction, ToneMappingMode, type BloomEffect, type ChromaticAberrationEffect, type DepthOfFieldEffect } from "postprocessing";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { touchQuality } from "./quality";
 import { MathUtils } from "three";
 import { HalfFloatType, Vector2 } from "three";
 import { range } from "../store";
@@ -15,7 +16,33 @@ import { rig } from "./rig";
  * with scroll velocity and the burst. Depth of field opens in the exploded
  * world on capable GPUs.
  */
-export function Effects({ dof, dofOn, multisampling }: { dof: boolean; dofOn: { current: boolean }; multisampling: number }) {
+export function Effects({ dof, dofOn, multisampling, lite = false }: { dof: boolean; dofOn: { current: boolean }; multisampling: number; lite?: boolean }) {
+  if (lite) return <TouchEffects />;
+  return <DesktopEffects dof={dof} dofOn={dofOn} multisampling={multisampling} />;
+}
+
+/**
+ * Phones and tablets: tone mapping and vignette, plus a half-resolution, softer
+ * bloom. No depth of field, aberration or grain. Bloom is left out on weak
+ * GPUs, and dropped for good if the governor's last step is reached.
+ */
+function TouchEffects() {
+  const bloom = useRef<BloomEffect>(null);
+  const [bloomOn, setBloomOn] = useState(touchQuality.bloom);
+  useFrame(() => {
+    if (bloomOn && !touchQuality.bloom) setBloomOn(false);
+    if (bloom.current) bloom.current.intensity = (0.85 + rig.burst * 0.9 + rig.anticipation * 0.6 + rig.flash * 1.4) * 0.7;
+  });
+  return (
+    <EffectComposer multisampling={0} frameBufferType={HalfFloatType} enableNormalPass={false}>
+      {bloomOn ? <Bloom ref={bloom} mipmapBlur luminanceThreshold={0.92} luminanceSmoothing={0.18} intensity={0.6} radius={0.74} resolutionScale={0.5} /> : <></>}
+      <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+      <Vignette offset={0.28} darkness={0.7} />
+    </EffectComposer>
+  );
+}
+
+function DesktopEffects({ dof, dofOn, multisampling }: { dof: boolean; dofOn: { current: boolean }; multisampling: number }) {
   const bloom = useRef<BloomEffect>(null);
   const aberration = useRef<ChromaticAberrationEffect>(null);
   const depth = useRef<DepthOfFieldEffect>(null);

@@ -231,7 +231,7 @@ export function Soundboard() {
     <>
       <mesh ref={root} geometry={built.geometry} material={built.material} visible={false} />
       <mesh ref={bridge} geometry={built.bridgeGeo} material={built.bridgeFx.material} visible={false} />
-      <pointLight ref={lamp} color="#f3d6ae" intensity={0} distance={11} decay={1.5} />
+      <pointLight ref={lamp} color="#f3d6ae" intensity={0} distance={11} decay={1.5} visible={journey.tier !== "touch"} userData={{ stageLamp: 1 }} />
     </>
   );
 }

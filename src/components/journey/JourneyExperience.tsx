@@ -3,7 +3,7 @@
 import "lenis/dist/lenis.css";
 import dynamic from "next/dynamic";
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { MOBILE_QUERY, SEGMENTS, type QualityTier } from "./config";
+import { isTouchDevice, isWeakGpu, MOBILE_QUERY, SEGMENTS, type QualityTier } from "./config";
 import { SoundControls } from "./SoundControls";
 import { useTextChoreography } from "./text/useTextChoreography";
 import styles from "./journey.module.css";
@@ -28,6 +28,7 @@ class CanvasBoundary extends Component<{ children: ReactNode; onFailure: () => v
 }
 
 function pickTier(): QualityTier {
+  if (isTouchDevice()) return "touch";
   if (window.matchMedia(MOBILE_QUERY).matches) return "low";
   const nav = navigator as Navigator & { deviceMemory?: number };
   if ((nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4) return "mid";
@@ -87,7 +88,8 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
     query.addEventListener("change", update);
     const t = pickTier();
     journey.tier = t;
-    journey.mobile = t === "low";
+    journey.mobile = t === "low" || t === "touch";
+    journey.weakGpu = t === "touch" && isWeakGpu();
     setTier(t);
     setEventSource(root.current);
     // Let the first paint and hydration finish before the 3D chunk downloads.

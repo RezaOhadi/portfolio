@@ -48,7 +48,8 @@ export const PALETTE = {
   goldHot: "#f3d6ae",
 } as const;
 
-export type QualityTier = "high" | "mid" | "low";
+/** "touch" is phones and tablets: a lighter render path that desktop never takes. */
+export type QualityTier = "high" | "mid" | "low" | "touch";
 
 export interface QualityProfile {
   /** Particle simulation texture edge: count = size². */
@@ -63,7 +64,36 @@ export const QUALITY: Record<QualityTier, QualityProfile> = {
   high: { particles: 256, dpr: [1, 1.75], dof: true, multisampling: 4, envResolution: 256 },
   mid: { particles: 180, dpr: [1, 1.5], dof: false, multisampling: 0, envResolution: 128 },
   low: { particles: 128, dpr: [1, 1.25], dof: false, multisampling: 0, envResolution: 64 },
+  // About 8k particles (90²), the pixel ratio capped at 1.25 and stepped down to 1.0 if frames drop.
+  touch: { particles: 90, dpr: [1, 1.25], dof: false, multisampling: 0, envResolution: 64 },
 };
+
+/**
+ * A phone or tablet: a coarse primary pointer with real touch points and a
+ * handheld-sized screen. Width alone is not enough (a narrow desktop window
+ * is still a desktop GPU).
+ */
+export function isTouchDevice() {
+  if (typeof window === "undefined") return false;
+  const touch = window.matchMedia("(pointer: coarse)").matches && navigator.maxTouchPoints > 0;
+  const handheld = Math.min(window.screen.width, window.screen.height) <= 1024;
+  return touch && handheld;
+}
+
+/** Older or low-end mobile GPUs, where even half-resolution bloom costs too much. */
+export function isWeakGpu() {
+  const nav = navigator as Navigator & { deviceMemory?: number };
+  if ((nav.deviceMemory ?? 8) <= 3 || (nav.hardwareConcurrency ?? 8) <= 4) return true;
+  try {
+    const gl = document.createElement("canvas").getContext("webgl");
+    const info = gl?.getExtension("WEBGL_debug_renderer_info");
+    const name = info ? String(gl!.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    return /Mali-(4|T[0-9]|G(3|5)[0-9])|Adreno \(TM\) [3-5][0-9]{2}|PowerVR|SwiftShader|Apple A(9|10|11)\b/i.test(name);
+  } catch {
+    return false;
+  }
+}
 
 /** Matches the site's existing "mobile" query (PianoUniverse) so tiers agree sitewide. */
 export const MOBILE_QUERY = "(max-width: 1024px), (any-pointer: coarse)";

@@ -6,6 +6,7 @@ import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { useEffect, type RefObject } from "react";
+import { isTouchDevice } from "../config";
 import { emitSparks } from "../store";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin, useGSAP);
@@ -29,7 +30,17 @@ gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin, useGSAP);
  */
 
 const GOLD = "#f3d6ae";
-const ENTER = { start: "top 88%", toggleActions: "play none none reverse" } as const;
+/**
+ * Phones and tablets animate transform and opacity only: no blur, no letter
+ * spacing, colour sweeps or clip paths. Set when the choreography starts.
+ */
+let touch = false;
+/**
+ * An entrance trigger. Desktop plays on enter and reverses on the way back up.
+ * Phones play once, by time, and the trigger is killed after it fires, so only
+ * a few text triggers are ever live while scrolling.
+ */
+const enter = (start = "top 88%") => (touch ? { start, once: true } : { start, toggleActions: "play none none reverse" });
 
 /** The section that owns an element's exit (sticky copy leaves with its world). */
 function scopeOf(el: HTMLElement) {
@@ -42,12 +53,14 @@ function scopeOf(el: HTMLElement) {
  * deep-link load or a fast reverse can never leave text stuck invisible.
  */
 function exitTrigger(el: HTMLElement, targets: gsap.TweenTarget, blur: number, extra: gsap.TweenVars = {}, sparks = 0) {
+  // Phones: no scrubbed exits and no gold dust; the copy simply scrolls away.
+  if (touch) return;
   const scope = scopeOf(el);
   gsap.fromTo(
     targets,
-    { filter: "opacity(1) blur(0px)", y: 0 },
+    { filter: touch ? "opacity(1)" : "opacity(1) blur(0px)", y: 0 },
     {
-      filter: `opacity(0) blur(${blur}px)`,
+      filter: touch ? "opacity(0)" : `opacity(0) blur(${blur}px)`,
       y: -28,
       ...extra,
       ease: "power2.in",
@@ -69,17 +82,19 @@ function exitTrigger(el: HTMLElement, targets: gsap.TweenTarget, blur: number, e
 
 function title(el: HTMLElement) {
   SplitText.create(el, {
-    type: "words,chars",
+    // Phones split into words only: far fewer pieces to animate.
+    type: touch ? "words" : "words,chars",
     mask: "words",
     autoSplit: true,
     onSplit(self) {
-      gsap.set(self.chars, { transformPerspective: 700, transformOrigin: "50% 100%" });
-      const tl = gsap.timeline({ scrollTrigger: { trigger: el, ...ENTER } });
-      tl.from(self.chars, { yPercent: 118, rotateX: -78, opacity: 0, duration: 1.35, ease: "power4.out", stagger: 0.032 })
-        // The light sweep: each letter catches gold and lets it go.
-        .to(self.chars, { color: GOLD, duration: 0.32, ease: "power2.out", stagger: 0.028 }, "-=0.95")
-        .to(self.chars, { color: "", duration: 0.7, ease: "power2.inOut", stagger: 0.028 }, "<0.22");
-      exitTrigger(el, self.words, 8, { color: GOLD, stagger: { each: 0.03, from: "random" } }, Math.min(90, self.chars.length * 3));
+      const pieces = touch ? self.words : self.chars;
+      gsap.set(pieces, { transformPerspective: 700, transformOrigin: "50% 100%" });
+      const tl = gsap.timeline({ scrollTrigger: { trigger: el, ...enter() } });
+      tl.from(pieces, { yPercent: 118, rotateX: -78, opacity: 0, duration: 1.35, ease: "power4.out", stagger: touch ? 0.09 : 0.032 });
+      // The light sweep: each letter catches gold and lets it go.
+      if (!touch)
+        tl.to(self.chars, { color: GOLD, duration: 0.32, ease: "power2.out", stagger: 0.028 }, "-=0.95").to(self.chars, { color: "", duration: 0.7, ease: "power2.inOut", stagger: 0.028 }, "<0.22");
+      exitTrigger(el, self.words, 8, { ...(touch ? {} : { color: GOLD }), stagger: { each: 0.03, from: "random" } }, Math.min(90, self.chars.length * 3));
       return tl;
     },
   });
@@ -87,11 +102,13 @@ function title(el: HTMLElement) {
 
 function eyebrow(el: HTMLElement) {
   gsap.from(el, {
-    letterSpacing: "0.9em",
+    // Phones slide in instead of tracking in: letter spacing re-lays the line every frame.
+    // (x, not y: the exit owns y on this node.)
+    ...(touch ? { x: -14 } : { letterSpacing: "0.9em" }),
     opacity: 0,
     duration: 1.5,
     ease: "expo.out",
-    scrollTrigger: { trigger: el, ...ENTER },
+    scrollTrigger: { trigger: el, ...enter() },
   });
   exitTrigger(el, el, 4);
 }
@@ -104,17 +121,17 @@ function lede(el: HTMLElement) {
       const tween = gsap.from(self.words, {
         opacity: 0,
         y: 22,
-        filter: "blur(12px)",
+        ...(touch ? {} : { filter: "blur(12px)" }),
         duration: 1.3,
         ease: "power3.out",
         stagger: { each: 0.045, ease: "sine.inOut" },
-        scrollTrigger: { trigger: el, ...ENTER },
+        scrollTrigger: { trigger: el, ...enter() },
       });
       return tween;
     },
   });
   // On the element itself: the words carry the entrance.
-  exitTrigger(el, el, 10, { color: GOLD }, 40);
+  exitTrigger(el, el, 10, touch ? {} : { color: GOLD }, 40);
 }
 
 function body(el: HTMLElement) {
@@ -128,7 +145,7 @@ function body(el: HTMLElement) {
         duration: 1.15,
         ease: "expo.out",
         stagger: 0.085,
-        scrollTrigger: { trigger: el, ...ENTER },
+        scrollTrigger: { trigger: el, ...enter() },
       });
       exitTrigger(el, self.masks, 6, { stagger: 0.04 });
       return tween;
@@ -139,12 +156,12 @@ function body(el: HTMLElement) {
 function number(el: HTMLElement) {
   const text = el.textContent ?? "";
   el.setAttribute("aria-label", text);
-  gsap.from(el, { opacity: 0, duration: 0.4, scrollTrigger: { trigger: el, ...ENTER } });
+  gsap.from(el, { opacity: 0, duration: 0.4, scrollTrigger: { trigger: el, ...enter() } });
   gsap.to(el, {
     duration: 1.4,
     ease: "power3.out",
     scrambleText: { text, chars: "0123456789", revealDelay: 0.25, speed: 0.6 },
-    scrollTrigger: { trigger: el, ...ENTER },
+    scrollTrigger: { trigger: el, ...enter() },
   });
   exitTrigger(el, el, 6);
 }
@@ -173,7 +190,7 @@ function link(el: HTMLElement) {
     mask: "words",
     autoSplit: true,
     onSplit(self) {
-      const tl = gsap.timeline({ scrollTrigger: { trigger: el, ...ENTER } });
+      const tl = gsap.timeline({ scrollTrigger: { trigger: el, ...enter() } });
       tl.fromTo(el, { "--fx-line": 0 }, { "--fx-line": 1, duration: 1.1, ease: "expo.inOut" })
         .from(self.words, { yPercent: 110, duration: 0.9, ease: "power4.out", stagger: 0.03 }, "-=0.45");
       const icons = el.querySelectorAll("svg");
@@ -186,13 +203,13 @@ function link(el: HTMLElement) {
 
 function block(el: HTMLElement) {
   gsap.from(el, {
-    clipPath: "inset(18% 6% 18% 6%)",
+    ...(touch ? {} : { clipPath: "inset(18% 6% 18% 6%)" }),
     opacity: 0,
     y: 60,
     scale: 0.96,
     duration: 1.4,
     ease: "expo.out",
-    scrollTrigger: { trigger: el, start: "top 92%", toggleActions: "play none none reverse" },
+    scrollTrigger: { trigger: el, ...enter("top 92%") },
   });
 }
 
@@ -204,16 +221,16 @@ function stagger(el: HTMLElement) {
     opacity: 0,
     y: 70,
     scale: 0.94,
-    clipPath: "inset(12% 8% 12% 8%)",
+    ...(touch ? {} : { clipPath: "inset(12% 8% 12% 8%)" }),
     duration: 1.3,
     ease: "expo.out",
     stagger: 0.09,
-    scrollTrigger: { trigger: el, start: "top 90%", toggleActions: "play none none reverse" },
+    scrollTrigger: { trigger: el, ...enter("top 90%") },
   });
 }
 
 function rule(el: HTMLElement) {
-  gsap.from(el, { scaleX: 0, transformOrigin: "left center", duration: 1.6, ease: "expo.inOut", scrollTrigger: { trigger: el, ...ENTER } });
+  gsap.from(el, { scaleX: 0, transformOrigin: "left center", duration: 1.6, ease: "expo.inOut", scrollTrigger: { trigger: el, ...enter() } });
 }
 
 const ROLES: Record<string, (el: HTMLElement) => void> = { title, eyebrow, lede, body, number, link, block, stagger, rule };
@@ -229,6 +246,7 @@ export function useTextChoreography(root: RefObject<HTMLElement | null>, reduced
       const host = root.current;
       if (!host) return;
       if (!started) return;
+      touch = isTouchDevice();
       // On a slow connection the hero copy has already shown itself (see LATE_COPY in the root layout): leave it in place.
       const shown = document.documentElement.classList.contains("fx-late");
       // Only the first, slow arrival: a later visit within the session gets the full entrance.
@@ -236,13 +254,14 @@ export function useTextChoreography(root: RefObject<HTMLElement | null>, reduced
       const nodes = gsap.utils.toArray<HTMLElement>("[data-fx]", host).filter((el) => !(shown && el.closest("[data-hero-copy]")));
       if (reduced) {
         // Soft fades only.
-        nodes.forEach((el) => gsap.from(el, { opacity: 0, duration: 0.8, ease: "power1.out", scrollTrigger: { trigger: el, ...ENTER } }));
+        nodes.forEach((el) => gsap.from(el, { opacity: 0, duration: 0.8, ease: "power1.out", scrollTrigger: { trigger: el, ...enter() } }));
         host.setAttribute("data-fx-ready", "");
         return;
       }
       nodes.forEach((el) => ROLES[el.dataset.fx ?? ""]?.(el));
       // The dark pools behind the copy (--scrim, see journey.module.css) leave with their section's text.
-      gsap.utils.toArray<HTMLElement>("[data-fx-scope]", host).forEach((scope) =>
+      // Desktop only: on phones the only scroll-scrubbed timeline is the journey itself.
+      if (!touch) gsap.utils.toArray<HTMLElement>("[data-fx-scope]", host).forEach((scope) =>
         gsap.fromTo(
           scope,
           { "--scrim": 1 },

@@ -13,6 +13,8 @@ export interface JourneyState {
   pointer: { x: number; y: number; mouse: boolean };
   reduced: boolean;
   tier: QualityTier;
+  /** A low-end mobile GPU (touch tier only): bloom stays off. */
+  weakGpu: boolean;
   mobile: boolean;
   /** A performance card is hovered: the hammer world goes into bullet time. */
   bullet: boolean;
@@ -27,6 +29,7 @@ export const journey: JourneyState = {
   pointer: { x: 0, y: 0, mouse: false },
   reduced: false,
   tier: "high",
+  weakGpu: false,
   mobile: false,
   hovered: null,
   bullet: false,
