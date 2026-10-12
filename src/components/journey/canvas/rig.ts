@@ -95,8 +95,6 @@ const windowed = (v: number, a: number, b: number, c: number, d: number) => {
 };
 
 let introStart = -1;
-/** Capture mode (config.isCapture): the intro counts as finished and every value settles each frame. */
-export const rigOptions = { capture: false };
 
 type LaterId = "dive" | "corridor" | "twist" | "hammers" | "portal" | "strings" | "dissolve" | "soundboard" | "morph" | "name" | "reassemble" | "outro";
 const LATER: LaterId[] = ["dive", "corridor", "twist", "hammers", "portal", "strings", "dissolve", "soundboard", "morph", "name", "reassemble", "outro"];
@@ -108,7 +106,7 @@ export function stepRig(elapsed: number, dt: number) {
   const r = journey.raw;
   rig.time = elapsed;
   if (introStart < 0) introStart = elapsed;
-  const intro = rigOptions.capture ? 99 : elapsed - introStart;
+  const intro = elapsed - introStart;
 
   if (journey.reduced) {
     // Still frames: each world shows its resting pose, transitions cut at their midpoint.

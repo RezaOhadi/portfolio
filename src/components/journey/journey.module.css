@@ -41,23 +41,6 @@
 .journey[data-active="false"] .stage canvas {
   visibility: hidden;
 }
-/* Phones: the pre-rendered sequence (SequencePlayer) covers the stage while it plays;
-   the live 3D takes over, already warm, where the sequence ends. */
-.sequence {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  visibility: hidden;
-}
-.journey[data-sequence="true"] .sequence {
-  opacity: 1;
-  visibility: visible;
-}
-.journey[data-sequence="true"] .stage canvas:not([data-sequence]) {
-  visibility: hidden;
-}
 .fallback {
   position: absolute;
   inset: 0;
