@@ -64,8 +64,8 @@ export const QUALITY: Record<QualityTier, QualityProfile> = {
   high: { particles: 256, dpr: [1, 1.75], dof: true, multisampling: 4, envResolution: 256 },
   mid: { particles: 180, dpr: [1, 1.5], dof: false, multisampling: 0, envResolution: 128 },
   low: { particles: 128, dpr: [1, 1.25], dof: false, multisampling: 0, envResolution: 64 },
-  // About 8k particles (90²), the pixel ratio capped at 1.25 and stepped down to 1.0 if frames drop.
-  touch: { particles: 90, dpr: [1, 1.25], dof: false, multisampling: 0, envResolution: 64 },
+  // About 8k particles (90²), the pixel ratio capped at 1.5 and stepped down to 1.0 if frames drop.
+  touch: { particles: 90, dpr: [1, 1.5], dof: false, multisampling: 0, envResolution: 64 },
 };
 
 /**

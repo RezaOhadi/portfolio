@@ -83,18 +83,20 @@ function Governor({ tier, dofOn }: { tier: QualityTier; dofOn: { current: boolea
 
 /**
  * Phones and tablets: when frames stay under 50 fps for a second, step down
- * (pixel ratio 1.25 to 1.0, then fewer particles, then no bloom). Never back up
+ * (pixel ratio 1.5 to 1.0, then fewer particles, then no bloom). Never back up
  * mid-visit, so the picture does not shift while scrolling.
  */
+const TOUCH_DPR = QUALITY.touch.dpr[1];
+
 function TouchGovernor() {
   const setDpr = useThree((s) => s.setDpr);
   const step = useRef(0);
   const report = () =>
-    (window.__journey = { ...(window.__journey as NonNullable<Window["__journey"]>), dpr: step.current > 0 ? 1 : Math.min(window.devicePixelRatio || 1, 1.25), tier: "touch", dof: false, step: step.current });
+    (window.__journey = { ...(window.__journey as NonNullable<Window["__journey"]>), dpr: step.current > 0 ? 1 : Math.min(window.devicePixelRatio || 1, TOUCH_DPR), tier: "touch", dof: false, step: step.current });
   useEffect(() => {
     touchQuality.particles = 1;
     touchQuality.bloom = !journey.weakGpu;
-    setDpr(Math.min(window.devicePixelRatio || 1, 1.25));
+    setDpr(Math.min(window.devicePixelRatio || 1, TOUCH_DPR));
     report();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
