@@ -34,7 +34,9 @@ export function Effects({ dof, multisampling }: { dof: boolean; multisampling: n
   });
 
   return (
-    <EffectComposer multisampling={multisampling} frameBufferType={HalfFloatType} enableNormalPass={false}>
+    // Remounted when depth of field toggles: removing it from a live multisampled
+    // composer leaves a depth blit between mismatched formats (GL_INVALID_OPERATION).
+    <EffectComposer key={dof ? "dof" : "flat"} multisampling={multisampling} frameBufferType={HalfFloatType} enableNormalPass={false}>
       {dof && <DepthOfField ref={depth} target={rig.focus} focusRange={2.6} bokehScale={0} resolutionScale={0.5} />}
       <Bloom ref={bloom} mipmapBlur luminanceThreshold={0.92} luminanceSmoothing={0.18} intensity={0.85} radius={0.74} />
       <ChromaticAberration ref={aberration} offset={offset.current} radialModulation modulationOffset={0.3} blendFunction={BlendFunction.NORMAL} />
