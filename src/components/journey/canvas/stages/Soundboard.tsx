@@ -118,7 +118,7 @@ export function Soundboard() {
   const root = useRef<Mesh>(null);
   const bridge = useRef<Mesh>(null);
   const lamp = useRef<PointLight>(null);
-  const tiles = useRef<{ list: HTMLElement[]; checked: number }>({ list: [], checked: 0 });
+  const tiles = useRef<{ list: HTMLElement[]; rects: DOMRect[]; checked: number }>({ list: [], rects: [], checked: 0 });
   const last = useRef({ ambient: 0 });
 
   const built = useMemo(() => {
@@ -211,7 +211,8 @@ export function Soundboard() {
     }
     if (rig.soundboard > 0 && rig.soundboard < 1 && !journey.reduced) {
       // Every read first, then every write: interleaving them forced a style and layout pass per tile, per frame.
-      const rects = t.list.map((tile) => tile.getBoundingClientRect());
+      const rects = t.rects;
+      for (let i = 0; i < t.list.length; i++) rects[i] = t.list[i].getBoundingClientRect();
       for (let i = 0; i < t.list.length; i++) {
         const tile = t.list[i];
         const r = rects[i];

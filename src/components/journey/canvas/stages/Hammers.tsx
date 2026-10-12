@@ -217,8 +217,14 @@ export function Hammers() {
           for (let n = 0; n < 22; n++) {
             const j = built.fibre.cursor;
             built.fibre.cursor = (j + 1) % FIBRES;
-            built.fibre.position.set([_head.x + (Math.random() - 0.5) * 0.12, _head.y, _head.z + (Math.random() - 0.5) * 0.2], j * 3);
-            built.fibre.velocity.set([(Math.random() - 0.5) * 0.9, 0.4 + Math.random() * 1.1, (Math.random() - 0.5) * 0.9], j * 3);
+            // Written in place: an impact must not allocate.
+            const fp = built.fibre.position, fv = built.fibre.velocity;
+            fp[j * 3] = _head.x + (Math.random() - 0.5) * 0.12;
+            fp[j * 3 + 1] = _head.y;
+            fp[j * 3 + 2] = _head.z + (Math.random() - 0.5) * 0.2;
+            fv[j * 3] = (Math.random() - 0.5) * 0.9;
+            fv[j * 3 + 1] = 0.4 + Math.random() * 1.1;
+            fv[j * 3 + 2] = (Math.random() - 0.5) * 0.9;
             built.fibre.life[j] = 1;
           }
           if (sound && Math.abs(h.x - camX) < 3.6) playNote(h.midi, 0.3, 3.2);
@@ -251,7 +257,9 @@ export function Hammers() {
       built.unders.setMatrixAt(i, _m);
     }
     for (let j = 0; j < ring.count; j++) ring.setX(j, ring.getX(j) * Math.exp(-dt * 0.8 * rig.timeScale) * (rise > 0.5 ? 1 : 0));
-    [built.heads, built.unders, built.shanks].forEach((m) => (m.instanceMatrix.needsUpdate = true));
+    built.heads.instanceMatrix.needsUpdate = true;
+    built.unders.instanceMatrix.needsUpdate = true;
+    built.shanks.instanceMatrix.needsUpdate = true;
     headPress.needsUpdate = true;
     ring.needsUpdate = true;
 

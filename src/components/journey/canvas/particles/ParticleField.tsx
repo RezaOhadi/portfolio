@@ -236,7 +236,7 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
     sim.geometry.setDrawRange(0, Math.floor(size * size * touchQuality.particles));
     const dt = Math.min(delta, 1 / 30);
     const { shared, velVar, gpu, material } = sim;
-    parts.forEach((part, i) => shared.uParts.value[i].copy(part.group.matrixWorld));
+    for (let i = 0; i < parts.length; i++) shared.uParts.value[i].copy(parts[i].group.matrixWorld);
     shared.uTime.value = rig.time;
     shared.uAssemble.value = rig.assemble;
     shared.uFree.value = rig.free;

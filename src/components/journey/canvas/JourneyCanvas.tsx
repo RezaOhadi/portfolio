@@ -3,7 +3,7 @@
 import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { HalfFloatType, WebGLRenderTarget, type DirectionalLight, type Light, type Object3D, type PointLight } from "three";
+import { HalfFloatType, WebGLRenderTarget, type DirectionalLight, type Light, type Mesh, type Object3D, type PointLight, type ShaderMaterial, type Texture } from "three";
 import { PALETTE, QUALITY, testFlag, type QualityTier } from "../config";
 import { journey } from "../store";
 import { CameraDirector } from "./CameraDirector";
@@ -61,7 +61,9 @@ function RigStep({ onReady }: { onReady: () => void }) {
     s.acc += delta;
     s.count++;
     if (s.acc >= 1) {
-      window.__journey = { ...(window.__journey as NonNullable<Window["__journey"]>), fps: Math.round(s.count / s.acc), frames: s.frames };
+      const j = (window.__journey ??= { fps: 0, frames: 0, dpr: 1, tier: journey.tier, dof: false });
+      j.fps = Math.round(s.count / s.acc);
+      j.frames = s.frames;
       s.acc = 0;
       s.count = 0;
     }
@@ -326,6 +328,21 @@ function Precompile({ onDone }: { onDone: () => void }) {
       if (!o.visible && !(o as Light).isLight) hidden.push(o);
       if (o.frustumCulled) culled.push(o);
     });
+    // Every texture goes to the GPU now: material maps, shader uniforms and the environment.
+    const textures = new Set<Texture>();
+    const collect = (value: unknown) => {
+      if ((value as Texture)?.isTexture) textures.add(value as Texture);
+    };
+    scene.traverse((o) => {
+      const mats = (o as Mesh).material;
+      for (const m of Array.isArray(mats) ? mats : mats ? [mats] : []) {
+        for (const v of Object.values(m)) collect(v);
+        for (const u of Object.values((m as ShaderMaterial).uniforms ?? {})) collect(u?.value);
+      }
+    });
+    collect(scene.environment);
+    collect(scene.background);
+    textures.forEach((t) => gl.initTexture(t));
     const target = new WebGLRenderTarget(64, 64, { type: HalfFloatType });
     const reveal = (on: boolean) => {
       hidden.forEach((o) => (o.visible = on));

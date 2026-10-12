@@ -79,7 +79,8 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
     fxShared.uCursor.value.set(((journey.pointer.x + 1) / 2) * size.width * dpr, ((journey.pointer.y + 1) / 2) * size.height * dpr);
     fxShared.uRevealRadius.value = 150 * dpr;
 
-    parts.forEach((part, i) => {
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
       const g = part.group;
       const e = partProgress(part.delay);
       const tum = partTumble(part.delay);
@@ -157,7 +158,7 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
       g.scale.setScalar(1 + h * 0.035);
       // Exploded parts carry a fine gold edge light; the snap brightens it into a drawing.
       const glow = h + rig.anticipation * 0.55 + rig.burst * 0.25 + rig.dof * (0.16 + rig.snap * 0.22);
-      part.materials.forEach((m) => (m.highlight.value = glow));
+      for (const m of part.materials) m.highlight.value = glow;
       g.updateMatrixWorld(true);
 
       // Labels: the hovered part, or every kind together during the snap.
@@ -171,7 +172,7 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
         }
         node.style.opacity = opacity.toFixed(3);
       }
-    });
+    }
 
     // Diagram layout: one aligned column on the left, leaders run to each part,
     // rows pushed apart so no two labels ever overlap.
