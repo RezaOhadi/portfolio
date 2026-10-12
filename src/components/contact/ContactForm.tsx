@@ -130,9 +130,14 @@ export function ContactForm() {
         {error("message")}
       </div>
       {state.status === "error" ? (
-        <p role="alert" className="text-sm leading-relaxed">
-          {state.message}
-        </p>
+        <div role="alert" className="text-sm leading-relaxed">
+          <p>{state.message}</p>
+          {state.mailto ? (
+            <a href={state.mailto} className="action-text mt-4 inline-block">
+              Email me directly
+            </a>
+          ) : null}
+        </div>
       ) : null}
       <div>
         <SubmitButton />

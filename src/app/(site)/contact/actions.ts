@@ -8,6 +8,8 @@ export interface ContactState {
   status: "idle" | "success" | "error";
   message?: string;
   errors?: Record<string, string>;
+  /** Prefilled mailto: link, offered when server-side delivery fails. */
+  mailto?: string;
 }
 
 function escapeHtml(s: string) {
@@ -48,6 +50,11 @@ export async function submitContact(
 
   const { name, email, inquiryType, message } = parsed.data;
 
+  const mailto =
+    `mailto:${env.contactTo}` +
+    `?subject=${encodeURIComponent(`${inquiryType} inquiry — ${name}`)}` +
+    `&body=${encodeURIComponent(`${message}\n\n— ${name} (${email})`)}`;
+
   const html = emailLayout(
     `New ${inquiryType.toLowerCase()} inquiry`,
     `<p style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#cfcfd6;">
@@ -72,11 +79,14 @@ export async function submitContact(
     return {
       status: "error",
       message:
-        "Email delivery is currently unavailable. Your message has not been sent. Please use the direct email link instead.",
+        "Your message couldn't be sent from the website right now. Use the button below to send it from your own email app instead.",
+      mailto,
     };
   }
   return {
     status: "error",
-    message: "Something went wrong sending your message. Please email directly.",
+    message:
+      "Something went wrong sending your message. Use the button below to send it from your own email app instead.",
+    mailto,
   };
 }
