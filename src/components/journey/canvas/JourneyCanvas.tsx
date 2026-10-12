@@ -40,12 +40,17 @@ declare global {
 
 /** Advances the choreography first, and reports frame stats for verification. */
 function RigStep({ onReady }: { onReady: () => void }) {
-  const stats = useRef({ frames: 0, acc: 0, count: 0, sent: false });
+  const stats = useRef({ frames: 0, acc: 0, count: 0, sent: false, opacity: "" });
   useFrame((state, delta) => {
     stepRig(state.clock.elapsedTime, Math.min(delta, 1 / 20));
     // The whole world recedes as the next (not yet built) world's content arrives.
     const layer = state.gl.domElement.parentElement;
-    if (layer) layer.style.opacity = (1 - rig.after * 0.88).toFixed(3);
+    const opacity = (1 - rig.after * 0.88).toFixed(3);
+    // Written only when it changes: a style write every frame invalidates style for the page.
+    if (layer && stats.current.opacity !== opacity) {
+      layer.style.opacity = opacity;
+      stats.current.opacity = opacity;
+    }
     const s = stats.current;
     s.frames++;
     s.acc += delta;
@@ -83,7 +88,7 @@ function Governor({ tier, dofOn }: { tier: QualityTier; dofOn: { current: boolea
 
 /**
  * Phones and tablets: when frames stay under 50 fps for a second, step down
- * (pixel ratio 1.5 to 1.0, then fewer particles, then no bloom). Never back up
+ * (internal resolution 1x to 0.85x, then fewer particles, then no bloom). Never back up
  * mid-visit, so the picture does not shift while scrolling.
  */
 const TOUCH_DPR = QUALITY.touch.dpr[1];
@@ -92,7 +97,7 @@ function TouchGovernor() {
   const setDpr = useThree((s) => s.setDpr);
   const step = useRef(0);
   const report = () =>
-    (window.__journey = { ...(window.__journey as NonNullable<Window["__journey"]>), dpr: step.current > 0 ? 1 : Math.min(window.devicePixelRatio || 1, TOUCH_DPR), tier: "touch", dof: false, step: step.current });
+    (window.__journey = { ...(window.__journey as NonNullable<Window["__journey"]>), dpr: step.current > 0 ? QUALITY.touch.dpr[0] : Math.min(window.devicePixelRatio || 1, TOUCH_DPR), tier: "touch", dof: false, step: step.current });
   useEffect(() => {
     touchQuality.particles = 1;
     touchQuality.bloom = !journey.weakGpu;
@@ -107,7 +112,7 @@ function TouchGovernor() {
       bounds={() => [50, 1000]}
       onDecline={() => {
         step.current++;
-        if (step.current === 1) setDpr(1);
+        if (step.current === 1) setDpr(QUALITY.touch.dpr[0]);
         if (step.current === 2) touchQuality.particles = 0.6;
         if (step.current === 3) touchQuality.bloom = false;
         report();

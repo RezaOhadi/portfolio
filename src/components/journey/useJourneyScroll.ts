@@ -79,6 +79,8 @@ export function useJourneyScroll(root: RefObject<HTMLElement | null>, reduced: b
       const html = document.documentElement;
       const previous = html.style.scrollBehavior;
       html.style.scrollBehavior = "auto";
+      // Section snapping on phones is native CSS scroll-snap, run by the compositor (portfolio.css).
+      html.classList.add("journey-snap");
       document.addEventListener("click", onAnchor);
       // The address bar showing and hiding must not re-measure every trigger mid-scroll.
       ScrollTrigger.config({ ignoreMobileResize: true });
@@ -102,6 +104,7 @@ export function useJourneyScroll(root: RefObject<HTMLElement | null>, reduced: b
         window.removeEventListener("scroll", onScroll);
         gsap.ticker.remove(tick);
         document.removeEventListener("click", onAnchor);
+        html.classList.remove("journey-snap");
         html.style.scrollBehavior = previous;
         journey.velocity = 0;
       };
@@ -151,8 +154,9 @@ export function useJourneyScroll(root: RefObject<HTMLElement | null>, reduced: b
           },
         });
       });
-      // One trigger over the whole page carries the snap: it settles on world resting points.
-      if (!reduced)
+      // Desktop: one trigger over the whole page carries the snap and settles on world resting
+      // points. Phones snap natively instead (the journey-snap class, portfolio.css).
+      if (!reduced && !isTouchDevice())
         ScrollTrigger.create({
           start: 0,
           end: () => ScrollTrigger.maxScroll(window),

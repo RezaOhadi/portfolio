@@ -27,6 +27,8 @@
   height: 100vh;
   height: 100lvh;
   z-index: 0;
+  /* Pinned layers get their own compositor layer up front. */
+  will-change: transform;
   pointer-events: none;
 }
 .stage canvas {
@@ -234,6 +236,7 @@
 .labels {
   position: fixed;
   inset: 0;
+  will-change: transform;
   z-index: 2;
   pointer-events: none;
   overflow: hidden;
@@ -466,6 +469,7 @@
 }
 .corner {
   position: fixed;
+  will-change: transform;
   z-index: 4;
   left: max(1.25rem, env(safe-area-inset-left));
   bottom: max(1.25rem, env(safe-area-inset-bottom));

@@ -208,8 +208,11 @@ export function Soundboard() {
       t.checked = rig.time;
     }
     if (rig.soundboard > 0 && rig.soundboard < 1 && !journey.reduced) {
-      for (const tile of t.list) {
-        const r = tile.getBoundingClientRect();
+      // Every read first, then every write: interleaving them forced a style and layout pass per tile, per frame.
+      const rects = t.list.map((tile) => tile.getBoundingClientRect());
+      for (let i = 0; i < t.list.length; i++) {
+        const tile = t.list[i];
+        const r = rects[i];
         if (r.bottom < 0 || r.top > state.size.height) continue;
         _ndc.set(((r.left + r.width / 2) / state.size.width) * 2 - 1, -((r.top + r.height / 2) / state.size.height) * 2 + 1);
         _ray.setFromCamera(_ndc, state.camera);

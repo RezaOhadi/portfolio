@@ -1310,3 +1310,17 @@ body::before {
     background: rgb(12 12 15 / 0.86);
   }
 }
+
+/* Phones and tablets: section snapping by the compositor. Each world is a snap area;
+   one taller than the screen scrolls freely inside, and a stop inside a transition
+   settles on the next or previous world. The footer is the last stop. */
+html.journey-snap {
+  scroll-snap-type: y mandatory;
+}
+html.journey-snap [data-segment]:not([data-kind="transition"]) {
+  scroll-snap-align: start;
+}
+html.journey-snap body > footer,
+html.journey-snap footer:last-of-type {
+  scroll-snap-align: end;
+}

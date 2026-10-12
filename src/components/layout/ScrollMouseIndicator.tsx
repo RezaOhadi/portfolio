@@ -65,21 +65,27 @@ export function ScrollMouseIndicator({
      * hero is still on screen. Measure the track instead, and fall back to the
      * plain threshold everywhere else (and on layouts where the pin is off).
      */
-    const update = () => {
+    // The track's end is a page position: measured on load and resize, never during a scroll.
+    let trackEnd = 0;
+    const measure = () => {
       const track = document.querySelector<HTMLElement>("[data-hero-track]");
-      const trackEnd = track
+      trackEnd = track
         ? track.getBoundingClientRect().bottom +
           window.scrollY -
           window.innerHeight * 0.6
         : 0;
-      setScrolled(window.scrollY > Math.max(trackEnd, SCROLL_THRESHOLD));
+      update();
     };
-    update();
+    const update = () =>
+      setScrolled(window.scrollY > Math.max(trackEnd, SCROLL_THRESHOLD));
+    measure();
+    const late = window.setTimeout(measure, 1500);
     window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
+    window.addEventListener("resize", measure);
     return () => {
+      window.clearTimeout(late);
       window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
+      window.removeEventListener("resize", measure);
     };
   }, [pathname]);
 
