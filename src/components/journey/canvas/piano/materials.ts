@@ -93,11 +93,14 @@ function inject(material: Material, options: FxOptions): FxMaterial {
       .replace(
         "#include <clipping_planes_fragment>",
         `#include <clipping_planes_fragment>
-        float fxN = fxNoise(vFxWorld * 7.0) * 0.65 + fxNoise(vFxWorld * 23.0) * 0.35;
+        // The noise field is only read while materializing or revealing: evaluated inside those
+        // branches (the same expression), it costs nothing the rest of the time.
+        #define FX_N (fxNoise(vFxWorld * 7.0) * 0.65 + fxNoise(vFxWorld * 23.0) * 0.35)
         // Materialize: fragments appear as uMaterialize sweeps through the noise field.
         float fxEdge = 0.0;
         #ifdef FX_MATERIALIZE
         if (uMaterialize < 1.0) {
+          float fxN = FX_N;
           float m = uMaterialize * 1.25 - 0.12;
           if (fxN > m) discard;
           fxEdge = 1.0 - smoothstep(0.0, 0.07, m - fxN);
@@ -105,6 +108,7 @@ function inject(material: Material, options: FxOptions): FxMaterial {
         #endif
         #ifdef FX_REVEAL
           if (uRevealAmount > 0.001) {
+            float fxN = FX_N;
             float r = uRevealRadius * uRevealAmount;
             float d = distance(gl_FragCoord.xy, uCursor) + (fxN - 0.5) * uRevealRadius * 0.22;
             if (d < r) discard;
