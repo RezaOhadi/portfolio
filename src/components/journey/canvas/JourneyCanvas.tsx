@@ -88,7 +88,7 @@ function Governor({ tier, dofOn }: { tier: QualityTier; dofOn: { current: boolea
 
 /**
  * Phones and tablets: when frames stay under 50 fps for a second, step down
- * (internal resolution 1x to 0.85x, then fewer particles, then no bloom). Never back up
+ * (pixel ratio 1.5 to 1.0, then fewer particles, then no bloom). Never back up
  * mid-visit, so the picture does not shift while scrolling.
  */
 const TOUCH_DPR = QUALITY.touch.dpr[1];

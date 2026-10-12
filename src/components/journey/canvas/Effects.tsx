@@ -1,7 +1,7 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { Bloom, ChromaticAberration, DepthOfField, EffectComposer, FXAA, Noise, ToneMapping, Vignette } from "@react-three/postprocessing";
+import { Bloom, ChromaticAberration, DepthOfField, EffectComposer, Noise, ToneMapping, Vignette } from "@react-three/postprocessing";
 import { BlendFunction, ToneMappingMode, type BloomEffect, type ChromaticAberrationEffect, type DepthOfFieldEffect } from "postprocessing";
 import { useRef, useState } from "react";
 import { touchQuality } from "./quality";
@@ -23,8 +23,7 @@ export function Effects({ dof, dofOn, multisampling, lite = false }: { dof: bool
 
 /**
  * Phones and tablets: tone mapping and vignette, plus a half-resolution, softer
- * bloom. The scene renders at a lower internal resolution (QUALITY.touch) and
- * FXAA smooths the edges as it is scaled up to the screen. No depth of field, aberration or grain. Bloom is left out on weak
+ * bloom. No depth of field, aberration or grain. Bloom is left out on weak
  * GPUs, and dropped for good if the governor's last step is reached.
  */
 function TouchEffects() {
@@ -39,7 +38,6 @@ function TouchEffects() {
       {bloomOn ? <Bloom ref={bloom} mipmapBlur luminanceThreshold={0.92} luminanceSmoothing={0.18} intensity={0.6} radius={0.74} resolutionScale={0.5} /> : <></>}
       <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
       <Vignette offset={0.28} darkness={0.7} />
-      <FXAA />
     </EffectComposer>
   );
 }
