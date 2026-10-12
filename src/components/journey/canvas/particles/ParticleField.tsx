@@ -212,6 +212,9 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
         uMaxSize: { value: 9 },
         uGold: { value: new Color(PALETTE.gold).convertSRGBToLinear() },
         uHot: { value: new Color(PALETTE.goldHot).convertSRGBToLinear() },
+        // Linear multipliers: warmer and more saturated (more red, less blue) and about a fifth brighter.
+        uNameTint: { value: new Vector3(1.3, 1.12, 0.74) },
+        uNameMix: { value: 0 },
       },
     });
     const points = new Points(geometry, material);
@@ -265,6 +268,9 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
     material.uniforms.uOpacity.value = (0.55 + glow * 0.4) * (1 - rig.after * 0.9);
     material.uniforms.uSize.value = 0.0078 * (1 + glow * 0.35);
     material.uniforms.uFree.value = rig.free;
+    // Phones only: the name's richer gold comes in as the dust forms the name (chain 4.5 -> 5)
+    // and goes as the piano reassembles (5 -> 5.6). Colour only; nothing else changes.
+    material.uniforms.uNameMix.value = materialOptions.lite ? range(rig.chain, 4.5, 5) * (1 - range(rig.chain, 5, 5.6)) : 0;
     material.uniforms.uMaxSize.value = 9 * state.gl.getPixelRatio();
   });
 

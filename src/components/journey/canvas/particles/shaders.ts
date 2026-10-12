@@ -200,6 +200,7 @@ uniform float uSize, uScale, uOpacity, uFree, uMaxSize;
 attribute vec2 ref;
 varying float vHeat;
 varying float vAlpha;
+varying float vName;
 
 float h11(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
@@ -212,6 +213,8 @@ void main(){
   float haze = step(h11(ref * 17.13), 0.24) * uFree;
   vHeat = max(vHeat, haze * 0.45);
   vAlpha = uOpacity * (0.35 + r * 0.65) * (1.0 - haze * 0.45);
+  // Dust that can carry the name's richer gold (phones): everything but the free haze.
+  vName = 1.0 - haze;
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   gl_Position = projectionMatrix * mv;
   // Close-up dust is capped so depth of field never turns it into screen-filling discs.
@@ -222,8 +225,12 @@ void main(){
 export const renderFragment = /* glsl */ `
 uniform vec3 uGold;
 uniform vec3 uHot;
+// Phones: the name's gold is richer and brighter (uNameMix rises as the name forms, 0 on desktop).
+uniform vec3 uNameTint;
+uniform float uNameMix;
 varying float vHeat;
 varying float vAlpha;
+varying float vName;
 
 void main(){
   vec2 c = gl_PointCoord - 0.5;
@@ -231,6 +238,7 @@ void main(){
   if (d > 0.5) discard;
   float core = smoothstep(0.5, 0.0, d);
   vec3 col = mix(uGold, uHot, vHeat) * (0.9 + vHeat * 3.2);
+  col *= mix(vec3(1.0), uNameTint, uNameMix * vName);
   gl_FragColor = vec4(col * core, core * vAlpha);
 }
 `;
