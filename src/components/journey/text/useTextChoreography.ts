@@ -233,6 +233,14 @@ export function useTextChoreography(root: RefObject<HTMLElement | null>, reduced
         return;
       }
       nodes.forEach((el) => ROLES[el.dataset.fx ?? ""]?.(el));
+      // The dark pools behind the copy (--scrim, see journey.module.css) leave with their section's text.
+      gsap.utils.toArray<HTMLElement>("[data-fx-scope]", host).forEach((scope) =>
+        gsap.fromTo(
+          scope,
+          { "--scrim": 1 },
+          { "--scrim": 0, ease: "power2.in", scrollTrigger: { trigger: scope, start: "bottom 58%", end: "bottom 8%", scrub: 0.6 } },
+        ),
+      );
       host.setAttribute("data-fx-ready", "");
     },
     { scope: root, dependencies: [reduced, started], revertOnUpdate: true },

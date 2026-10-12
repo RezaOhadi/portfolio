@@ -35,6 +35,8 @@ function pickTier(): QualityTier {
 }
 
 const BUILT = SEGMENTS.filter((s) => s.built).map((s) => s.id);
+/** Running text the world should step back for (titles and taglines are big enough not to need it). */
+const COPY = `[data-fx="body"], .${styles.works} li, .concert-row, .media-card p, .contact-grid form, [data-fx="block"] > .container-editorial p`;
 
 /**
  * The persistent world behind the home page. Content is server-rendered and
@@ -109,6 +111,22 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Body copy in the middle band of the screen dims the world under it (see .dim).
+  useEffect(() => {
+    const host = root.current;
+    if (!host) return;
+    const reading = new Set<Element>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => (entry.isIntersecting ? reading.add(entry.target) : reading.delete(entry.target)));
+        host.dataset.copy = String(reading.size > 0);
+      },
+      { rootMargin: "-28% 0px -28% 0px" },
+    );
+    host.querySelectorAll(COPY).forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
+  }, []);
+
   // Pointer in NDC; only a real mouse drives parallax, reveal and repulsion.
   useEffect(() => {
     const host = root.current;
@@ -176,6 +194,7 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
             <JourneyCanvas tier={tier} active={active} reduced={reduced} eventSource={eventSource} onReady={onReady} onFailure={onFailure} />
           </CanvasBoundary>
         )}
+        <div className={styles.dim} />
       </div>
       <PartLabels />
       <SoundControls ready={gateReady} />
