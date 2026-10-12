@@ -4,7 +4,7 @@ import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei"
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HalfFloatType, WebGLRenderTarget, type DirectionalLight, type Light, type Object3D, type PointLight } from "three";
-import { PALETTE, QUALITY, type QualityTier } from "../config";
+import { isCapture, PALETTE, QUALITY, type QualityTier } from "../config";
 import { journey } from "../store";
 import { CameraDirector } from "./CameraDirector";
 import { Effects } from "./Effects";
@@ -20,7 +20,7 @@ import { Portal } from "./stages/Portal";
 import { Soundboard } from "./stages/Soundboard";
 import { Atmosphere } from "./Atmosphere";
 import { buildPiano } from "./piano/build";
-import { stepRig, rig } from "./rig";
+import { rigOptions, stepRig, rig } from "./rig";
 import { materialOptions, touchQuality } from "./quality";
 
 interface Props {
@@ -42,7 +42,9 @@ declare global {
 function RigStep({ onReady }: { onReady: () => void }) {
   const stats = useRef({ frames: 0, acc: 0, count: 0, sent: false, opacity: "" });
   useFrame((state, delta) => {
-    stepRig(state.clock.elapsedTime, Math.min(delta, 1 / 20));
+    // Capture: time follows the scroll and each step settles fully, so frames are repeatable.
+    if (rigOptions.capture) stepRig(10 + window.scrollY * 0.002, 1);
+    else stepRig(state.clock.elapsedTime, Math.min(delta, 1 / 20));
     // The whole world recedes as the next (not yet built) world's content arrives.
     const layer = state.gl.domElement.parentElement;
     const opacity = (1 - rig.after * 0.88).toFixed(3);
@@ -254,7 +256,7 @@ function Scene({ tier, onReady }: { tier: QualityTier; onReady: () => void }) {
       <color attach="background" args={[PALETTE.ink]} />
       <fog attach="fog" args={[PALETTE.ink, 9, 26]} />
       <RigStep onReady={onReady} />
-      <Governor tier={tier} dofOn={dofOn} />
+      {!rigOptions.capture && <Governor tier={tier} dofOn={dofOn} />}
       <CameraDirector />
       <Studio resolution={profile.envResolution} />
       <Lights touch={touch} />
@@ -277,6 +279,7 @@ function Scene({ tier, onReady }: { tier: QualityTier; onReady: () => void }) {
 export default function JourneyCanvas({ tier, active, reduced, eventSource, onReady, onFailure }: Props) {
   // Read by every material built below (the piano, then each stage).
   materialOptions.lite = tier === "touch";
+  rigOptions.capture = isCapture();
   const [compiled, setCompiled] = useState(false);
   const onCompiled = useCallback(() => setCompiled(true), []);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -301,7 +304,7 @@ export default function JourneyCanvas({ tier, active, reduced, eventSource, onRe
       eventSource={eventSource}
       eventPrefix="client"
       frameloop={frameloop}
-      dpr={QUALITY[tier].dpr}
+      dpr={rigOptions.capture ? window.devicePixelRatio : QUALITY[tier].dpr}
       gl={{ antialias: false, alpha: false, stencil: false, depth: true, powerPreference: "high-performance" }}
       camera={{ fov: 30, near: 0.1, far: 60, position: [4, 1.4, 4] }}
       onCreated={({ gl }) => {

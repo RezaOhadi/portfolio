@@ -47,3 +47,6 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Offline capture masters (scripts/capture-sequence.mjs)
+.sequence-masters/

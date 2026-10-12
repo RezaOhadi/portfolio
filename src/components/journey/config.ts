@@ -73,8 +73,17 @@ export const QUALITY: Record<QualityTier, QualityProfile> = {
  * handheld-sized screen. Width alone is not enough (a narrow desktop window
  * is still a desktop GPU).
  */
+/**
+ * Offline frame capture (`?capture`, scripts/capture-sequence.mjs): the desktop render
+ * at full detail, at the device's native pixel ratio, with time and the intro tied to
+ * the scroll position so each frame is fully settled and repeatable.
+ */
+export function isCapture() {
+  return typeof window !== "undefined" && new URLSearchParams(window.location.search).has("capture");
+}
+
 export function isTouchDevice() {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined" || isCapture()) return false;
   const touch = window.matchMedia("(pointer: coarse)").matches && navigator.maxTouchPoints > 0;
   const handheld = Math.min(window.screen.width, window.screen.height) <= 1024;
   return touch && handheld;

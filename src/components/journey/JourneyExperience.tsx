@@ -3,11 +3,12 @@
 import "lenis/dist/lenis.css";
 import dynamic from "next/dynamic";
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { isTouchDevice, isWeakGpu, MOBILE_QUERY, SEGMENTS, type QualityTier } from "./config";
+import { isCapture, isTouchDevice, isWeakGpu, MOBILE_QUERY, SEGMENTS, type QualityTier } from "./config";
 import { SoundControls } from "./SoundControls";
 import { useTextChoreography } from "./text/useTextChoreography";
 import styles from "./journey.module.css";
 import { PartLabels } from "./PartLabels";
+import { SequencePlayer } from "./SequencePlayer";
 import { emitSparks, journey } from "./store";
 import { playCadence } from "./audio";
 import { useJourneyScroll } from "./useJourneyScroll";
@@ -28,6 +29,7 @@ class CanvasBoundary extends Component<{ children: ReactNode; onFailure: () => v
 }
 
 function pickTier(): QualityTier {
+  if (isCapture()) return "high";
   if (isTouchDevice()) return "touch";
   if (window.matchMedia(MOBILE_QUERY).matches) return "low";
   const nav = navigator as Navigator & { deviceMemory?: number };
@@ -56,6 +58,10 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
   const [failed, setFailed] = useState(false);
   const [gateReady, setGateReady] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Phones and tablets: the opening stretch plays as a pre-rendered image sequence (SequencePlayer).
+  const [sequence, setSequence] = useState({ holds: true, warm: false });
+  const onSequence = useCallback((state: { holds: boolean; warm: boolean }) => setSequence(state), []);
+  const sequenced = tier === "touch";
   const reduced = prefersReduced;
 
   const [copyReady, setCopyReady] = useState(false);
@@ -206,14 +212,16 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
       data-ready={ready && !failed}
       data-reduced={reduced}
       data-active={active}
+      data-sequence={sequenced && sequence.holds}
     >
       <div className={styles.stage} aria-hidden="true">
         <div className={styles.fallback} />
         {mount && tier && eventSource && !failed && (
           <CanvasBoundary onFailure={onFailure}>
-            <JourneyCanvas tier={tier} active={active && !menuOpen} reduced={reduced} eventSource={eventSource} onReady={onReady} onFailure={onFailure} />
+            <JourneyCanvas tier={tier} active={active && !menuOpen && (!sequenced || !sequence.holds || sequence.warm)} reduced={reduced} eventSource={eventSource} onReady={onReady} onFailure={onFailure} />
           </CanvasBoundary>
         )}
+        {sequenced && <SequencePlayer name="hero" onState={onSequence} />}
         <div className={styles.dim} />
       </div>
       <PartLabels />

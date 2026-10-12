@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { useEffect, type RefObject } from "react";
-import { isTouchDevice } from "./config";
+import { isCapture, isTouchDevice } from "./config";
 import { journey } from "./store";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -73,7 +73,7 @@ function onAnchor(event: MouseEvent) {
  */
 export function useJourneyScroll(root: RefObject<HTMLElement | null>, reduced: boolean) {
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || isCapture()) return;
     if (isTouchDevice()) {
       // CSS smooth scrolling would animate ScrollTrigger's own refresh jumps; anchors glide explicitly instead.
       const html = document.documentElement;
@@ -156,7 +156,7 @@ export function useJourneyScroll(root: RefObject<HTMLElement | null>, reduced: b
       });
       // Desktop: one trigger over the whole page carries the snap and settles on world resting
       // points. Phones snap natively instead (the journey-snap class, portfolio.css).
-      if (!reduced && !isTouchDevice())
+      if (!reduced && !isTouchDevice() && !isCapture())
         ScrollTrigger.create({
           start: 0,
           end: () => ScrollTrigger.maxScroll(window),
