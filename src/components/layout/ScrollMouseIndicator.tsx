@@ -9,7 +9,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { ChevronUp } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { useSitePath } from "@/components/layout/useSitePath";
 import { useEffect, useRef, useState } from "react";
 import { useFadeOverText } from "./useFadeOverText";
 
@@ -45,7 +45,7 @@ export function ScrollMouseIndicator({
   // Only ever read inside event handlers — a render-time branch would add
   // framer's tabIndex on the server and drop it on the client (hydration).
   const reduce = useReducedMotion();
-  const pathname = usePathname();
+  const pathname = useSitePath();
   const [scrolled, setScrolled] = useState(false);
   const showCue = pathname === cuePath;
   const top = useRef<HTMLButtonElement>(null);

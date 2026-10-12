@@ -3,7 +3,7 @@
 import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { DirectionalLight } from "three";
+import { HalfFloatType, WebGLRenderTarget, type DirectionalLight, type Object3D } from "three";
 import { PALETTE, QUALITY, type QualityTier } from "../config";
 import { journey } from "../store";
 import { CameraDirector } from "./CameraDirector";
@@ -75,7 +75,7 @@ function RigStep({ onReady }: { onReady: () => void }) {
  * Adaptive quality: when frames drop, step the pixel ratio down first, then
  * drop depth of field; recover the same way when there is headroom.
  */
-function Governor({ tier, setDof }: { tier: QualityTier; setDof: (on: boolean) => void }) {
+function Governor({ tier, dofOn }: { tier: QualityTier; dofOn: { current: boolean } }) {
   const setDpr = useThree((s) => s.setDpr);
   const profile = QUALITY[tier];
   const level = useRef(1);
@@ -83,7 +83,7 @@ function Governor({ tier, setDof }: { tier: QualityTier; setDof: (on: boolean) =
     const [min, max] = profile.dpr;
     const dpr = Math.min(window.devicePixelRatio || 1, min + (max - min) * level.current);
     setDpr(dpr);
-    setDof(profile.dof && level.current > 0.45);
+    dofOn.current = profile.dof && level.current > 0.45;
     window.__journey = { ...(window.__journey as NonNullable<Window["__journey"]>), dpr, tier, dof: profile.dof && level.current > 0.45 };
   };
   useEffect(apply, [tier]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -135,7 +135,8 @@ function Studio({ resolution }: { resolution: number }) {
   );
 }
 
-function Scene({ tier, setDof, dof, onReady }: { tier: QualityTier; setDof: (on: boolean) => void; dof: boolean; onReady: () => void }) {
+function Scene({ tier, onReady }: { tier: QualityTier; onReady: () => void }) {
+  const dofOn = useRef(QUALITY[tier].dof);
   const parts = useMemo(() => {
     const t = performance.now();
     const built = buildPiano();
@@ -160,7 +161,7 @@ function Scene({ tier, setDof, dof, onReady }: { tier: QualityTier; setDof: (on:
       <color attach="background" args={[PALETTE.ink]} />
       <fog attach="fog" args={[PALETTE.ink, 9, 26]} />
       <RigStep onReady={onReady} />
-      <Governor tier={tier} setDof={setDof} />
+      <Governor tier={tier} dofOn={dofOn} />
       <CameraDirector />
       <Studio resolution={profile.envResolution} />
       <Lights />
@@ -175,13 +176,12 @@ function Scene({ tier, setDof, dof, onReady }: { tier: QualityTier; setDof: (on:
       <Portal />
       <Soundboard />
       <FlashVeil />
-      <Effects dof={dof} multisampling={profile.multisampling} />
+      <Effects dof={profile.dof} dofOn={dofOn} multisampling={profile.multisampling} />
     </>
   );
 }
 
 export default function JourneyCanvas({ tier, active, reduced, eventSource, onReady, onFailure }: Props) {
-  const [dof, setDof] = useState(QUALITY[tier].dof);
   const [compiled, setCompiled] = useState(false);
   const onCompiled = useCallback(() => setCompiled(true), []);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -214,7 +214,7 @@ export default function JourneyCanvas({ tier, active, reduced, eventSource, onRe
         rig.time = 0;
       }}
     >
-      <Scene tier={tier} setDof={setDof} dof={dof} onReady={onReady} />
+      <Scene tier={tier} onReady={onReady} />
       {!compiled && <Precompile onDone={onCompiled} />}
       {reduced && compiled && <DemandRenderer />}
     </Canvas>
@@ -222,20 +222,49 @@ export default function JourneyCanvas({ tier, active, reduced, eventSource, onRe
 }
 
 /**
- * Compile every shader program off the main thread (KHR_parallel_shader_compile)
- * before the first frame, so the page never freezes while the piano arrives.
+ * Before the first frame, compile every world's shader programs off the main
+ * thread (KHR_parallel_shader_compile) and upload every texture and buffer, so
+ * no world ever stalls the first time it appears. The stages start hidden, and
+ * a hidden object is skipped by both compile and render, so everything is shown
+ * for the warm-up and put back after. The warm-up renders into a half-float
+ * target like the composer's, so the compiled variants are the ones in use.
  */
 function Precompile({ onDone }: { onDone: () => void }) {
   const { gl, scene, camera } = useThree();
   useEffect(() => {
     let cancelled = false;
     const t = performance.now();
+    const hidden: Object3D[] = [];
+    const culled: Object3D[] = [];
+    scene.traverse((o) => {
+      if (!o.visible) hidden.push(o);
+      if (o.frustumCulled) culled.push(o);
+    });
+    const target = new WebGLRenderTarget(64, 64, { type: HalfFloatType });
+    const reveal = (on: boolean) => {
+      hidden.forEach((o) => (o.visible = on));
+      culled.forEach((o) => (o.frustumCulled = !on));
+    };
+    reveal(true);
+    gl.setRenderTarget(target);
     gl.compileAsync(scene, camera)
       .catch(() => undefined)
       .then(() => {
+        if (cancelled) return;
+        reveal(true);
+        gl.setRenderTarget(target);
+        gl.render(scene, camera);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        reveal(false);
+        gl.setRenderTarget(null);
+        target.dispose();
         performance.measure("journey:compile", { start: t, end: performance.now() });
         if (!cancelled) onDone();
       });
+    gl.setRenderTarget(null);
+    reveal(false);
     return () => {
       cancelled = true;
     };

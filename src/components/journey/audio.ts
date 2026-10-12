@@ -4,7 +4,10 @@ import type * as ToneNS from "tone";
 
 /**
  * Piano voice for the site. Tone.js and the samples load only when the
- * visitor switches sound on; nothing plays before that click.
+ * visitor switches sound on; nothing plays before that click. The five
+ * recordings behind the menu octave (C4-B4) load first, so sound is ready in
+ * one small download; the full range follows in the background and takes over
+ * once it has arrived.
  *
  * Samples: Salamander Grand Piano by Alexander Holm, CC BY 3.0, served from
  * /public/audio/salamander (every minor third, A0 to C8; Tone pitch-shifts
@@ -16,6 +19,8 @@ import type * as ToneNS from "tone";
  */
 let Tone: typeof ToneNS | null = null;
 let sampler: ToneNS.Sampler | null = null;
+/** True once the full A0-C8 range is loaded; before that only notes near the menu octave play. */
+let complete = false;
 let ready: Promise<void> | null = null;
 let enabled = false;
 let lastNoteAt = 0;
@@ -81,9 +86,16 @@ export function pitchOf(name: string) {
   return frequencyOf(name) * 2 ** (-(SAMPLE_TUNING[sampleFor(name)] ?? 0) / 1200);
 }
 
+/** The recordings the C4-B4 menu keys play from (each key's nearest sample, as in the full set). */
+export const MENU_SAMPLES = ["C4", "D#4", "F#4", "A4", "C5"];
+/** Notes the menu samples cover without stretching further than the full set would. */
+const MENU_RANGE = [57, 75]; // A3 .. D#5
+
 /** The one piano voice: the app and the pitch test build it the same way. */
-export function createPiano(tone: typeof ToneNS) {
-  return new tone.Sampler({ urls: sampleUrls(), baseUrl: SAMPLE_BASE, release: 1.4 });
+export function createPiano(tone: typeof ToneNS, only?: string[], onload?: () => void) {
+  const all = sampleUrls();
+  const urls = only ? Object.fromEntries(only.map((n) => [n, all[n]])) : all;
+  return new tone.Sampler({ urls, baseUrl: SAMPLE_BASE, release: 1.4, onload });
 }
 
 /** Must be called from a user gesture: it unlocks the AudioContext. */
@@ -94,9 +106,23 @@ export async function enableSound() {
       await Tone.start();
       const reverb = new Tone.Reverb({ decay: 4.8, wet: 0.3, preDelay: 0.02 }).toDestination();
       const limiter = new Tone.Limiter(-3).connect(reverb);
-      sampler = createPiano(Tone).connect(limiter);
-      sampler.volume.value = -8;
-      await Tone.loaded();
+      const tone = Tone;
+      // Menu octave first: sound is ready after five small files.
+      const menu = await new Promise<ToneNS.Sampler>((resolve, reject) => {
+        const voice: ToneNS.Sampler = createPiano(tone, MENU_SAMPLES, () => resolve(voice));
+        voice.connect(limiter);
+        voice.volume.value = -8;
+        window.setTimeout(() => reject(new Error("Piano samples did not load")), 30000);
+      });
+      sampler = menu;
+      // Then the whole keyboard, quietly in the background.
+      const full: ToneNS.Sampler = createPiano(tone, undefined, () => {
+        sampler = full;
+        complete = true;
+        window.setTimeout(() => menu.dispose(), 6000);
+      });
+      full.connect(limiter);
+      full.volume.value = -8;
     })();
     // A failed load must not wedge the switch: the next attempt starts over.
     ready.catch(() => {
@@ -123,6 +149,10 @@ export function playPitch(name: string, velocity = 0.6, duration = 2.4) {
   if (!enabled || !sampler || !Tone) return;
   const now = Tone.now();
   if (now - lastNoteAt < 0.045) return;
+  if (!complete) {
+    const midi = Math.round(69 + 12 * Math.log2(frequencyOf(name) / 440));
+    if (midi < MENU_RANGE[0] || midi > MENU_RANGE[1]) return;
+  }
   lastNoteAt = now;
   sampler.triggerAttackRelease(pitchOf(name), duration, now, Math.max(0.05, Math.min(1, velocity)));
 }
@@ -136,6 +166,7 @@ export function playNote(midi: number, velocity = 0.6, duration = 2.4) {
 export function playCadence() {
   if (!enabled || !sampler || !Tone) return;
   const now = Tone.now();
+  if (!complete) return;
   const at = (midis: number[], delay: number, velocity: number, duration: number) =>
     sampler!.triggerAttackRelease(midis.map((m) => pitchOf(noteName(m))), duration, now + delay, velocity);
   at([39, 51, 55, 58, 63], 0, 0.42, 1.6);

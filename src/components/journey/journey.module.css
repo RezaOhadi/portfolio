@@ -17,9 +17,15 @@
 }
 
 /* --- stage ---------------------------------------------------------------- */
+/* The large viewport height, not inset: 0. On phones the address bar would otherwise
+   resize the canvas on every scroll, and each resize clears it for a frame. */
 .stage {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh;
+  height: 100lvh;
   z-index: 0;
   pointer-events: none;
 }
@@ -344,6 +350,23 @@
 @keyframes fx-failsafe {
   to {
     visibility: visible;
+  }
+}
+/* Slow connections: when the scripts are late (the fx-late flag, set by a tiny script in
+   the page head), the hero copy shows by itself; the scripts then leave it in place. */
+@media (scripting: enabled) {
+  :global(.fx-late) .journey:not([data-fx-ready]) [data-hero-copy] [data-fx] {
+    animation: fx-arrive 0.4s ease-out forwards;
+  }
+}
+@keyframes fx-arrive {
+  from {
+    visibility: visible;
+    opacity: 0;
+  }
+  to {
+    visibility: visible;
+    opacity: 1;
   }
 }
 .journey [data-fx="link"]:not(.break-all) {

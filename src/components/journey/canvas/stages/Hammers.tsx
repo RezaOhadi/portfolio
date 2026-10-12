@@ -188,6 +188,8 @@ export function Hammers() {
     const group = root.current;
     if (!group) return;
     group.visible = rig.show.hammers;
+    // The lamp lives outside the group and only goes dark (see Corridor): the light count never changes.
+    if (lamp.current) lamp.current.intensity = group.visible ? 42 : 0;
     if (!group.visible) return;
     const dt = Math.min(delta, 1 / 30);
     const camX = state.camera.position.x;
@@ -277,6 +279,7 @@ export function Hammers() {
   }, -1);
 
   return (
+    <>
     <group ref={root} visible={false}>
       <primitive object={built.heads} />
       <primitive object={built.unders} />
@@ -284,7 +287,8 @@ export function Hammers() {
       <primitive object={built.stringMesh} />
       <mesh geometry={built.rail} material={built.gold.material} />
       <primitive object={built.fibres} />
-      <spotLight ref={lamp} color={PALETTE.goldHot} intensity={42} angle={0.5} penumbra={0.85} distance={14} decay={1.6} />
     </group>
+    <spotLight ref={lamp} color={PALETTE.goldHot} intensity={0} angle={0.5} penumbra={0.85} distance={14} decay={1.6} />
+    </>
   );
 }

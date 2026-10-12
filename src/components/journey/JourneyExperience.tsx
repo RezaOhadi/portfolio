@@ -54,15 +54,25 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [gateReady, setGateReady] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const reduced = prefersReduced;
 
+  const [copyReady, setCopyReady] = useState(false);
   useJourneyScroll(root, reduced);
-  useTextChoreography(root, reduced, gateReady);
+  useTextChoreography(root, reduced, copyReady);
 
   // The sound threshold waits for the piano, but never longer than a few seconds.
   useEffect(() => {
     if (ready || failed) setGateReady(true);
     const t = window.setTimeout(() => setGateReady(true), 4500);
+    return () => window.clearTimeout(t);
+  }, [ready, failed]);
+
+  // The copy never waits on the 3D download: it enters with the piano when the piano
+  // is quick, and on its own a moment after hydration when the connection is slow.
+  useEffect(() => {
+    if (ready || failed) setCopyReady(true);
+    const t = window.setTimeout(() => setCopyReady(true), 700);
     return () => window.clearTimeout(t);
   }, [ready, failed]);
 
@@ -109,6 +119,14 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
       observer.disconnect();
       document.removeEventListener("visibilitychange", update);
     };
+  }, []);
+
+  // The full-screen menu covers the stage: the render loop rests so the menu opens at
+  // full speed. The canvas stays visible underneath, holding its last frame.
+  useEffect(() => {
+    const onMenu = (event: Event) => setMenuOpen(Boolean((event as CustomEvent<boolean>).detail));
+    window.addEventListener("site:menu", onMenu);
+    return () => window.removeEventListener("site:menu", onMenu);
   }, []);
 
   // Body copy in the middle band of the screen dims the world under it (see .dim).
@@ -191,7 +209,7 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
         <div className={styles.fallback} />
         {mount && tier && eventSource && !failed && (
           <CanvasBoundary onFailure={onFailure}>
-            <JourneyCanvas tier={tier} active={active} reduced={reduced} eventSource={eventSource} onReady={onReady} onFailure={onFailure} />
+            <JourneyCanvas tier={tier} active={active && !menuOpen} reduced={reduced} eventSource={eventSource} onReady={onReady} onFailure={onFailure} />
           </CanvasBoundary>
         )}
         <div className={styles.dim} />

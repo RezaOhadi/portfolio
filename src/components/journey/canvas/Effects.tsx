@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { Bloom, ChromaticAberration, DepthOfField, EffectComposer, Noise, ToneMapping, Vignette } from "@react-three/postprocessing";
 import { BlendFunction, ToneMappingMode, type BloomEffect, type ChromaticAberrationEffect, type DepthOfFieldEffect } from "postprocessing";
 import { useRef } from "react";
+import { MathUtils } from "three";
 import { HalfFloatType, Vector2 } from "three";
 import { range } from "../store";
 import { rig } from "./rig";
@@ -14,13 +15,16 @@ import { rig } from "./rig";
  * with scroll velocity and the burst. Depth of field opens in the exploded
  * world on capable GPUs.
  */
-export function Effects({ dof, multisampling }: { dof: boolean; multisampling: number }) {
+export function Effects({ dof, dofOn, multisampling }: { dof: boolean; dofOn: { current: boolean }; multisampling: number }) {
   const bloom = useRef<BloomEffect>(null);
   const aberration = useRef<ChromaticAberrationEffect>(null);
   const depth = useRef<DepthOfFieldEffect>(null);
   const offset = useRef(new Vector2());
+  // The governor's depth-of-field switch, eased: the effect stays mounted and only its strength moves.
+  const strength = useRef(1);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
+    strength.current = MathUtils.damp(strength.current, dofOn.current ? 1 : 0, 3, Math.min(delta, 1 / 20));
     if (bloom.current) bloom.current.intensity = 0.85 + rig.burst * 0.9 + rig.anticipation * 0.6 + rig.flash * 1.4;
     const ca = rig.velocity * 0.0016 + rig.burst * 0.0024 + rig.flash * 0.005;
     offset.current.set(ca, ca * 0.6);
@@ -28,15 +32,14 @@ export function Effects({ dof, multisampling }: { dof: boolean; multisampling: n
     if (depth.current) {
       depth.current.target = rig.focus;
       // Shallow focus while parts float; it closes as the crane reaches eye level.
-      depth.current.bokehScale = rig.dof * (1 - rig.snap * 0.7) * (1 - range(rig.exploded, 0.72, 1) * 0.65) * (1 - range(rig.dive, 0.4, 0.6) * 0.6) * 3.4;
+      depth.current.bokehScale = rig.dof * (1 - rig.snap * 0.7) * (1 - range(rig.exploded, 0.72, 1) * 0.65) * (1 - range(rig.dive, 0.4, 0.6) * 0.6) * 3.4 * strength.current;
       depth.current.cocMaterial.focusRange = 2.6;
     }
   });
 
   return (
-    // Remounted when depth of field toggles: removing it from a live multisampled
-    // composer leaves a depth blit between mismatched formats (GL_INVALID_OPERATION).
-    <EffectComposer key={dof ? "dof" : "flat"} multisampling={multisampling} frameBufferType={HalfFloatType} enableNormalPass={false}>
+    // Mounted once for the tier and never rebuilt mid-journey: a rebuild recompiles every pass.
+    <EffectComposer multisampling={multisampling} frameBufferType={HalfFloatType} enableNormalPass={false}>
       {dof && <DepthOfField ref={depth} target={rig.focus} focusRange={2.6} bokehScale={0} resolutionScale={0.5} />}
       <Bloom ref={bloom} mipmapBlur luminanceThreshold={0.92} luminanceSmoothing={0.18} intensity={0.85} radius={0.74} />
       <ChromaticAberration ref={aberration} offset={offset.current} radialModulation modulationOffset={0.3} blendFunction={BlendFunction.NORMAL} />

@@ -8,7 +8,7 @@ import styles from "../journey.module.css";
 /** World 1: the hero, over the floating piano. */
 export function HeroOverlay({ data }: { data: HomeUniverseData }) {
   return (
-    <div className={styles.heroCopy}>
+    <div className={styles.heroCopy} data-hero-copy>
       <p className={styles.eyebrow} data-fx="eyebrow">
         00 / Pianist · Composer
       </p>

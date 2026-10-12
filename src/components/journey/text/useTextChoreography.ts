@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
-import type { RefObject } from "react";
+import { useEffect, type RefObject } from "react";
 import { emitSparks } from "../store";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin, useGSAP);
@@ -220,12 +220,20 @@ const ROLES: Record<string, (el: HTMLElement) => void> = { title, eyebrow, lede,
 
 /** `started` holds every entrance until the first world is ready, so text arrives with the piano. */
 export function useTextChoreography(root: RefObject<HTMLElement | null>, reduced: boolean, started: boolean) {
+  // The scripts have arrived: from here the choreography owns the hero copy (see LATE_COPY in the root layout).
+  useEffect(() => {
+    (window as Window & { __fxStarted?: boolean }).__fxStarted = true;
+  }, []);
   useGSAP(
     () => {
       const host = root.current;
       if (!host) return;
       if (!started) return;
-      const nodes = gsap.utils.toArray<HTMLElement>("[data-fx]", host);
+      // On a slow connection the hero copy has already shown itself (see LATE_COPY in the root layout): leave it in place.
+      const shown = document.documentElement.classList.contains("fx-late");
+      // Only the first, slow arrival: a later visit within the session gets the full entrance.
+      document.documentElement.classList.remove("fx-late");
+      const nodes = gsap.utils.toArray<HTMLElement>("[data-fx]", host).filter((el) => !(shown && el.closest("[data-hero-copy]")));
       if (reduced) {
         // Soft fades only.
         nodes.forEach((el) => gsap.from(el, { opacity: 0, duration: 0.8, ease: "power1.out", scrollTrigger: { trigger: el, ...ENTER } }));

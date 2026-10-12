@@ -114,7 +114,9 @@ function inject(material: Material, options: FxOptions): FxMaterial {
       .replace(
         "#include <dithering_fragment>",
         `#include <dithering_fragment>
-        float fxFacing = 1.0 - abs(dot(normalize(normal), normalize(vViewPosition)));
+        // Clamped: a face square to the lens rounds |dot| just past 1.0, and pow() of a
+        // negative base is NaN; bloom then spreads one NaN pixel over the whole frame as black.
+        float fxFacing = clamp(1.0 - abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0);
         float fxFres = pow(fxFacing, 2.4);
         // The constant rim is kept to true silhouettes so lacquer stays black.
         float fxRim = pow(fxFacing, 6.0);

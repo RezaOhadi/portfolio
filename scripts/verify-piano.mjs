@@ -45,3 +45,8 @@ test("MIDI numbers convert to the right names, and every sample file exists", as
   assert.deepEqual([60, 61, 62, 69, 70, 71, 72].map(audio.noteName), ["C4", "C#4", "D4", "A4", "A#4", "B4", "C5"]);
   for (const file of Object.values(audio.sampleUrls())) await access(new URL(`../public/audio/salamander/${file}`, import.meta.url));
 });
+
+test("Sound loads the menu octave first: those five samples are exactly the ones C4 to B4 play", () => {
+  const needed = [...new Set(Object.keys(EXPECTED).map(audio.sampleFor))].sort();
+  assert.deepEqual([...audio.MENU_SAMPLES].sort(), needed);
+});

@@ -219,59 +219,68 @@ export function PianoKeys({ variant, active, onHome, onNavigate, label }: PianoK
  */
 function Cheek() {
   const id = useId().replace(/:/g, "");
+  // One contour: the shoulder rolls over, then a long S sweeps down and flares into the foot on the key slip.
+  const body = "M0 114V20C0 11 5.5 6 14 5.2 40 3 70 2.6 96 3c17 .3 27.5 5 33.5 14.5 6 9.5 7 23.5 10 38.5 3.5 17 11 32 23.5 42 5 4 9.5 6.5 13 7.5V114z";
+  const rim = "M14 5.2C40 3 70 2.6 96 3c17 .3 27.5 5 33.5 14.5 6 9.5 7 23.5 10 38.5 3.5 17 11 32 23.5 42 5 4 9.5 6.5 13 7.5";
+  const gloss = "M14 9.6C40 7.6 70 7.2 95.5 7.6c14.5.3 23.4 4.3 28.6 12.4 5.4 8.4 6.4 22.4 9.4 37.4 3.6 18 11.6 33.5 25 43.8";
   return (
     <svg className={styles.cheek} viewBox="0 0 176 114" aria-hidden focusable="false">
       <defs>
-        <linearGradient id={`${id}-body`} x1="0" y1="0" x2="1" y2="0.25">
+        <radialGradient id={`${id}-glow`} cx="0.86" cy="0.62" r="0.62">
+          <stop offset="0" stopColor="#f2b56a" stopOpacity="0.66" />
+          <stop offset="0.45" stopColor="#c98f52" stopOpacity="0.26" />
+          <stop offset="1" stopColor="#8a5a2b" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id={`${id}-body`} x1="0" y1="0" x2="1" y2="0.3">
           <stop offset="0" stopColor="#010102" />
-          <stop offset="0.28" stopColor="#0d0d10" />
-          <stop offset="0.58" stopColor="#1b1b1f" />
-          <stop offset="0.8" stopColor="#0a0a0c" />
+          <stop offset="0.35" stopColor="#0c0c0f" />
+          <stop offset="0.66" stopColor="#18181c" />
+          <stop offset="0.86" stopColor="#09090b" />
           <stop offset="1" stopColor="#020203" />
         </linearGradient>
-        <radialGradient id={`${id}-roll`} cx="0.72" cy="0.12" r="0.55">
-          <stop offset="0" stopColor="#f3d6ae" stopOpacity="0.6" />
-          <stop offset="0.35" stopColor="#d5ae88" stopOpacity="0.2" />
+        <radialGradient id={`${id}-sheen`} cx="0.7" cy="0.16" r="0.5">
+          <stop offset="0" stopColor="#f3d6ae" stopOpacity="0.32" />
+          <stop offset="0.5" stopColor="#d5ae88" stopOpacity="0.08" />
           <stop offset="1" stopColor="#d5ae88" stopOpacity="0" />
         </radialGradient>
-        <radialGradient id={`${id}-foot`} cx="0.96" cy="0.98" r="0.4">
-          <stop offset="0" stopColor="#f6c98c" stopOpacity="0.75" />
-          <stop offset="0.4" stopColor="#d5ae88" stopOpacity="0.22" />
+        <radialGradient id={`${id}-foot`} cx="0.97" cy="0.97" r="0.34">
+          <stop offset="0" stopColor="#f6c98c" stopOpacity="0.7" />
+          <stop offset="0.45" stopColor="#d5ae88" stopOpacity="0.16" />
           <stop offset="1" stopColor="#d5ae88" stopOpacity="0" />
         </radialGradient>
-        <linearGradient id={`${id}-spec`} x1="0" y1="0" x2="1" y2="0">
+        <linearGradient id={`${id}-gloss`} gradientUnits="userSpaceOnUse" x1="14" y1="8" x2="160" y2="102">
           <stop offset="0" stopColor="#f3d6ae" stopOpacity="0" />
-          <stop offset="0.25" stopColor="#f6dcb6" stopOpacity="0.45" />
-          <stop offset="0.62" stopColor="#fff4e2" stopOpacity="1" />
-          <stop offset="0.84" stopColor="#f3d6ae" stopOpacity="0.55" />
-          <stop offset="1" stopColor="#d5ae88" stopOpacity="0" />
+          <stop offset="0.3" stopColor="#f6dcb6" stopOpacity="0.5" />
+          <stop offset="0.56" stopColor="#fff6e8" stopOpacity="1" />
+          <stop offset="0.74" stopColor="#f6dcb6" stopOpacity="0.7" />
+          <stop offset="1" stopColor="#f2b56a" stopOpacity="0.15" />
         </linearGradient>
-        <linearGradient id={`${id}-edge`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#f3d6ae" stopOpacity="0" />
-          <stop offset="0.35" stopColor="#f6dcb6" stopOpacity="0.6" />
-          <stop offset="1" stopColor="#ffe9c7" stopOpacity="0.95" />
+        <linearGradient id={`${id}-rim`} gradientUnits="userSpaceOnUse" x1="14" y1="4" x2="176" y2="106">
+          <stop offset="0" stopColor="#f6dcb6" stopOpacity="0.15" />
+          <stop offset="0.5" stopColor="#f6dcb6" stopOpacity="0.8" />
+          <stop offset="1" stopColor="#ffd9a0" stopOpacity="0.95" />
         </linearGradient>
         <linearGradient id={`${id}-face`} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="#000" stopOpacity="0.95" />
           <stop offset="1" stopColor="#000" stopOpacity="0" />
         </linearGradient>
-        <filter id={`${id}-soft`} x="-20%" y="-40%" width="140%" height="180%">
-          <feGaussianBlur stdDeviation="1.3" />
+        <filter id={`${id}-soft`} x="-10%" y="-10%" width="120%" height="120%">
+          <feGaussianBlur stdDeviation="0.7" />
         </filter>
-        <filter id={`${id}-bloom`} x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="3.2" />
+        <filter id={`${id}-bloom`} x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3" />
         </filter>
       </defs>
-      {/* Rises from the fallboard in one long sweep, rolls over, and flares into its foot on the key slip. */}
-      <path d="M0 114V28c0-9 5-14.5 14-16.5C38 6.5 64 3.5 94 3.5c26 0 42 6 53 20 10 12.5 10 32 14 52 2.6 13 7.5 22 15 38.5z" fill={`url(#${id}-body)`} />
-      <path d="M0 114V28c0-9 5-14.5 14-16.5C38 6.5 64 3.5 94 3.5c26 0 42 6 53 20 10 12.5 10 32 14 52 2.6 13 7.5 22 15 38.5z" fill={`url(#${id}-roll)`} />
-      <path d="M0 114V28c0-9 5-14.5 14-16.5C38 6.5 64 3.5 94 3.5c26 0 42 6 53 20 10 12.5 10 32 14 52 2.6 13 7.5 22 15 38.5z" fill={`url(#${id}-foot)`} />
-      <rect x="0" y="20" width="12" height="94" fill={`url(#${id}-face)`} />
-      {/* A specular streak along the roll with a softer bloom under it, and a highlight down the outer contour. */}
-      <path d="M8 30c1-7 5-10.5 12-12C42 13.5 66 10 94 10c22 0 36 5 45 16.5" fill="none" stroke={`url(#${id}-spec)`} strokeWidth="6" strokeLinecap="round" opacity="0.35" filter={`url(#${id}-bloom)`} />
-      <path d="M8 30c1-7 5-10.5 12-12C42 13.5 66 10 94 10c22 0 36 5 45 16.5" fill="none" stroke={`url(#${id}-spec)`} strokeWidth="2.6" strokeLinecap="round" filter={`url(#${id}-soft)`} />
-      <path d="M146 30c7.5 11 8 28 11.5 46 2.4 12 6.6 21 12.5 33" fill="none" stroke={`url(#${id}-edge)`} strokeWidth="2.2" strokeLinecap="round" filter={`url(#${id}-soft)`} />
-      <path d="M.5 28c0-8.8 5-14 13.6-16C38 7 64 4 94 4c25.8 0 41.6 6 52.6 19.8 9.9 12.4 9.9 31.9 13.9 51.9 2.6 13 7.5 22 15 38.3" fill="none" stroke="#f6dcb6" strokeOpacity="0.7" strokeWidth="0.9" />
+      {/* Warm light just beyond the contour, as if the lamp sits behind the case. */}
+      <rect x="96" y="0" width="80" height="114" fill={`url(#${id}-glow)`} />
+      <path d={body} fill={`url(#${id}-body)`} />
+      <path d={body} fill={`url(#${id}-sheen)`} />
+      <path d={body} fill={`url(#${id}-foot)`} />
+      <rect x="0" y="18" width="12" height="96" fill={`url(#${id}-face)`} />
+      {/* A glossy highlight riding the curve: a soft bloom, then the crisp streak on top. */}
+      <path d={gloss} fill="none" stroke={`url(#${id}-gloss)`} strokeWidth="6" strokeLinecap="round" opacity="0.4" filter={`url(#${id}-bloom)`} />
+      <path d={gloss} fill="none" stroke={`url(#${id}-gloss)`} strokeWidth="1.8" strokeLinecap="round" filter={`url(#${id}-soft)`} />
+      <path d={rim} fill="none" stroke={`url(#${id}-rim)`} strokeWidth="0.9" />
     </svg>
   );
 }

@@ -81,6 +81,7 @@ const _m = new Matrix4();
 const _q = new Quaternion();
 const _p = new Vector3();
 const _s = new Vector3(1, 1, 1);
+const _gone = new Vector3(0, 0, 0);
 const Z_AXIS = new Vector3(0, 0, 1);
 
 export function Corridor() {
@@ -158,7 +159,12 @@ export function Corridor() {
     const group = root.current;
     if (!group) return;
     group.visible = rig.show.corridor;
-    if (!group.visible) return;
+    // The lamp lives outside the group and only goes dark: a light leaving the scene
+    // changes every lit shader, and they would all recompile in the middle of the cut.
+    if (!group.visible) {
+      if (light.current) light.current.intensity = 0;
+      return;
+    }
     const dt = Math.min(delta, 1 / 30);
     const cam = state.camera.position;
 
@@ -234,7 +240,10 @@ export function Corridor() {
           _p.set(x - pivotX, 0, 0).applyQuaternion(_q);
           _p.x += pivotX;
           _p.z = key.z;
-          _m.compose(_p, _q, _s);
+          // A blade swinging up level with the camera would sweep across the lens and black out
+          // the frame for a moment: during the twist, the keys beside the lens step aside.
+          const atLens = rig.fin > 0.02 && Math.abs(dist) < 0.55;
+          _m.compose(_p, _q, atLens ? _gone : _s);
           mesh.setMatrixAt(i, _m);
           attr.setX(i, p * (black ? 0.8 : 0.55));
         }
@@ -247,22 +256,24 @@ export function Corridor() {
 
     // A travelling gold lamp, and a light at the far end of the corridor.
     if (light.current) {
-      light.current.position.set(0, CORRIDOR.centerY + 0.2, cam.z - 1.6 - group.position.z);
+      light.current.position.set(0, CORRIDOR.centerY + 0.2, cam.z - 1.6);
       light.current.intensity = 2.6 + rig.velocity * 3;
     }
     if (beacon.current) beacon.current.position.set(0, CORRIDOR.centerY, cam.z - 24 - group.position.z);
   }, -1);
 
   return (
+    <>
+    <pointLight ref={light} color={PALETTE.goldHot} intensity={0} distance={9} decay={1.4} />
     <group ref={root} visible={false}>
       {built.sides.map((side, i) => (i === 2 ? null : <primitive key={i} object={side.pivot} />))}
-      <pointLight ref={light} color={PALETTE.goldHot} intensity={5} distance={9} decay={1.4} />
       <group ref={beacon}>
         <mesh material={beaconMaterial}>
           <sphereGeometry args={[0.16, 24, 16]} />
         </mesh>
       </group>
     </group>
+    </>
   );
 }
 

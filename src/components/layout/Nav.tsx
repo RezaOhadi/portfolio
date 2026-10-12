@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useSitePath } from "@/components/layout/useSitePath";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X, ArrowUpRight } from "lucide-react";
 import { utilityNav } from "@/config/site";
 import type { SocialLinks } from "@/lib/types";
 import { PianoKeys, WHITE_KEYS } from "@/components/layout/PianoKeys";
 export function Nav({ social }: { social: SocialLinks }) {
-  const pathname = usePathname();
+  const pathname = useSitePath();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("home");
   const dialog = useRef<HTMLDialogElement>(null);
@@ -55,6 +55,8 @@ export function Nav({ social }: { social: SocialLinks }) {
     if (!node) return;
     if (open && !node.open) node.showModal();
     if (!open && node.open) node.close();
+    // Anything animating behind the full-screen menu can rest while it is open.
+    window.dispatchEvent(new CustomEvent("site:menu", { detail: open }));
     if (!open) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
