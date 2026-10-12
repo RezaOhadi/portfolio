@@ -1,6 +1,12 @@
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // A stray package-lock.json in the user folder made Next guess that folder as
+  // the workspace root; pin file tracing to this project.
+  outputFileTracingRoot: dirname(fileURLToPath(import.meta.url)),
   // Keep live preview and production builds from writing the same cache.
   distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   poweredByHeader: false,
