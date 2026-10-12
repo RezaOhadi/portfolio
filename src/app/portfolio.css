@@ -1272,3 +1272,14 @@ body::before {
     clip-path: none !important;
   }
 }
+
+/* Touch: small text links get a full-size tap area without moving anything. */
+@media (pointer: coarse) {
+  footer ul a {
+    padding-block: 4px;
+  }
+  .menu-email {
+    padding-block: 12px;
+    margin-block: -12px;
+  }
+}

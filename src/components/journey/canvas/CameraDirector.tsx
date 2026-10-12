@@ -15,8 +15,12 @@ import { NAME } from "./particles/shaders";
 /** Centre of the assembled piano, the pivot of the final arc. */
 const PIANO_TARGET = new Vector3(0.02, 0.86, -0.92);
 
-/** Dolly zoom: the name keeps its size on screen; portrait frames need a far wider hold to fit it. */
-const nameKeep = (portrait: number) => 6 * Math.tan(MathUtils.degToRad(24)) * MathUtils.lerp(1, 3.2, portrait);
+/**
+ * Dolly zoom: the name keeps its size on screen; portrait frames need a far wider hold to fit it.
+ * Never narrower than the name itself with a margin, whatever the aspect (4:3 tablets, small phones).
+ */
+const nameKeep = (portrait: number, aspect: number) =>
+  Math.max(6 * Math.tan(MathUtils.degToRad(24)) * MathUtils.lerp(1, 3.2, portrait), ((NAME.width / 2) * 1.14) / aspect);
 const nameDistance = (portrait: number) => MathUtils.lerp(1, 2.6, portrait);
 
 /**
@@ -244,7 +248,7 @@ export function CameraDirector() {
         const face = ease.recoil(range(rig.morph, 0, 0.85));
         // Dolly zoom: pull back while the lens narrows, holding the name's size (Vertigo).
         const d = MathUtils.lerp(6, 13, ease.settle(rig.name)) * nameDistance(portrait);
-        const keep = nameKeep(portrait);
+        const keep = nameKeep(portrait, aspect);
         const fov = MathUtils.radToDeg(2 * Math.atan(keep / d));
         s.tmp.set(Math.sin(t * 0.1) * 0.12, NAME.y + 0.1, NAME.z + d);
         s.near.set(0, NAME.y, NAME.z);
@@ -272,7 +276,7 @@ export function CameraDirector() {
       const from = Math.min(1, rig.reassemble * 12);
       f.pos.lerp(pos, from);
       f.target.lerp(o2.target, from);
-      const nameFov = MathUtils.radToDeg(2 * Math.atan(nameKeep(portrait) / (13 * nameDistance(portrait))));
+      const nameFov = MathUtils.radToDeg(2 * Math.atan(nameKeep(portrait, aspect) / (13 * nameDistance(portrait))));
       f.fov = MathUtils.lerp(nameFov, MathUtils.lerp(32, 42, portrait), a);
       f.roll = 0;
       f.shiftX = 0;

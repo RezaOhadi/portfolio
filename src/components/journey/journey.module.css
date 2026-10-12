@@ -508,6 +508,21 @@
     display: none;
   }
 }
+/* Short landscape screens (phones on their side): the centred invitation would sit
+   on the hero title, so it moves to the bottom-right corner, clear of the copy. */
+@media (min-width: 761px) and (max-height: 520px) {
+  .gate {
+    left: auto;
+    right: max(1.5rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    translate: none;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+  .gateLine {
+    display: none;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .corner .credit {
     animation: none;
