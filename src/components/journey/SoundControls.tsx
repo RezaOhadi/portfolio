@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useFadeOverText } from "@/components/layout/useFadeOverText";
 import { disableSound, enableSound } from "./audio";
 import styles from "./journey.module.css";
 import { emit, emitSparks, journey } from "./store";
@@ -26,6 +27,7 @@ export function SoundControls({ ready }: { ready: boolean }) {
   const gate = useRef<HTMLDivElement>(null);
   const corner = useRef<HTMLDivElement>(null);
   const leaving = useRef(false);
+  useFadeOverText(corner, choice !== "pending");
 
   const dismiss = (next: Choice) => {
     const node = gate.current;

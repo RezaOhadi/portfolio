@@ -455,7 +455,15 @@ html {
   gap: 11px;
   color: var(--muted);
   cursor: pointer;
-  transition: color 0.25s ease;
+  transition:
+    color 0.25s ease,
+    opacity 0.4s ease;
+}
+/* Short screens: copy passes under the button; it steps back until pointed at. */
+@media (max-height: 960px) {
+  .scroll-mouse-control--top[data-over-text]:not(:hover, :focus-visible) {
+    opacity: 0.22 !important;
+  }
 }
 .scroll-mouse-control:hover {
   color: var(--ivory);
@@ -524,7 +532,7 @@ html {
   transform: translateY(-1px);
 }
 .scroll-mouse-label {
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1;
   letter-spacing: 0.22em;
   color: #b7b5b1cc;

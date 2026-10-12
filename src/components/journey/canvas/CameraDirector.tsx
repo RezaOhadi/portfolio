@@ -21,7 +21,9 @@ const PIANO_TARGET = new Vector3(0.02, 0.86, -0.92);
  */
 const nameKeep = (portrait: number, aspect: number) =>
   Math.max(6 * Math.tan(MathUtils.degToRad(24)) * MathUtils.lerp(1, 3.2, portrait), ((NAME.width / 2) * 1.14) / aspect);
-const nameDistance = (portrait: number) => MathUtils.lerp(1, 2.6, portrait);
+const TABLET_LIFT = 0.22;
+const TABLET_PULL = 0.2;
+const nameDistance =(portrait: number) => MathUtils.lerp(1, 2.6, portrait);
 
 /**
  * One camera, a different move per world:
@@ -92,6 +94,8 @@ export function CameraDirector() {
     const aspect = width / Math.max(1, height);
     // Portrait screens: pull back and push the subject into the upper half.
     const portrait = MathUtils.clamp((1.25 - aspect) / 0.8, 0, 1);
+    // Tablet portrait keeps the side-by-side hero copy: lift the instrument clear of the title.
+    const tablet = MathUtils.smoothstep(portrait, 0.2, 0.45) * (1 - MathUtils.smoothstep(portrait, 0.8, 0.95));
     const t = rig.time;
     const f = s.frame;
 
@@ -101,14 +105,14 @@ export function CameraDirector() {
     const away = 1 - rig.arrival;
     // Portrait screens see the instrument more from the front, so it fits the width.
     o.angle = 0.62 - portrait * 0.5 + hero * 0.85 - away * 0.55 + (journey.reduced ? 0 : Math.sin(t * 0.13) * 0.1);
-    o.radius = MathUtils.lerp(6.4, 9.0, portrait) * (1 - hero * 0.06) + away * 5.5;
+    o.radius = MathUtils.lerp(6.4, 9.0, portrait) * (1 - hero * 0.06) * (1 + tablet * TABLET_PULL) + away * 5.5;
     // High enough to look into the open case and catch the gold plate.
     o.height = MathUtils.lerp(1.95, 2.6, portrait) - hero * 0.45 + away * 2.4;
     o.target.set(0.02, 0.74 + hero * 0.22, -0.92);
     o.fov = MathUtils.lerp(30, 40, portrait);
     // As the hero copy leaves, the instrument moves to the centre of the frame.
     o.shiftX = MathUtils.lerp(-0.5, 0, portrait) * (1 - ease.settle(range(rig.piano, 0.25, 0.9)));
-    o.shiftY = MathUtils.lerp(0, -0.4, portrait);
+    o.shiftY = MathUtils.lerp(0, -0.4, portrait) - tablet * TABLET_LIFT;
 
     // Explode: the camera recoils up and back to a high three-quarter view,
     // so every flat part (lid, plate, strings, soundboard) shows its face.

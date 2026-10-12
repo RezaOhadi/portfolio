@@ -10,7 +10,8 @@ import {
 } from "framer-motion";
 import { ChevronUp } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useFadeOverText } from "./useFadeOverText";
 
 const SCROLL_THRESHOLD = 300;
 
@@ -47,6 +48,8 @@ export function ScrollMouseIndicator({
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const showCue = pathname === cuePath;
+  const top = useRef<HTMLButtonElement>(null);
+  useFadeOverText(top, scrolled);
 
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, {
@@ -93,6 +96,7 @@ export function ScrollMouseIndicator({
       {scrolled ? (
         <motion.button
           key="back-to-top"
+          ref={top}
           type="button"
           className="scroll-mouse-control scroll-mouse-control--top"
           aria-label="Back to top"

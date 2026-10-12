@@ -211,7 +211,7 @@
   color: var(--gold);
 }
 .workMeta {
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: #c9b89e;
@@ -237,7 +237,7 @@
   top: 0;
   left: 0;
   white-space: nowrap;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ivory);
@@ -425,7 +425,7 @@
   transition: border-color 0.25s, color 0.25s, scale 0.35s var(--ease);
 }
 .gateAlt {
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--muted);
@@ -450,6 +450,12 @@
   align-items: center;
   gap: 0.75rem;
   transition: opacity 0.4s;
+}
+/* Short screens: copy passes under the corner; the control steps back until pointed at. */
+@media (max-height: 960px) {
+  .corner[data-over-text]:not(:hover, :focus-within) {
+    opacity: 0.22 !important;
+  }
 }
 .journey[data-active="false"] .corner {
   opacity: 0;
