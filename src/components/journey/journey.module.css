@@ -657,3 +657,12 @@
     top: 52svh;
   }
 }
+
+/* Phones: the about and music copy columns are their own compositor layers (see portfolio.css). */
+@media (pointer: coarse) {
+  .aboutCopy,
+  .musicCopy {
+    will-change: transform;
+    contain: layout;
+  }
+}

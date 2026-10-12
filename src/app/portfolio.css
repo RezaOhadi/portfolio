@@ -1324,3 +1324,16 @@ html.journey-snap body > footer,
 html.journey-snap footer:last-of-type {
   scroll-snap-align: end;
 }
+
+/* Phones and tablets: each long copy block is its own compositor layer, rasterized once and
+   only moved while the page scrolls. Measured on the S26 Ultra: the slow stretches through the
+   dive, portal, morph and reassemble were the browser re-rasterizing this copy at 4.25x. Paint
+   containment is left out on purpose: it would clip the scrim pools that extend past the boxes. */
+@media (pointer: coarse) {
+  [data-fx-scope],
+  .concert-row,
+  .contact-grid {
+    will-change: transform;
+    contain: layout;
+  }
+}

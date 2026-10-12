@@ -11,10 +11,12 @@ import sharp from "sharp";
 const readPng = async (buf) => { const { data, info } = await sharp(buf).raw().toBuffer({ resolveWithObject: true }); return { data, width: info.width, height: info.height, channels: info.channels }; };
 const writePng = (img) => sharp(img.data, { raw: { width: img.width, height: img.height, channels: img.channels } }).png().toBuffer();
 
-const [base, mode = "compare", onlyStops] = process.argv.slice(2);
+const [base, mode = "compare", onlyStops, dom] = process.argv.slice(2);
+// With a 4th argument "dom", the page copy stays visible and a separate baseline folder is used.
+const withDom = dom === "dom";
 const STOPS = [["strings", "strings", 0.4], ["hammers", "hammers", 0.4], ["outro", "outro", 0.6], ["corridor", "corridor", 0.15], ["soundboard", "soundboard", 0.4], ["name", "name", 0.5], ["hero", "piano", 0], ["about", "exploded", 0.45]].filter(([n]) => !onlyStops || onlyStops.split(",").includes(n));
 const dir = ".playwright-mcp/pixels";
-const baseDir = join(dir, "baseline");
+const baseDir = join(dir, withDom ? "baseline-dom" : "baseline");
 mkdirSync(baseDir, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -53,7 +55,7 @@ try {
   await send("Page.navigate", { url: `${base}/?freeze` });
   await sleep(12000);
   // Only the 3D: no copy, menu or controls in the frame (they animate).
-  await ev(`(() => { const s = document.createElement('style'); s.textContent = 'body * { visibility: hidden !important; } [class*="stage"] canvas { visibility: visible !important; opacity: 1 !important; transition: none !important; } [class*="dim"] { display: none !important; }'; document.head.append(s); return 1; })()`);
+  if (!withDom) await ev(`(() => { const s = document.createElement('style'); s.textContent = 'body * { visibility: hidden !important; } [class*="stage"] canvas { visibility: visible !important; opacity: 1 !important; transition: none !important; } [class*="dim"] { display: none !important; }'; document.head.append(s); return 1; })()`);
   await ev(`window.__segs = [...document.querySelectorAll('[data-segment]')].map((s) => ({ id: s.dataset.segment, top: s.offsetTop, h: s.offsetHeight })); 1`);
   const results = {};
   for (const [name, seg, p] of STOPS) {
@@ -73,11 +75,11 @@ try {
       const ref = await readPng(readFileSync(file));
       const d = diff(a, ref);
       results[name] = d;
-      if (d.differing > 0) writeFileSync(join(dir, `${name}-now.png`), await writePng(a));
+      if (d.differing > 0) writeFileSync(join(dir, `${name}${withDom ? "-dom" : ""}-now.png`), await writePng(a));
     }
     console.log(name, JSON.stringify(results[name]));
   }
-  writeFileSync(join(dir, `${mode}.json`), JSON.stringify(results, null, 1));
+  writeFileSync(join(dir, `${mode}${withDom ? "-dom" : ""}.json`), JSON.stringify(results, null, 1));
 } finally {
   chrome.kill();
   await sleep(300);
