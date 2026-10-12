@@ -78,7 +78,12 @@ export function Nav({ social }: { social: SocialLinks }) {
       <header className={"portfolio-nav" + (scrolled ? " is-scrolled" : "")}>
         <div className="nav-inner">
           <Link href="/" className="wordmark" aria-label="Reza Ohadi — home">
-            Reza Ohadi<span aria-hidden>.</span>
+            <span className="wordmark-name">
+              Reza Ohadi<span aria-hidden>.</span>
+            </span>
+            <span className="wordmark-role" aria-hidden>
+              Pianist · Composer
+            </span>
           </Link>
           <nav className="piano-nav" aria-label="Primary">
             <PianoKeys
@@ -112,7 +117,14 @@ export function Nav({ social }: { social: SocialLinks }) {
         }}
       >
         <div className="menu-heading">
-          <span className="wordmark">Reza Ohadi.</span>
+          <span className="wordmark">
+            <span className="wordmark-name">
+              Reza Ohadi<span aria-hidden>.</span>
+            </span>
+            <span className="wordmark-role" aria-hidden>
+              Pianist · Composer
+            </span>
+          </span>
           <button
             type="button"
             autoFocus

@@ -67,17 +67,101 @@ html {
   min-height: 76px;
 }
 .wordmark {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
   font-family: var(--font-serif), Georgia, serif;
-  font-size: 27px;
   white-space: nowrap;
 }
-.wordmark span {
+.wordmark-name {
+  font-size: 27px;
+  line-height: 1;
+}
+.wordmark-name span {
   color: var(--accent);
 }
-/* The primary navigation is one octave of keys (components/layout/PianoKeys). */
+.wordmark-role {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+/* The primary navigation is a slice of a grand piano (components/layout/PianoKeys). */
 .piano-nav {
-  margin: 0 auto;
+  margin-left: auto;
   display: flex;
+}
+/* From 1100px the whole header is the piano case: black lacquer with warm
+   reflections and a gold rim light, the keys set into it on the right. */
+@media (min-width: 1100px) {
+  .portfolio-nav {
+    top: 16px;
+    max-width: 1392px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 7px;
+    transform-origin: 50% 0;
+    background:
+      radial-gradient(55% 150% at 10% -30%, rgb(243 214 174 / 0.1), transparent 60%),
+      radial-gradient(30% 130% at 99% 0%, rgb(243 214 174 / 0.14), transparent 70%),
+      linear-gradient(98deg, transparent 16%, rgb(255 244 228 / 0.035) 22%, transparent 29%, transparent 52%, rgb(255 244 228 / 0.028) 58%, transparent 66%),
+      linear-gradient(180deg, #1a1a1d 0%, #0a0a0c 22%, #040405 56%, #0c0c0e 86%, #050506 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(243 214 174 / 0.38),
+      inset 0 -1px 0 rgb(213 174 136 / 0.2),
+      inset 1px 0 0 rgb(243 214 174 / 0.12),
+      0 18px 40px rgb(0 0 0 / 0.55),
+      0 0 0 1px #000;
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .portfolio-nav.is-scrolled {
+    background:
+      radial-gradient(55% 150% at 10% -30%, rgb(243 214 174 / 0.1), transparent 60%),
+      radial-gradient(30% 130% at 99% 0%, rgb(243 214 174 / 0.14), transparent 70%),
+      linear-gradient(180deg, #1a1a1d 0%, #0a0a0c 22%, #040405 56%, #0c0c0e 86%, #050506 100%);
+    backdrop-filter: none;
+    border-color: transparent;
+    transform: translateY(-6px) scale(0.84);
+  }
+  .nav-inner,
+  .portfolio-nav.is-scrolled .nav-inner {
+    height: 114px;
+    min-height: 0;
+    padding: 0 0 0 32px;
+    align-items: stretch;
+  }
+  .nav-inner .wordmark {
+    align-self: center;
+  }
+  .nav-inner .menu-toggle {
+    display: none;
+  }
+  /* One soft glint passes across the lacquer when the page loads. */
+  .portfolio-nav::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background: linear-gradient(104deg, transparent 38%, rgb(255 236 205 / 0.14) 46%, rgb(255 236 205 / 0.3) 50%, rgb(255 236 205 / 0.14) 54%, transparent 62%);
+    transform: translateX(-100%);
+    animation: lacquer-glint 2.4s 0.8s cubic-bezier(0.45, 0, 0.2, 1) forwards;
+  }
+}
+@keyframes lacquer-glint {
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (min-width: 1100px) and (prefers-reduced-motion: reduce) {
+  .portfolio-nav,
+  .portfolio-nav.is-scrolled {
+    transform: none;
+  }
+  .portfolio-nav::after {
+    display: none;
+  }
 }
 .menu-toggle {
   display: flex;
@@ -116,7 +200,7 @@ html {
   margin-top: 22px;
 }
 /* Below the header octave's width the burger opens the octave full screen. */
-@media (max-width: 1023px) {
+@media (max-width: 1099px) {
   .piano-nav {
     display: none;
   }
@@ -131,7 +215,12 @@ html {
     margin: 0;
     border: 0;
     padding: 18px 20px max(24px, env(safe-area-inset-bottom));
-    background: #0a0a0c;
+    /* The same black lacquer as the desktop case, lit from the treble end. */
+    background:
+      radial-gradient(90% 40% at 100% 100%, rgb(243 214 174 / 0.12), transparent 70%),
+      radial-gradient(70% 30% at 0% 0%, rgb(243 214 174 / 0.07), transparent 70%),
+      linear-gradient(170deg, #141417 0%, #070708 30%, #030304 70%, #0b0b0d 100%);
+    box-shadow: inset 0 1px 0 rgb(243 214 174 / 0.3);
   }
 }
 .navigation-dialog .menu-utility a {
@@ -991,7 +1080,7 @@ body::before {
   width: 40px;
   height: 40px;
 }
-@media (max-width: 1100px) {
+@media (max-width: 1099px) {
   .nav-inner {
     gap: 14px;
     padding-inline: 16px;
