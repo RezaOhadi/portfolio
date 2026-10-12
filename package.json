@@ -13,7 +13,9 @@
     "postinstall": "node scripts/gen-placeholders.mjs",
     "predev": "node scripts/gen-gallery.mjs",
     "prebuild": "node scripts/gen-gallery.mjs",
-    "gen:gallery": "node scripts/gen-gallery.mjs"
+    "gen:gallery": "node scripts/gen-gallery.mjs",
+    "test": "node --test scripts/verify-portfolio.mjs scripts/verify-piano.mjs",
+    "test:pitch": "node scripts/pitch-test.mjs"
   },
   "dependencies": {
     "@gsap/react": "2.1.2",
