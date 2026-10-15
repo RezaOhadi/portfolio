@@ -32,6 +32,16 @@ import { rimPoints } from "../piano/outline";
 
 const CENTER = new Vector3(0, 0.82, -0.95);
 
+/**
+ * The gold of the name (chain step 5), per tier. Desktop stacks tens of
+ * thousands of motes, so a modest lift already burns; phones and the lite tier
+ * draw a tenth as many and need a stronger, more saturated gold to read against
+ * the black.
+ */
+const NAME_GOLD = { desktop: "#e8b65a", touch: "#f6c650" } as const;
+const NAME_HOT = { desktop: "#ffe6a6", touch: "#fff2c0" } as const;
+const NAME_LIFT = { desktop: 0.55, touch: 2.6 } as const;
+
 function dataTexture(data: Float32Array, size: number) {
   const t = new DataTexture(data, size, size, RGBAFormat, FloatType);
   t.minFilter = t.magFilter = NearestFilter;
@@ -212,8 +222,12 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
         uMaxSize: { value: 9 },
         uGold: { value: new Color(PALETTE.gold).convertSRGBToLinear() },
         uHot: { value: new Color(PALETTE.goldHot).convertSRGBToLinear() },
-        // Linear multipliers: warmer and more saturated (more red, less blue) and about a fifth brighter.
-        uNameTint: { value: new Vector3(1.3, 1.12, 0.74) },
+        // The name's gold. Desktop: a richer, brighter gold than the dust. Phones and the lite
+        // tier draw far fewer motes, so the gold is more saturated and lifted well past 1.0,
+        // which also sends it into the bloom for a soft glow where bloom is on.
+        uNameGold: { value: new Color(materialOptions.lite ? NAME_GOLD.touch : NAME_GOLD.desktop).convertSRGBToLinear() },
+        uNameHot: { value: new Color(materialOptions.lite ? NAME_HOT.touch : NAME_HOT.desktop).convertSRGBToLinear() },
+        uNameLift: { value: materialOptions.lite ? NAME_LIFT.touch : NAME_LIFT.desktop },
         uNameMix: { value: 0 },
       },
     });
@@ -268,9 +282,9 @@ export function ParticleField({ parts, size }: { parts: PianoPart[]; size: numbe
     material.uniforms.uOpacity.value = (0.55 + glow * 0.4) * (1 - rig.after * 0.9);
     material.uniforms.uSize.value = 0.0078 * (1 + glow * 0.35);
     material.uniforms.uFree.value = rig.free;
-    // Phones only: the name's richer gold comes in as the dust forms the name (chain 4.5 -> 5)
-    // and goes as the piano reassembles (5 -> 5.6). Colour only; nothing else changes.
-    material.uniforms.uNameMix.value = materialOptions.lite ? range(rig.chain, 4.5, 5) * (1 - range(rig.chain, 5, 5.6)) : 0;
+    // The name's richer gold comes in as the dust forms the name (chain 4.5 -> 5) and goes as
+    // the piano reassembles (5 -> 5.6). Colour and brightness only; nothing else changes.
+    material.uniforms.uNameMix.value = range(rig.chain, 4.5, 5) * (1 - range(rig.chain, 5, 5.6));
     material.uniforms.uMaxSize.value = 9 * state.gl.getPixelRatio();
   });
 

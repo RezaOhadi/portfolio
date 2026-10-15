@@ -213,7 +213,7 @@ void main(){
   float haze = step(h11(ref * 17.13), 0.24) * uFree;
   vHeat = max(vHeat, haze * 0.45);
   vAlpha = uOpacity * (0.35 + r * 0.65) * (1.0 - haze * 0.45);
-  // Dust that can carry the name's richer gold (phones): everything but the free haze.
+  // Dust that can carry the name's richer gold: everything but the free haze.
   vName = 1.0 - haze;
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   gl_Position = projectionMatrix * mv;
@@ -225,9 +225,12 @@ void main(){
 export const renderFragment = /* glsl */ `
 uniform vec3 uGold;
 uniform vec3 uHot;
-// Phones: the name's gold is richer and brighter (uNameMix rises as the name forms, 0 on desktop).
-uniform vec3 uNameTint;
+// The name's own gold: a richer, brighter pair than the dust (uNameMix rises as the name forms),
+// lifted by uNameLift. The tier sets how far (ParticleField): phones go much stronger than desktop.
+uniform vec3 uNameGold;
+uniform vec3 uNameHot;
 uniform float uNameMix;
+uniform float uNameLift;
 varying float vHeat;
 varying float vAlpha;
 varying float vName;
@@ -237,8 +240,9 @@ void main(){
   float d = length(c);
   if (d > 0.5) discard;
   float core = smoothstep(0.5, 0.0, d);
-  vec3 col = mix(uGold, uHot, vHeat) * (0.9 + vHeat * 3.2);
-  col *= mix(vec3(1.0), uNameTint, uNameMix * vName);
+  float name = uNameMix * vName;
+  vec3 base = mix(mix(uGold, uHot, vHeat), mix(uNameGold, uNameHot, vHeat), name);
+  vec3 col = base * (0.9 + vHeat * 3.2) * (1.0 + name * uNameLift);
   gl_FragColor = vec4(col * core, core * vAlpha);
 }
 `;

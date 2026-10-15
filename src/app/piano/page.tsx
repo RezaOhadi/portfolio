@@ -33,9 +33,12 @@ export default function PianoPage() {
         allowFullScreen
         title="Golden Grand Piano"
       />
-      <Link href="/" className={styles.back}>
-        <span aria-hidden>←</span> rezaohadi.com
-      </Link>
+      <div className={styles.foot}>
+        <Link href="/" className={styles.back}>
+          <span aria-hidden>←</span> rezaohadi.com
+        </Link>
+        <small className={styles.copyright}>© 2026 Reza Ohadi. All rights reserved.</small>
+      </div>
     </main>
   );
 }

@@ -6,11 +6,21 @@
   z-index: 61;
   background: #0a0806;
 }
-.back {
+/* The back link and the copyright line share the bottom-left corner. The row
+   itself takes no pointer events, so only the link is clickable. */
+.foot {
   position: fixed;
   left: 18px;
-  bottom: max(16px, env(safe-area-inset-bottom));
+  bottom: 0;
   z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  pointer-events: none;
+}
+.back {
+  margin-bottom: max(16px, env(safe-area-inset-bottom));
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -41,4 +51,25 @@
 .back:focus-visible {
   outline: 2px solid rgb(243 220 166 / 0.8);
   outline-offset: 2px;
+}
+/* Champagne gold, small and quiet. It sits in the app's own bottom gutter
+   (16px on desktop and tablet, 10px on phones, plus the safe area), below
+   the piano roll and the studio bar, so it never covers a control. */
+.copyright {
+  margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 3px);
+  font-family: var(--font-sans), Inter, system-ui, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  white-space: nowrap;
+  color: #dcbd7c;
+  opacity: 0.45;
+  user-select: none;
+}
+@media (max-width: 760px) {
+  .copyright {
+    margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 1px);
+    font-size: 9px;
+    letter-spacing: 0.04em;
+  }
 }
