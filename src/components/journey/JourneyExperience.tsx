@@ -3,7 +3,7 @@
 import "lenis/dist/lenis.css";
 import dynamic from "next/dynamic";
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { isTouchDevice, isWeakGpu, MOBILE_QUERY, SEGMENTS, type QualityTier } from "./config";
+import { forcedQuality, isTouchDevice, isWeakGpu, LITE_FPS, MOBILE_QUERY, POSTER_FPS, SEGMENTS, type QualityTier, type QualityVerdict } from "./config";
 import { SoundControls } from "./SoundControls";
 import { useTextChoreography } from "./text/useTextChoreography";
 import styles from "./journey.module.css";
@@ -35,6 +35,26 @@ function pickTier(): QualityTier {
   return "high";
 }
 
+/** The probe's verdict is kept for the session: a revisit skips straight to it. */
+const VERDICT_KEY = "journey:quality";
+
+function readVerdict(): QualityVerdict | null {
+  try {
+    const value = window.sessionStorage.getItem(VERDICT_KEY);
+    return value === "lite" || value === "poster" ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function keepVerdict(value: QualityVerdict) {
+  try {
+    window.sessionStorage.setItem(VERDICT_KEY, value);
+  } catch {
+    /* private mode: measured again next time */
+  }
+}
+
 const BUILT = SEGMENTS.filter((s) => s.built).map((s) => s.id);
 /** Running text the world should step back for (titles and taglines are big enough not to need it). */
 const COPY = `[data-fx="body"], .${styles.works} li, .concert-row, .media-card p, .contact-grid form, [data-fx="block"] > .container-editorial p`;
@@ -57,6 +77,13 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
   const [gateReady, setGateReady] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const reduced = prefersReduced;
+  // The still version: the poster behind the page instead of the live scene.
+  // Taken for reduced motion, and when the first seconds ran under POSTER_FPS.
+  const [poster, setPoster] = useState(false);
+  const still = reduced || poster;
+  // "first": measuring the chosen tier; "second": measuring the lite tier; "done": settled.
+  const probeStage = useRef<"first" | "second" | "done">("first");
+  const [probing, setProbing] = useState(true);
 
   const [copyReady, setCopyReady] = useState(false);
   useJourneyScroll(root, reduced);
@@ -86,7 +113,15 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
     const update = () => setPrefersReduced(query.matches);
     update();
     query.addEventListener("change", update);
-    const t = pickTier();
+    let t = pickTier();
+    // A verdict from earlier in the session (or a test flag) stands; nothing is measured again.
+    const verdict = forcedQuality() ?? readVerdict();
+    if (verdict === "poster") setPoster(true);
+    if (verdict === "lite") t = "lite";
+    if (verdict) {
+      probeStage.current = "done";
+      setProbing(false);
+    }
     journey.tier = t;
     journey.mobile = t === "low" || t === "touch";
     journey.weakGpu = t === "touch" && isWeakGpu();
@@ -193,6 +228,35 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Without a live scene there is nothing to wait for: the copy and the sound threshold go ahead.
+  useEffect(() => {
+    if (still) setReady(true);
+  }, [still]);
+
+  // The FPS monitor's verdict: under LITE_FPS step down once and measure again,
+  // under POSTER_FPS at either step show the still version instead.
+  const onVerdict = useCallback((fps: number) => {
+    const stage = probeStage.current;
+    if (stage === "done") return;
+    if (fps < POSTER_FPS) {
+      probeStage.current = "done";
+      keepVerdict("poster");
+      setPoster(true);
+      setProbing(false);
+      return;
+    }
+    if (stage === "first" && fps < LITE_FPS) {
+      probeStage.current = "second";
+      keepVerdict("lite");
+      journey.tier = "lite";
+      setTier("lite");
+      return;
+    }
+    probeStage.current = "done";
+    if (stage === "first") keepVerdict("full");
+    setProbing(false);
+  }, []);
+
   const onReady = useCallback(() => setReady(true), []);
   const onFailure = useCallback(() => {
     setFailed(true);
@@ -206,12 +270,15 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
       data-ready={ready && !failed}
       data-reduced={reduced}
       data-active={active}
+      data-poster={still}
     >
       <div className={styles.stage} aria-hidden="true">
         <div className={styles.fallback} />
-        {mount && tier && eventSource && !failed && (
+        {/* The still version never loads the 3D chunk. A tier change remounts the
+            canvas, so the lighter scene is built fresh rather than rebuilt in place. */}
+        {mount && tier && eventSource && !failed && !still && (
           <CanvasBoundary onFailure={onFailure}>
-            <JourneyCanvas tier={tier} active={active && !menuOpen} reduced={reduced} eventSource={eventSource} onReady={onReady} onFailure={onFailure} />
+            <JourneyCanvas key={tier} tier={tier} active={active && !menuOpen} reduced={reduced} eventSource={eventSource} onReady={onReady} onFailure={onFailure} probe={probing} onVerdict={onVerdict} />
           </CanvasBoundary>
         )}
         <div className={styles.dim} />

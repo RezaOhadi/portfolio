@@ -48,8 +48,12 @@ export const PALETTE = {
   goldHot: "#f3d6ae",
 } as const;
 
-/** "touch" is phones and tablets: a lighter render path that desktop never takes. */
-export type QualityTier = "high" | "mid" | "low" | "touch";
+/**
+ * "touch" is phones and tablets: a lighter render path that desktop never takes.
+ * "lite" is any device whose first three seconds ran under LITE_FPS: fewer
+ * particles, no post-processing, native resolution, the lighter materials.
+ */
+export type QualityTier = "high" | "mid" | "low" | "touch" | "lite";
 
 export interface QualityProfile {
   /** Particle simulation texture edge: count = size². */
@@ -58,15 +62,40 @@ export interface QualityProfile {
   dof: boolean;
   multisampling: number;
   envResolution: number;
+  /** The post-processing chain (bloom, grain, vignette, tone mapping). Off only on the lite tier. */
+  post: boolean;
 }
 
+// The pixel ratio is capped at 1.5 on desktop and 1 on phones and tablets: above
+// that the extra pixels cost a full tier of frame time and are not visible.
 export const QUALITY: Record<QualityTier, QualityProfile> = {
-  high: { particles: 256, dpr: [1, 1.75], dof: true, multisampling: 4, envResolution: 256 },
-  mid: { particles: 180, dpr: [1, 1.5], dof: false, multisampling: 0, envResolution: 128 },
-  low: { particles: 128, dpr: [1, 1.25], dof: false, multisampling: 0, envResolution: 64 },
-  // About 8k particles (90²), the pixel ratio capped at 1.5 and stepped down to 1.0 if frames drop.
-  touch: { particles: 90, dpr: [1, 1.5], dof: false, multisampling: 0, envResolution: 64 },
+  high: { particles: 256, dpr: [1, 1.5], dof: true, multisampling: 4, envResolution: 256, post: true },
+  mid: { particles: 180, dpr: [1, 1.5], dof: false, multisampling: 0, envResolution: 128, post: true },
+  low: { particles: 128, dpr: [1, 1.25], dof: false, multisampling: 0, envResolution: 64, post: true },
+  // About 8k particles (90²) at native resolution.
+  touch: { particles: 90, dpr: [1, 1], dof: false, multisampling: 0, envResolution: 64, post: true },
+  // The step down after a slow first three seconds, on any device.
+  lite: { particles: 96, dpr: [1, 1], dof: false, multisampling: 0, envResolution: 64, post: false },
 };
+
+/**
+ * The first three seconds of rendering are measured once per visit. Under
+ * LITE_FPS the scene steps down to the lite tier and is measured again; under
+ * POSTER_FPS (at either step) the live scene gives way to a still poster.
+ */
+export const PROBE_SECONDS = 3;
+export const LITE_FPS = 40;
+export const POSTER_FPS = 25;
+
+/** What the probe decided, kept for the session so a revisit skips straight to it. */
+export type QualityVerdict = "full" | "lite" | "poster";
+
+/** Test-only: `?quality=lite` or `?quality=poster` forces a verdict; inert without the parameter. */
+export function forcedQuality(): QualityVerdict | null {
+  if (typeof window === "undefined") return null;
+  const value = new URLSearchParams(window.location.search).get("quality");
+  return value === "lite" || value === "poster" || value === "full" ? value : null;
+}
 
 /**
  * A phone or tablet: a coarse primary pointer with real touch points and a

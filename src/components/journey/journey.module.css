@@ -64,6 +64,15 @@
 .journey[data-reduced="true"] .transition[data-built="true"] {
   height: 40svh !important;
 }
+/* The still version (reduced motion, or a device too slow for the live scene):
+   a poster of the hero frame behind the page, and the transition runways
+   shortened as in reduced motion, since nothing changes form in them. */
+.journey[data-poster="true"] .fallback {
+  background: url("/assets/images/journey-poster.jpg") 68% 50% / cover no-repeat #060608;
+}
+.journey[data-poster="true"] .transition[data-built="true"] {
+  height: 40svh !important;
+}
 
 /* --- shared type ---------------------------------------------------------- */
 .eyebrow {
