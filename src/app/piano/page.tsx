@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { PianoStage } from "./PianoStage";
 import styles from "./piano.module.css";
 
 export const metadata: Metadata = {
@@ -20,25 +20,7 @@ export default function PianoPage() {
           page never scrolls, so release it here only; the rule unmounts with
           the page and no other route sees it. */}
       <style>{"html{scrollbar-gutter:auto}"}</style>
-      <iframe
-        src="/golden-grand/index.html"
-        style={{
-          position: "fixed",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          border: 0,
-        }}
-        allow="midi; fullscreen; autoplay"
-        allowFullScreen
-        title="Golden Grand Piano"
-      />
-      <div className={styles.foot}>
-        <Link href="/" className={styles.back}>
-          <span aria-hidden>←</span> rezaohadi.com
-        </Link>
-        <small className={styles.copyright}>© 2026 Reza Ohadi. All rights reserved.</small>
-      </div>
+      <PianoStage />
     </main>
   );
 }

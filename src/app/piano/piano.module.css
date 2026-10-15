@@ -6,20 +6,31 @@
   z-index: 61;
   background: #0a0806;
 }
-/* The back link and the copyright line share the bottom-left corner. The row
+/* The back link and the copyright line in one row, clear of the app's panels.
+   PianoStage measures the app and sets --foot-bottom (desktop and tablet: just
+   above the pedal dock and the piano roll) or --foot-top (phones: just under
+   the top bar). The fallbacks are the app's default layout: roll 268px +
+   gutters 32px + dock 52px + 12px, and top bar 10px + 48px + 4px. The row
    itself takes no pointer events, so only the link is clickable. */
 .foot {
   position: fixed;
   left: 18px;
-  bottom: 0;
+  bottom: var(--foot-bottom, 364px);
   z-index: 2;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 14px;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+/* An app overlay (popover, toast, focus label) is over the row: step aside until it goes. */
+.foot[data-covered] {
+  opacity: 0;
+}
+.foot[data-covered] .back {
   pointer-events: none;
 }
 .back {
-  margin-bottom: max(16px, env(safe-area-inset-bottom));
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
@@ -52,11 +63,8 @@
   outline: 2px solid rgb(243 220 166 / 0.8);
   outline-offset: 2px;
 }
-/* Champagne gold, small and quiet. It sits in the app's own bottom gutter
-   (16px on desktop and tablet, 10px on phones, plus the safe area), below
-   the piano roll and the studio bar, so it never covers a control. */
+/* Champagne gold, small and quiet. */
 .copyright {
-  margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 3px);
   font-family: var(--font-sans), Inter, system-ui, sans-serif;
   font-size: 10px;
   letter-spacing: 0.06em;
@@ -66,10 +74,23 @@
   opacity: 0.45;
   user-select: none;
 }
+/* Phones (the app's own breakpoint): top-left, under the app's top bar, smaller and quieter. */
 @media (max-width: 760px) {
+  .foot {
+    left: 14px;
+    bottom: auto;
+    top: var(--foot-top, calc(env(safe-area-inset-top, 0px) + 62px));
+    gap: 10px;
+  }
+  .back {
+    height: 22px;
+    padding: 0 9px;
+    font-size: 10px;
+    opacity: 0.38;
+  }
   .copyright {
-    margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 1px);
     font-size: 9px;
     letter-spacing: 0.04em;
+    opacity: 0.4;
   }
 }
