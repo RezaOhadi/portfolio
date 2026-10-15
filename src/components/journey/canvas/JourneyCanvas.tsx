@@ -4,7 +4,7 @@ import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei"
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HalfFloatType, WebGLRenderTarget, type DirectionalLight, type Light, type Mesh, type Object3D, type PointLight, type ShaderMaterial, type Texture } from "three";
-import { PALETTE, QUALITY, testFlag, type QualityTier } from "../config";
+import { PALETTE, PROBE_SECONDS, QUALITY, testFlag, type QualityTier } from "../config";
 import { journey } from "../store";
 import { CameraDirector } from "./CameraDirector";
 import { Effects } from "./Effects";
@@ -33,12 +33,40 @@ interface Props {
   eventSource: HTMLElement;
   onReady: () => void;
   onFailure: () => void;
+  /** Measure the first seconds of rendering and report the median frame rate once. */
+  probe: boolean;
+  onVerdict: (medianFps: number) => void;
 }
 
 declare global {
   interface Window {
-    __journey?: { fps: number; frames: number; dpr: number; tier: QualityTier; dof: boolean; step?: number };
+    __journey?: { fps: number; frames: number; dpr: number; tier: QualityTier; dof: boolean; step?: number; probe?: number; mode?: string };
   }
+}
+
+/**
+ * The FPS monitor: the first PROBE_SECONDS of rendered frames after the
+ * shaders are compiled, as a median (one long frame from a chunk download or
+ * a tab switch does not count against the device). Pauses of the loop are
+ * skipped, so three seconds means three seconds of actual drawing.
+ */
+function FpsProbe({ onVerdict }: { onVerdict: (medianFps: number) => void }) {
+  const samples = useRef<number[]>([]);
+  const elapsed = useRef(0);
+  const sent = useRef(false);
+  useFrame((_, delta) => {
+    if (sent.current || delta <= 0 || delta > 0.5) return;
+    samples.current.push(delta);
+    elapsed.current += delta;
+    if (elapsed.current < PROBE_SECONDS) return;
+    sent.current = true;
+    const sorted = samples.current.slice().sort((a, b) => a - b);
+    const median = 1 / sorted[Math.floor(sorted.length / 2)];
+    const j = (window.__journey ??= { fps: 0, frames: 0, dpr: 1, tier: journey.tier, dof: false });
+    j.probe = Math.round(median * 10) / 10;
+    onVerdict(median);
+  }, -2);
+  return null;
 }
 
 /** Advances the choreography first, and reports frame stats for verification. */
@@ -228,6 +256,9 @@ function Scene({ tier, onReady }: { tier: QualityTier; onReady: () => void }) {
   }, []);
   const profile = QUALITY[tier];
   const touch = tier === "touch";
+  useEffect(() => {
+    if (window.__journey) window.__journey.mode = tier;
+  }, [tier]);
   useEffect(
     () => () => {
       parts.forEach((part) => {
@@ -260,14 +291,14 @@ function Scene({ tier, onReady }: { tier: QualityTier; onReady: () => void }) {
       <Portal />
       <Soundboard />
       <FlashVeil />
-      <Effects dof={profile.dof} dofOn={dofOn} multisampling={profile.multisampling} lite={touch} />
+      <Effects dof={profile.dof} dofOn={dofOn} multisampling={profile.multisampling} lite={touch} post={profile.post} />
     </>
   );
 }
 
-export default function JourneyCanvas({ tier, active, reduced, eventSource, onReady, onFailure }: Props) {
+export default function JourneyCanvas({ tier, active, reduced, eventSource, onReady, onFailure, probe, onVerdict }: Props) {
   // Read by every material built below (the piano, then each stage).
-  materialOptions.lite = tier === "touch";
+  materialOptions.lite = tier === "touch" || tier === "lite";
   rigOptions.frozen = testFlag("freeze");
   const [compiled, setCompiled] = useState(false);
   const onCompiled = useCallback(() => setCompiled(true), []);
@@ -303,6 +334,7 @@ export default function JourneyCanvas({ tier, active, reduced, eventSource, onRe
     >
       <Scene tier={tier} onReady={onReady} />
       {!compiled && <Precompile onDone={onCompiled} />}
+      {compiled && probe && !reduced && !rigOptions.frozen && <FpsProbe onVerdict={onVerdict} />}
       {reduced && compiled && <DemandRenderer />}
     </Canvas>
   );

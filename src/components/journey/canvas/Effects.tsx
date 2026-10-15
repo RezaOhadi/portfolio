@@ -16,7 +16,9 @@ import { rig } from "./rig";
  * with scroll velocity and the burst. Depth of field opens in the exploded
  * world on capable GPUs.
  */
-export function Effects({ dof, dofOn, multisampling, lite = false }: { dof: boolean; dofOn: { current: boolean }; multisampling: number; lite?: boolean }) {
+export function Effects({ dof, dofOn, multisampling, lite = false, post = true }: { dof: boolean; dofOn: { current: boolean }; multisampling: number; lite?: boolean; post?: boolean }) {
+  // The lite tier draws straight to the screen: no composer, no extra passes.
+  if (!post) return null;
   if (lite) return <TouchEffects />;
   return <DesktopEffects dof={dof} dofOn={dofOn} multisampling={multisampling} />;
 }

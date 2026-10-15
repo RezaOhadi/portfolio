@@ -1,0 +1,185 @@
+/* "Let's Play" — the one gold button on the site. Champagne gold, pill, thin
+   gold rim, soft glow, and a single shimmer that crosses it on hover.
+   Everything here is scoped to this module; nothing global is touched. */
+.cta {
+  --gg-gold-hi: #f3dca6;
+  --gg-gold-mid: #e0c17e;
+  --gg-gold-lo: #bf9a52;
+  --gg-ink: #1b1307;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 22px 12px 18px;
+  border-radius: 999px;
+  border: 1px solid rgb(243 220 166 / 0.85);
+  background: linear-gradient(135deg, var(--gg-gold-hi) 0%, var(--gg-gold-mid) 46%, var(--gg-gold-lo) 100%);
+  color: var(--gg-ink);
+  font-family: var(--font-sans), Inter, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgb(255 248 230 / 0.75),
+    inset 0 -1px 0 rgb(120 86 30 / 0.35),
+    0 0 0 1px rgb(191 154 82 / 0.28),
+    0 6px 22px rgb(214 176 100 / 0.22);
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s,
+    filter 0.35s;
+  -webkit-tap-highlight-color: transparent;
+}
+/* The shimmer: a soft diagonal light that sweeps across once per hover. */
+.cta::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent 0%, rgb(255 250 235 / 0.55) 50%, transparent 100%);
+  transform: skewX(-18deg) translateX(0);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.cta:hover,
+.cta:focus-visible {
+  transform: translateY(-1px);
+  filter: saturate(1.05);
+  box-shadow:
+    inset 0 1px 0 rgb(255 248 230 / 0.85),
+    inset 0 -1px 0 rgb(120 86 30 / 0.35),
+    0 0 0 1px rgb(243 220 166 / 0.5),
+    0 10px 30px rgb(214 176 100 / 0.38),
+    0 0 44px rgb(243 220 166 / 0.2);
+}
+.cta:hover::after,
+.cta:focus-visible::after {
+  opacity: 1;
+  transform: skewX(-18deg) translateX(420%);
+  transition:
+    transform 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s;
+}
+.cta:active {
+  transform: translateY(0);
+}
+.cta:focus-visible {
+  outline: 2px solid rgb(243 220 166 / 0.9);
+  outline-offset: 3px;
+}
+.icon {
+  position: relative;
+  z-index: 2;
+  flex: none;
+  width: 18px;
+  height: 13px;
+}
+.label {
+  position: relative;
+  z-index: 2;
+}
+
+/* --- in the header ---------------------------------------------------------- */
+.nav {
+  align-self: center;
+  flex: none;
+  margin: 0 22px 0 18px;
+  padding: 9px 16px 9px 13px;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+.nav .icon {
+  width: 16px;
+  height: 11px;
+}
+/* From 1100px the header is the piano case and the octave fills it edge to
+   edge, so the button sits on the lacquer cheek at the treble end (the empty
+   176px block right of the keys), centred like a maker's plaque. */
+@media (min-width: 1100px) {
+  .nav {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 32px;
+    height: fit-content;
+    margin: auto 0;
+  }
+}
+/* Below the desktop octave the button sits just left of the menu toggle. The
+   toggle keeps its place: only when this button is present does the free
+   space move in front of the button instead of in front of the toggle. */
+@media (max-width: 1099px) {
+  .nav {
+    margin: 0 0 0 auto;
+  }
+  :global(.nav-inner):has(.nav) :global(.menu-toggle) {
+    margin-left: 0;
+  }
+}
+@media (max-width: 760px) {
+  .nav {
+    padding: 8px 13px 8px 11px;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+  }
+}
+/* On the narrowest phones the wordmark, the pill and the burger no longer fit
+   side by side, so the pill becomes a gold key-cap: icon only, the label kept
+   for assistive tech. */
+@media (max-width: 380px) {
+  .nav {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    gap: 0;
+  }
+  .nav .icon {
+    width: 17px;
+    height: 12px;
+  }
+  .nav .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+/* --- in the home-page section --------------------------------------------- */
+.section {
+  padding: 16px 30px 16px 24px;
+  gap: 12px;
+  font-size: 13px;
+}
+.section .icon {
+  width: 22px;
+  height: 15px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta,
+  .cta::after {
+    transition: none;
+  }
+  .cta:hover::after,
+  .cta:focus-visible::after {
+    display: none;
+  }
+  .cta:hover,
+  .cta:focus-visible {
+    transform: none;
+  }
+}

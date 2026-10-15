@@ -12,6 +12,7 @@ import {
 import journeyStyles from "@/components/journey/journey.module.css";
 import { getHomeUniverseData } from "@/lib/data/home-universe";
 import { FeaturedComposition } from "@/components/home/FeaturedComposition";
+import { GoldenGrandSection } from "@/components/golden-grand/GoldenGrandSection";
 import { ProductCard } from "@/components/store/ProductCard";
 import {
   HorizontalShowcase,
@@ -425,6 +426,7 @@ export default async function HomePage() {
           </section>
         </World>
       </JourneyExperience>
+      <GoldenGrandSection />
     </>
   );
 }
