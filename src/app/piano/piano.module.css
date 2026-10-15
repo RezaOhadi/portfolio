@@ -1,0 +1,44 @@
+/* /piano: the Golden Grand fills the viewport. The wrapper sits above the
+   site's film-grain layer (z-index 60) so the app renders exactly as built. */
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: 61;
+  background: #0a0806;
+}
+.back {
+  position: fixed;
+  left: 18px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgb(243 220 166 / 0.12);
+  background: rgb(6 6 8 / 0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #f2eee6;
+  font-family: var(--font-sans), Inter, system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-decoration: none;
+  opacity: 0.42;
+  transition:
+    opacity 0.25s,
+    color 0.25s,
+    border-color 0.25s;
+}
+.back:hover,
+.back:focus-visible {
+  opacity: 1;
+  color: #f3dca6;
+  border-color: rgb(243 220 166 / 0.45);
+}
+.back:focus-visible {
+  outline: 2px solid rgb(243 220 166 / 0.8);
+  outline-offset: 2px;
+}

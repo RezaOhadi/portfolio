@@ -6,6 +6,7 @@ import { Menu, X, ArrowUpRight } from "lucide-react";
 import { utilityNav } from "@/config/site";
 import type { SocialLinks } from "@/lib/types";
 import { PianoKeys, WHITE_KEYS } from "@/components/layout/PianoKeys";
+import { LetsPlayButton } from "@/components/golden-grand/LetsPlayButton";
 export function Nav({ social }: { social: SocialLinks }) {
   const pathname = useSitePath();
   const [scrolled, setScrolled] = useState(false);
@@ -95,6 +96,7 @@ export function Nav({ social }: { social: SocialLinks }) {
               onHome={pathname === "/"}
             />
           </nav>
+          <LetsPlayButton variant="nav" />
           <button
             ref={toggle}
             type="button"

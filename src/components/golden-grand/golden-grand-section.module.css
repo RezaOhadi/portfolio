@@ -1,0 +1,62 @@
+/* The closing invitation on the home page, just above the footer. It sits
+   after the journey, so it is lifted above the journey's fixed stage and
+   given its own opaque, lamp-lit black. Scoped to this module only. */
+.section {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: clamp(104px, 14vw, 184px);
+  padding-inline: 24px;
+  text-align: center;
+  color: #f2eee6;
+  background:
+    radial-gradient(60% 58% at 50% 0%, rgb(243 220 166 / 0.11), transparent 72%),
+    radial-gradient(36% 26% at 50% 100%, rgb(191 154 82 / 0.07), transparent 72%),
+    linear-gradient(180deg, #0a0a0c 0%, #070708 55%, #060608 100%);
+  border-top: 1px solid rgb(243 220 166 / 0.12);
+}
+.inner {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+.eyebrow {
+  color: #d5ae88;
+  font-family: var(--font-sans), Inter, system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+.title {
+  margin: 4px 0 0;
+  font:
+    400 clamp(44px, 6.4vw, 88px) / 1.02 var(--font-serif),
+    Georgia,
+    serif;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.lead {
+  margin: 0;
+  max-width: 46ch;
+  font-family: var(--font-sans), Inter, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #b7b5b1;
+  text-wrap: pretty;
+}
+.action {
+  margin-top: 20px;
+}
+@media (max-width: 760px) {
+  .section {
+    padding-inline: 20px;
+  }
+  .inner {
+    gap: 18px;
+  }
+}

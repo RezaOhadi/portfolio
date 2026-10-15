@@ -29,6 +29,19 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // The Golden Grand (/piano, served from public/golden-grand) may listen to a
+  // MIDI keyboard and frames its own origin. These headers apply to those two
+  // paths only; no other route gains or loses a header.
+  async headers() {
+    const midi = { key: "Permissions-Policy", value: "midi=(self)" };
+    return [
+      {
+        source: "/piano",
+        headers: [midi, { key: "Content-Security-Policy", value: "frame-src 'self'" }],
+      },
+      { source: "/golden-grand/:path*", headers: [midi] },
+    ];
+  },
   experimental: {
     serverActions: {
       // Default Server Action body limit is 1 MB, which rejects PDF uploads in
