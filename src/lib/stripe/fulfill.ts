@@ -43,6 +43,8 @@ export async function fulfillCheckout(sessionId: string): Promise<FulfillResult>
     amountCents: session.amount_total ?? product?.priceCents ?? 0,
     currency: session.currency ?? product?.currency ?? "usd",
     status: "paid",
+    // Set by /api/checkout when a member was signed in; guests have none.
+    userId: session.metadata?.user_id || null,
   });
 
   if (!result) return { ok: false, reason: "store_failed" };

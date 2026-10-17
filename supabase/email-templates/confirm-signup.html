@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="supported-color-schemes" content="dark" />
+    <title>Confirm your email</title>
+  </head>
+  <body style="margin:0;padding:0;background:#0a0a0c;color:#f2eee6;">
+    <!-- Supabase: Authentication → Email Templates → "Confirm signup".
+         Subject suggestion: Confirm your email · Reza Ohadi
+         The link lands on the site's /auth/callback and signs the member in. -->
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">One click and your account is ready.</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0a0a0c;">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;">
+            <tr>
+              <td style="padding:0 8px 22px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1;color:#f2eee6;">
+                Reza Ohadi<span style="color:#e0c17e;">.</span>
+                <div style="margin-top:8px;font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#bf9a52;">Pianist &middot; Composer</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:36px 32px;background:#111214;border:1px solid #3a3120;border-top:1px solid #e0c17e;border-radius:8px;">
+                <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#e0c17e;">Members</div>
+                <h1 style="margin:14px 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:400;line-height:1.15;color:#f2eee6;">Confirm your email</h1>
+                <p style="margin:0 0 26px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#b9b9c2;">
+                  Thank you for creating an account. Confirm this address and you will be signed in straight away, with every score you buy kept in one place.
+                </p>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td align="center" bgcolor="#e0c17e" style="border-radius:999px;background:#e0c17e;">
+                      <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=signup&next=%2Faccount"
+                         style="display:inline-block;padding:15px 30px;border-radius:999px;background:#e0c17e;color:#1b1307;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;letter-spacing:2.5px;text-transform:uppercase;text-decoration:none;">
+                        Confirm &amp; sign in
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:26px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;color:#6f6f78;">
+                  The link works once and expires after a short while. If you did not create an account, you can ignore this email and nothing will happen.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:22px 8px 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:#55555f;">
+                Sent to {{ .Email }} because an account was created with this address.<br />
+                Reza Ohadi &mdash; Pianist &amp; Composer
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

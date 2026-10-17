@@ -88,6 +88,7 @@ export function mapPurchaseRow(r: any): Purchase {
     currency: r.currency ?? "usd",
     status: r.status ?? "pending",
     downloadToken: r.download_token,
+    userId: r.user_id ?? null,
     createdAt: r.created_at ?? new Date().toISOString(),
   };
 }

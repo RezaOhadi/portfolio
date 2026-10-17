@@ -7,6 +7,9 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
 /**
  * Refreshes the Supabase auth session cookie and gates /admin behind login.
  * Role enforcement happens in the admin layout + each server action.
+ *
+ * Member pages (/account) are gated here too, separately: they only need a
+ * session, never a role, and they send people to the member sign-in page.
  */
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -42,9 +45,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (pathname.startsWith("/account") && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/sign-in";
+    url.search = "";
+    url.searchParams.set("next", pathname);
+    return NextResponse.redirect(url);
+  }
+
   return response;
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/account/:path*"],
 };

@@ -124,6 +124,20 @@ signed URL server-side.
 Guest checkout is enabled (Stripe collects the buyer's email); customer accounts
 can be layered on later via Supabase Auth.
 
+## 4b. Member accounts (optional)
+
+Customers can create an account (**Continue with Google**, or email + password
+with a confirmation link), pick a unique **username**, and download every score
+they own from **`/account`**. Guest checkout and the email-only **`/library`**
+keep working unchanged; guest purchases join an account automatically once the
+same email is verified.
+
+Accounts use the same Supabase Auth and database as the admin login, and admin
+access is untouched (`/admin` is still gated by `ADMIN_EMAILS` /
+`profiles.role = 'admin'`). One-time setup — database migration, Google OAuth
+client, Supabase provider + URL settings, custom SMTP and the dark/gold email
+templates — is in [`supabase/ACCOUNTS-SETUP.md`](supabase/ACCOUNTS-SETUP.md).
+
 ## 5. Configure the Stripe webhook
 
 Fulfillment (recording the purchase + emailing the download link) happens in the

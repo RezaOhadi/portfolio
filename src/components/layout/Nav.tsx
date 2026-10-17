@@ -7,6 +7,7 @@ import { utilityNav } from "@/config/site";
 import type { SocialLinks } from "@/lib/types";
 import { PianoKeys, WHITE_KEYS } from "@/components/layout/PianoKeys";
 import { LetsPlayButton } from "@/components/golden-grand/LetsPlayButton";
+import { AccountMenu, AccountMenuItems } from "@/components/account/AccountMenu";
 export function Nav({ social }: { social: SocialLinks }) {
   const pathname = useSitePath();
   const [scrolled, setScrolled] = useState(false);
@@ -97,6 +98,7 @@ export function Nav({ social }: { social: SocialLinks }) {
             />
           </nav>
           <LetsPlayButton variant="nav" />
+          <AccountMenu />
           <button
             ref={toggle}
             type="button"
@@ -158,6 +160,8 @@ export function Nav({ social }: { social: SocialLinks }) {
                 <ArrowUpRight size={18} aria-hidden />
               </Link>
             ))}
+            {/* 381px to 460px: the header row has no room, so Sign in / @username lives here. */}
+            <AccountMenuItems onNavigate={close} />
           </div>
         </nav>
         <a className="menu-email" href={"mailto:" + social.email}>

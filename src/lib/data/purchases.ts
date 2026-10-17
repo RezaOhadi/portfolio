@@ -17,6 +17,8 @@ export interface NewPurchase {
   amountCents: number;
   currency: string;
   status: PurchaseStatus;
+  /** The signed-in member who bought it, if any (guest checkout leaves it null). */
+  userId?: string | null;
 }
 
 export interface UpsertResult {
@@ -48,6 +50,7 @@ export async function upsertPurchase(p: NewPurchase): Promise<UpsertResult | nul
       amount_cents: p.amountCents,
       currency: p.currency,
       status: p.status,
+      user_id: p.userId ?? null,
     })
     .select("*")
     .single();
@@ -101,6 +104,40 @@ export async function getPurchasesByEmail(email: string): Promise<Purchase[]> {
     .eq("status", "paid")
     .order("created_at", { ascending: false });
   return (data ?? []).map(mapPurchaseRow);
+}
+
+/**
+ * Member: paid purchases tied to their account, plus any still filed under
+ * their email (claimPurchasesByEmail normally moves those over first).
+ */
+export async function getPurchasesForMember(
+  userId: string,
+  email: string | null,
+): Promise<Purchase[]> {
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return [];
+  const { data: own } = await supabase
+    .from("purchases")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("status", "paid");
+  const byEmail = email ? await getPurchasesByEmail(email) : [];
+  const seen = new Set<string>();
+  return [...(own ?? []).map(mapPurchaseRow), ...byEmail]
+    .filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)))
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
+/** Files guest purchases made with a (verified) email under the member's account. */
+export async function claimPurchasesByEmail(userId: string, email: string): Promise<void> {
+  const supabase = createSupabaseAdminClient();
+  if (!supabase) return;
+  const { error } = await supabase
+    .from("purchases")
+    .update({ user_id: userId })
+    .is("user_id", null)
+    .eq("customer_email", email.toLowerCase());
+  if (error) console.error("[purchases] claim failed:", error.message);
 }
 
 /** Admin: all purchases, newest first. */

@@ -3,6 +3,7 @@ import { getStripe } from "@/lib/stripe/server";
 import { getProductBySlug } from "@/lib/data/products";
 import { checkoutSchema } from "@/lib/validation";
 import { absoluteUrl } from "@/lib/utils";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -30,6 +31,17 @@ export async function POST(req: Request) {
     ? [product.coverImage]
     : undefined;
 
+  // A signed-in member's purchase is filed under their account (and their
+  // account email is used at checkout). Guests are unaffected.
+  let member: { id: string; email: string } | null = null;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const user = supabase ? (await supabase.auth.getUser()).data.user : null;
+    if (user?.email) member = { id: user.id, email: user.email };
+  } catch {
+    member = null;
+  }
+
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -49,7 +61,12 @@ export async function POST(req: Request) {
           },
         },
       ],
-      metadata: { product_id: product.id, product_slug: product.slug },
+      metadata: {
+        product_id: product.id,
+        product_slug: product.slug,
+        ...(member ? { user_id: member.id } : {}),
+      },
+      ...(member ? { customer_email: member.email } : {}),
       payment_intent_data: {
         metadata: { product_id: product.id, product_slug: product.slug },
       },

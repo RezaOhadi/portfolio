@@ -60,7 +60,19 @@ export interface Purchase {
   status: PurchaseStatus;
   /** Secret bearer token used to mint signed download URLs. */
   downloadToken: string;
+  /** Member who owns it: set at checkout when signed in, or claimed later by verified email. */
+  userId: string | null;
   createdAt: string;
+}
+
+/** A member's own profile row (see supabase/accounts.sql). */
+export interface MemberProfile {
+  id: string;
+  email: string | null;
+  /** Unique handle, 3-20 letters/numbers/underscore; null until chosen. */
+  username: string | null;
+  displayName: string | null;
+  role: string;
 }
 
 export interface GalleryImage {
