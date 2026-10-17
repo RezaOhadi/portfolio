@@ -6,20 +6,21 @@
   z-index: 61;
   background: #0a0806;
 }
-/* The back link and the copyright line in one row, clear of the app's panels.
-   PianoStage measures the app and sets --foot-bottom (desktop and tablet: just
-   above the pedal dock and the piano roll) or --foot-top (phones: just under
-   the top bar). The fallbacks are the app's default layout: roll 268px +
-   gutters 32px + dock 52px + 12px, and top bar 10px + 48px + 4px. The row
-   itself takes no pointer events, so only the link is clickable. */
+/* The home link (site wordmark + gold "Home") and the copyright line in one
+   row at the top left, just under the app's top bar, clear of every control.
+   PianoStage measures the bar and sets --foot-top (its bottom edge + 10px, or
+   + 4px on phones). The fallback is the app's default geometry: 16px edge +
+   52px bar + 10px (phones: 10px + 48px + 4px), plus the safe-area inset the
+   bar already respects. The row itself takes no pointer events, so only the
+   link is clickable. */
 .foot {
   position: fixed;
-  left: 18px;
-  bottom: var(--foot-bottom, 364px);
+  left: max(18px, env(safe-area-inset-left, 0px));
+  top: var(--foot-top, calc(env(safe-area-inset-top, 0px) + 78px));
   z-index: 2;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   pointer-events: none;
   transition: opacity 0.2s;
 }
@@ -27,41 +28,88 @@
 .foot[data-covered] {
   opacity: 0;
 }
-.foot[data-covered] .back {
+.foot[data-covered] .home {
   pointer-events: none;
 }
-.back {
+/* The link: wordmark and label side by side, quiet until pointed at. The box
+   is at least 44px tall and the wordmark 44px wide, so the tap target holds
+   on every size while the mark itself stays small. */
+.home {
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 12px;
+  min-height: 44px;
+  padding: 2px 4px 2px 0;
   border-radius: 999px;
-  border: 1px solid rgb(243 220 166 / 0.12);
-  background: rgb(6 6 8 / 0.42);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   color: #f2eee6;
-  font-family: var(--font-sans), Inter, system-ui, sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  line-height: 1;
   text-decoration: none;
-  opacity: 0.42;
-  transition:
-    opacity 0.25s,
-    color 0.25s,
-    border-color 0.25s;
+  -webkit-tap-highlight-color: transparent;
 }
-.back:hover,
-.back:focus-visible {
-  opacity: 1;
-  color: #f3dca6;
-  border-color: rgb(243 220 166 / 0.45);
-}
-.back:focus-visible {
+.home:focus-visible {
   outline: 2px solid rgb(243 220 166 / 0.8);
-  outline-offset: 2px;
+  outline-offset: 4px;
+}
+/* The site's wordmark (global .wordmark classes, portfolio.css), a step
+   smaller than in the header and at reduced opacity until hovered. */
+.wordmark {
+  gap: 5px;
+  min-width: 44px;
+  opacity: 0.62;
+  transition: opacity 0.25s;
+}
+.wordmark :global(.wordmark-name) {
+  font-size: 23px;
+  transition: color 0.25s;
+}
+.wordmark :global(.wordmark-role) {
+  font-size: 8px;
+}
+.home:hover .wordmark,
+.home:focus-visible .wordmark {
+  opacity: 1;
+}
+.home:hover .wordmark :global(.wordmark-name),
+.home:focus-visible .wordmark :global(.wordmark-name) {
+  color: #f3dca6;
+}
+/* "Home": the Let's Play pill (lets-play.module.css .cta) shrunk to a label.
+   Low opacity by default; full gold with the pill's soft glow on hover of the
+   whole link, and the same shimmer crosses it. */
+.foot .home .homeLabel {
+  padding: 7px 11px 7px 11px;
+  gap: 0;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  opacity: 0.45;
+  transition:
+    opacity 0.3s,
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s,
+    filter 0.35s;
+}
+.foot .home:hover .homeLabel,
+.foot .home:focus-visible .homeLabel {
+  opacity: 1;
+  transform: translateY(-1px);
+  filter: saturate(1.05);
+  box-shadow:
+    inset 0 1px 0 rgb(255 248 230 / 0.85),
+    inset 0 -1px 0 rgb(120 86 30 / 0.35),
+    0 0 0 1px rgb(243 220 166 / 0.5),
+    0 8px 24px rgb(214 176 100 / 0.38),
+    0 0 36px rgb(243 220 166 / 0.22);
+}
+.foot .home:hover .homeLabel::after,
+.foot .home:focus-visible .homeLabel::after {
+  opacity: 1;
+  transform: skewX(-18deg) translateX(420%);
+  transition:
+    transform 0.9s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s;
+}
+.foot .home:active .homeLabel {
+  transform: translateY(0);
 }
 /* Champagne gold, small and quiet. */
 .copyright {
@@ -74,23 +122,51 @@
   opacity: 0.45;
   user-select: none;
 }
-/* Phones (the app's own breakpoint): top-left, under the app's top bar, smaller and quieter. */
+/* Phones (the app's own breakpoint): smaller and quieter, and the copyright
+   wraps under the link when the width runs out. */
 @media (max-width: 760px) {
   .foot {
-    left: 14px;
-    bottom: auto;
+    left: max(14px, env(safe-area-inset-left, 0px));
     top: var(--foot-top, calc(env(safe-area-inset-top, 0px) + 62px));
+    flex-wrap: wrap;
+    gap: 2px 12px;
+  }
+  .home {
     gap: 10px;
   }
-  .back {
-    height: 22px;
-    padding: 0 9px;
-    font-size: 10px;
-    opacity: 0.38;
+  .wordmark {
+    gap: 4px;
+    opacity: 0.58;
+  }
+  .wordmark :global(.wordmark-name) {
+    font-size: 19px;
+  }
+  .wordmark :global(.wordmark-role) {
+    font-size: 7px;
+  }
+  .foot .home .homeLabel {
+    padding: 6px 9px;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    opacity: 0.42;
   }
   .copyright {
     font-size: 9px;
     letter-spacing: 0.04em;
     opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .foot .home .homeLabel,
+  .foot .home .homeLabel::after {
+    transition: none;
+  }
+  .foot .home:hover .homeLabel::after,
+  .foot .home:focus-visible .homeLabel::after {
+    display: none;
+  }
+  .foot .home:hover .homeLabel,
+  .foot .home:focus-visible .homeLabel {
+    transform: none;
   }
 }
