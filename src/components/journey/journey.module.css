@@ -99,6 +99,19 @@
 .worldTitle {
   font-size: clamp(3.2rem, 5.6vw, 6.2rem);
 }
+/* SplitText wraps every word of a title in a mask (overflow: clip) that is
+   exactly one line-height tall, and these titles set a line-height under 1,
+   so descenders (p, g, y) fell below the mask and were cut. The word gets
+   padding below for the descender, the mask takes the same amount back as a
+   negative margin: the line box, the baseline and the layout are unchanged,
+   and the entrance still starts fully hidden (yPercent is of the word's own,
+   now taller, box). Only the title role names its words (useTextChoreography). */
+.journey :global([data-fx="title"] .fx-word) {
+  padding-bottom: 0.22em;
+}
+.journey :global([data-fx="title"] .fx-word-mask) {
+  margin-bottom: -0.22em;
+}
 .worldTitle em,
 .heroTitle em {
   font-style: italic;

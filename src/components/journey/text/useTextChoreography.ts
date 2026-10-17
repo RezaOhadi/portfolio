@@ -85,6 +85,8 @@ function title(el: HTMLElement) {
     // Phones split into words only: far fewer pieces to animate.
     type: touch ? "words" : "words,chars",
     mask: "words",
+    // Named so journey.module.css can give each word mask room for descenders.
+    wordsClass: "fx-word",
     autoSplit: true,
     onSplit(self) {
       const pieces = touch ? self.words : self.chars;
