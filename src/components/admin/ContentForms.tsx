@@ -16,7 +16,7 @@ const input =
   "w-full rounded-sm border border-white/15 bg-ink-deep px-3 py-2.5 font-sans text-sm text-ivory placeholder:text-silver-400/50 focus:border-ivory focus:outline-none";
 const label = "mb-1.5 block font-sans text-xs uppercase tracking-widest text-silver-400";
 
-function Save({ children = "Save" }: { children?: string }) {
+export function Save({ children = "Save" }: { children?: string }) {
   const { pending } = useFormStatus();
   return (
     <button
@@ -30,7 +30,7 @@ function Save({ children = "Save" }: { children?: string }) {
   );
 }
 
-function Status({ state }: { state: ContentState }) {
+export function Status({ state }: { state: ContentState }) {
   if (state.status === "success")
     return (
       <p className="flex items-center gap-2 font-sans text-sm text-ivory">
@@ -46,7 +46,7 @@ function Status({ state }: { state: ContentState }) {
   return null;
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+export function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-sm border border-white/10 bg-white/[0.02] p-6">
       <h2 className="mb-5 font-serif text-xl text-ivory">{title}</h2>

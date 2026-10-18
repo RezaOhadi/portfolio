@@ -238,11 +238,8 @@ export const defaultContent: SiteContent = {
     artistStatement:
       "I write for the piano the way one writes letters never meant to be sent — quietly, and only when there is something that cannot be said any other way. Each piece begins with a single sound and the patience to follow where it leads.",
     featuredProductSlug: "nocturne-in-ash",
-    performances: [
-      { title: "Solo Recital — Original Works", venue: "Concert Hall", location: "City to be announced", date: "2026-09-21" },
-      { title: "An Evening of Nocturnes", venue: "Recital Hall", location: "City to be announced", date: "2026-11-08" },
-      { title: "Cinematic Piano — A Première", venue: "Arts Centre", location: "City to be announced", date: "2027-02-14" },
-    ],
+    // Concerts are managed in /admin/concerts; none are invented here.
+    performances: [],
   },
   bio: {
     intro:
@@ -263,10 +260,8 @@ export const defaultContent: SiteContent = {
       { year: "—", title: "On the stage", description: "Bringing the compositions to live audiences." },
       { year: "2026", title: "A digital catalogue", description: "Opening a curated library of original sheet music." },
     ],
-    performances: [
-      { title: "Solo Recital", venue: "Concert Hall", location: "City to be announced", date: "2026-05-10" },
-      { title: "Chamber Evening", venue: "Recital Hall", location: "City to be announced", date: "2026-10-02" },
-    ],
+    // Performance history is managed in /admin/content; none are invented here.
+    performances: [],
     pullQuotes: [
       "Music shaped by memory, silence, and emotion.",
       "The resonance after a note matters as much as the note.",
@@ -274,5 +269,6 @@ export const defaultContent: SiteContent = {
     signatureImage: ph("signature.svg"),
     listenWhileReadingUrl: null,
   },
-  media: placeholderMedia,
+  // Videos are managed in /admin/media; none are invented here.
+  media: [],
 };

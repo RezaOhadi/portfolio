@@ -1,14 +1,6 @@
 import { createSupabasePublicClient } from "@/lib/supabase/public";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { defaultContent } from "./placeholder";
-import { mediaConfig } from "@/config/media";
-
-function configuredMedia(items: MediaItem[]): MediaItem[] {
-  return items.map((item) => ({
-    ...item,
-    youtubeUrl: mediaConfig.youtubeOverrides[item.id] || item.youtubeUrl,
-  }));
-}
 import type {
   BioContent,
   HeroContent,
@@ -26,14 +18,12 @@ export type ContentKey = "social" | "hero" | "home" | "bio" | "media";
  */
 export async function getSiteContent(): Promise<SiteContent> {
   const supabase = createSupabasePublicClient();
-  if (!supabase)
-    return { ...defaultContent, media: configuredMedia(defaultContent.media) };
+  if (!supabase) return defaultContent;
 
   const { data, error } = await supabase
     .from("site_content")
     .select("key, value");
-  if (error || !data)
-    return { ...defaultContent, media: configuredMedia(defaultContent.media) };
+  if (error || !data) return defaultContent;
 
   const map = Object.fromEntries(data.map((r) => [r.key, r.value])) as Record<
     string,
@@ -45,11 +35,7 @@ export async function getSiteContent(): Promise<SiteContent> {
     hero: { ...defaultContent.hero, ...(map.hero as object | undefined) },
     home: { ...defaultContent.home, ...(map.home as object | undefined) },
     bio: { ...defaultContent.bio, ...(map.bio as object | undefined) },
-    media: configuredMedia(
-      Array.isArray(map.media)
-        ? (map.media as MediaItem[])
-        : defaultContent.media,
-    ),
+    media: Array.isArray(map.media) ? (map.media as MediaItem[]) : defaultContent.media,
   };
 }
 

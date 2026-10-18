@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { HomeUniverseData } from "@/lib/data/home-universe";
+import { SectionTitleText } from "@/components/home/SectionTitle";
 import styles from "../journey.module.css";
 
 /* Copy is the site's existing content. Each element declares its entrance
@@ -38,7 +39,7 @@ export function AboutOverlay({ data }: { data: HomeUniverseData }) {
           01 / The artist
         </p>
         <h2 id="about-title" className={styles.worldTitle} data-fx="title">
-          A life at <em>the piano.</em>
+          <SectionTitleText title={data.titles.about} />
         </h2>
         {paragraphs.map((paragraph, index) => (
           <p key={index} className={styles.body} data-fx="body">
@@ -61,7 +62,7 @@ export function MusicOverlay({ data }: { data: HomeUniverseData }) {
         02 / The music
       </p>
       <h2 id="music-title" className={styles.worldTitle} data-fx="title">
-        Where silence <em>takes shape.</em>
+        <SectionTitleText title={data.titles.music} />
       </h2>
       <p className={styles.body} data-fx="body">
         Selected works for the piano. Explore a score and the story within it.

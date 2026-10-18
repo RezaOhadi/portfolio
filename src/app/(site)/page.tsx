@@ -27,6 +27,7 @@ import { mediaConfig } from "@/config/media";
 import { getSiteContent } from "@/lib/data/content";
 import { getProducts } from "@/lib/data/products";
 import { getGalleryImages } from "@/lib/data/gallery";
+import { SectionTitleText } from "@/components/home/SectionTitle";
 import { formatDate } from "@/lib/utils";
 export const revalidate = 60;
 
@@ -46,10 +47,15 @@ export default async function HomePage() {
     products.find((p) => p.slug === content.home.featuredProductSlug) ??
     products.find((p) => p.featured) ??
     products[0];
+  // The reel shows the videos marked "featured on home" in the admin.
   const videos = content.media
-    .filter((item) => item.type === "youtube")
+    .filter((item) => item.type === "youtube" && item.featured)
+    .slice(0, 3);
+  const nextDates = content.home.performances
+    .filter((performance) => performance.status !== "past")
     .slice(0, 3);
   const universe = getHomeUniverseData(content, products);
+  const titles = universe.titles;
   return (
     <>
       <ArtistJsonLd social={content.social} />
@@ -112,7 +118,7 @@ export default async function HomePage() {
                     className="section-title"
                     data-fx="title"
                   >
-                    New to the catalogue.
+                    <SectionTitleText title={titles.scores} />
                   </h2>
                 </div>
                 <Link className="action-text" href="/store" data-fx="link">
@@ -148,7 +154,7 @@ export default async function HomePage() {
                     className="section-title"
                     data-fx="title"
                   >
-                    Music, in the moment.
+                    <SectionTitleText title={titles.media} />
                   </h2>
                 </div>
                 <Link href="/media" className="action-text" data-fx="link">
@@ -242,11 +248,9 @@ export default async function HomePage() {
                   03 / On stage
                 </span>
                 <h3 data-fx="lede">Next at the piano.</h3>
-                {content.home.performances.length ? (
+                {nextDates.length ? (
                   <ul className="showcase-dates" data-fx="stagger">
-                    {content.home.performances
-                      .slice(0, 3)
-                      .map((performance, i) => (
+                    {nextDates.map((performance, i) => (
                         <li key={performance.date + i}>
                           <time dateTime={performance.date}>
                             {formatDate(performance.date)}
@@ -287,7 +291,7 @@ export default async function HomePage() {
                     className="section-title"
                     data-fx="title"
                   >
-                    Upcoming & recent.
+                    <SectionTitleText title={titles.concerts} />
                   </h2>
                 </div>
                 <Link href="/contact" className="action-text" data-fx="link">
@@ -306,6 +310,19 @@ export default async function HomePage() {
                       {performance.venue}
                       <br />
                       {performance.location}
+                      {performance.ticketUrl ? (
+                        <>
+                          <br />
+                          <a
+                            className="action-text"
+                            href={performance.ticketUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Tickets <ArrowUpRight size={18} aria-hidden />
+                          </a>
+                        </>
+                      ) : null}
                     </p>
                   </div>
                 ))
@@ -338,7 +355,7 @@ export default async function HomePage() {
                     className="section-title"
                     data-fx="title"
                   >
-                    Beyond the notes.
+                    <SectionTitleText title={titles.gallery} />
                   </h2>
                 </div>
                 <Link href="/gallery" className="action-text" data-fx="link">
@@ -399,9 +416,7 @@ export default async function HomePage() {
                   className="section-title"
                   data-fx="title"
                 >
-                  Let’s make
-                  <br />
-                  something resonant.
+                  <SectionTitleText title={titles.contact} />
                 </h2>
                 <div data-fx="rule" aria-hidden />
                 <p className="section-lead mt-6" data-fx="lede">

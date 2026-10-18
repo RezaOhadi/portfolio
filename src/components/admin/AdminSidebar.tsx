@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Music, Receipt, Users, FileEdit, ExternalLink } from "lucide-react";
+import { LayoutDashboard, Music, Receipt, Users, FileEdit, CalendarDays, Clapperboard, ExternalLink } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +12,8 @@ const links = [
   { href: "/admin/purchases", label: "Purchases", icon: Receipt },
   { href: "/admin/members", label: "Members", icon: Users },
   { href: "/admin/content", label: "Content", icon: FileEdit },
+  { href: "/admin/concerts", label: "Concerts", icon: CalendarDays },
+  { href: "/admin/media", label: "Media", icon: Clapperboard },
 ];
 
 export function AdminSidebar({ email }: { email: string }) {

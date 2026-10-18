@@ -6,6 +6,8 @@ import { upsertContent, getSiteContent } from "@/lib/data/content";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { uploadToBucket, publicAssetUrl } from "@/lib/supabase/storage";
 import { env } from "@/lib/env";
+import { HOME_TITLE_KEYS } from "@/lib/data/home-titles";
+import type { HomeTitles } from "@/lib/types";
 
 export interface ContentState {
   status: "idle" | "success" | "error";
@@ -58,6 +60,34 @@ export async function saveHome(_p: ContentState, fd: FormData): Promise<ContentS
   if (!res.ok) return { status: "error", message: res.error };
   revalidatePublic();
   return { status: "success", message: "Home content saved." };
+}
+
+export async function saveHero(_p: ContentState, fd: FormData): Promise<ContentState> {
+  await requireAdmin();
+  const cur = (await getSiteContent()).hero;
+  const image = (await upload(fd.get("portrait"), "hero/portrait")) ?? cur.image;
+  const res = await upsertContent("hero", {
+    ...cur,
+    headline: s(fd, "headline") || cur.headline,
+    supporting: s(fd, "supporting"),
+    image,
+  });
+  if (!res.ok) return { status: "error", message: res.error };
+  revalidatePublic();
+  return { status: "success", message: "Hero saved." };
+}
+
+export async function saveTitles(_p: ContentState, fd: FormData): Promise<ContentState> {
+  await requireAdmin();
+  const cur = (await getSiteContent()).home;
+  const titles: Partial<HomeTitles> = {};
+  for (const key of HOME_TITLE_KEYS) {
+    titles[key] = { text: s(fd, `${key}_text`), accent: s(fd, `${key}_accent`) };
+  }
+  const res = await upsertContent("home", { ...cur, titles });
+  if (!res.ok) return { status: "error", message: res.error };
+  revalidatePublic();
+  return { status: "success", message: "Section titles saved." };
 }
 
 export async function saveBio(_p: ContentState, fd: FormData): Promise<ContentState> {

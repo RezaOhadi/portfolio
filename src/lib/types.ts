@@ -114,6 +114,26 @@ export interface Performance {
   venue: string;
   location: string;
   date: string;
+  /** Optional "Tickets" link. */
+  ticketUrl?: string | null;
+  /** Set by the admin; when missing, derived from the date. */
+  status?: "upcoming" | "past";
+}
+
+/** A home-page section title: text plus an optional italic ending. */
+export interface SectionTitle {
+  text: string;
+  accent?: string;
+}
+
+export interface HomeTitles {
+  about: SectionTitle;
+  music: SectionTitle;
+  scores: SectionTitle;
+  media: SectionTitle;
+  concerts: SectionTitle;
+  gallery: SectionTitle;
+  contact: SectionTitle;
 }
 
 export interface BioContent {
@@ -149,6 +169,8 @@ export interface HomeContent {
   artistStatement: string;
   featuredProductSlug: string | null;
   performances: Performance[];
+  /** Overrides for the section titles (see lib/data/home-titles.ts). */
+  titles?: Partial<HomeTitles>;
 }
 
 export interface SiteContent {

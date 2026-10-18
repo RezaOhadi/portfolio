@@ -1,11 +1,8 @@
 /** Public media URLs only. Never put API secrets in this file.
- * YouTube overrides use the existing site_content.media item's id.
- * Add/edit the full media records through Supabase site_content.media.
+ * Videos are managed in the admin (/admin/media) and stored in
+ * site_content.media; nothing about them is hardcoded here.
  */
 export const mediaConfig = {
+  /** Fallback when no Spotify link is saved under Content → Social links. */
   spotifyUrl: "https://open.spotify.com/artist/0PF3j82FQfwxYpr2YGFzZQ",
-  youtubeOverrides: {
-    m1: "https://www.youtube.com/watch?v=5GiLjAbmLGc",
-    m2: "https://www.youtube.com/watch?v=cuzWQkuKDVE",
-  } as Record<string, string>,
 };

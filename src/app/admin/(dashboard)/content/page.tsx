@@ -3,7 +3,10 @@ import { Plus, Trash2 } from "lucide-react";
 import { getSiteContent } from "@/lib/data/content";
 import { getProducts } from "@/lib/data/products";
 import { getGalleryImages } from "@/lib/data/gallery";
+import { resolveHomeTitles } from "@/lib/data/home-titles";
 import { SocialForm, HomeForm, BioForm } from "@/components/admin/ContentForms";
+import { HeroForm, TitlesForm } from "@/components/admin/HeroTitlesForms";
+import { ListEditor } from "@/components/admin/ListEditor";
 import { ConfirmButton } from "@/components/admin/ConfirmButton";
 import { addGalleryImage, deleteGalleryImage } from "./actions";
 import { isSupabaseAdminConfigured } from "@/lib/env";
@@ -23,7 +26,8 @@ export default async function AdminContentPage() {
     <div>
       <h1 className="font-serif text-3xl text-ivory">Content</h1>
       <p className="mb-8 mt-1 font-sans text-sm text-silver-300">
-        Manage social links, the home page, biography and gallery.
+        Social links, the home page hero and titles, biography and gallery. Concerts and
+        videos have their own pages.
       </p>
 
       {!isSupabaseAdminConfigured ? (
@@ -34,11 +38,36 @@ export default async function AdminContentPage() {
 
       <div className="flex flex-col gap-6">
         <SocialForm social={content.social} />
+        <HeroForm hero={content.hero} />
         <HomeForm
           home={content.home}
           products={products.map((p) => ({ slug: p.slug, title: p.title }))}
         />
+        <TitlesForm titles={resolveHomeTitles(content.home)} />
         <BioForm bio={content.bio} />
+        <ListEditor
+          list="bio.timeline"
+          items={content.bio.timeline}
+          title="Biography · Timeline"
+          description="The “Musical journey” timeline on the biography page, top to bottom."
+        />
+        <ListEditor
+          list="bio.education"
+          items={content.bio.education}
+          title="Biography · Education & training"
+        />
+        <ListEditor
+          list="bio.performances"
+          items={content.bio.performances}
+          title="Biography · Performance history"
+          description="Past performances listed under “On stage” on the biography page."
+        />
+        <ListEditor
+          list="bio.pullQuotes"
+          items={content.bio.pullQuotes}
+          title="Biography · Pull quotes"
+          description="The first quote is shown large on the biography page."
+        />
 
         {/* Gallery manager */}
         <section className="rounded-sm border border-white/10 bg-white/[0.02] p-6">

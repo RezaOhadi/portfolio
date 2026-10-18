@@ -8,16 +8,22 @@ export function ConfirmButton({
   children,
   message = "Are you sure?",
   className,
+  name,
+  value,
   "aria-label": ariaLabel,
 }: {
   children: ReactNode;
   message?: string;
   className?: string;
+  name?: string;
+  value?: string;
   "aria-label"?: string;
 }) {
   return (
     <button
       type="submit"
+      name={name}
+      value={value}
       aria-label={ariaLabel}
       onClick={(e) => {
         if (!window.confirm(message)) e.preventDefault();

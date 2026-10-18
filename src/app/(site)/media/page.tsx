@@ -61,7 +61,13 @@ export default async function MediaPage() {
       <PianoDivider label="More" />
 
       <section className="container-editorial py-20 md:py-28">
-        <MediaExplorer items={rest.length ? rest : media} />
+        {media.length ? (
+          <MediaExplorer items={rest.length ? rest : media} />
+        ) : (
+          <p className="section-lead mb-16">
+            Performances and recordings will appear here soon.
+          </p>
+        )}
         <section className="spotify-panel" aria-labelledby="spotify-heading">
           <div>
             <span className="section-number">On record</span>

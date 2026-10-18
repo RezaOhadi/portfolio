@@ -111,6 +111,7 @@ export default async function BiographyPage() {
       <PianoDivider label="The Journey" className="py-8" />
 
       {/* Timeline */}
+      {bio.timeline.length ? (
       <section className="container-editorial py-16 md:py-24">
         <SectionHeading kicker="Musical Journey" title="A timeline" className="mb-12" />
         <Stagger className="relative border-l border-white/12 pl-8 md:pl-12">
@@ -132,9 +133,12 @@ export default async function BiographyPage() {
           ))}
         </Stagger>
       </section>
+      ) : null}
 
       {/* Education + Performances */}
+      {bio.education.length || bio.performances.length ? (
       <section className="container-editorial grid gap-12 py-16 md:grid-cols-2 md:gap-16">
+        {bio.education.length ? (
         <div>
           <SectionHeading kicker="Education & Training" title="Study" className="mb-8" />
           <Stagger className="flex flex-col">
@@ -151,6 +155,8 @@ export default async function BiographyPage() {
             ))}
           </Stagger>
         </div>
+        ) : null}
+        {bio.performances.length ? (
         <div>
           <SectionHeading kicker="Performance History" title="On stage" className="mb-8" />
           <Stagger className="flex flex-col">
@@ -169,7 +175,9 @@ export default async function BiographyPage() {
             ))}
           </Stagger>
         </div>
+        ) : null}
       </section>
+      ) : null}
 
       {/* Philosophy + pull quote */}
       <section className="relative overflow-hidden py-24 md:py-32">

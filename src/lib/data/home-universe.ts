@@ -1,4 +1,5 @@
-import type { Product, SiteContent } from "@/lib/types";
+import type { HomeTitles, Product, SiteContent } from "@/lib/types";
+import { resolveHomeTitles } from "./home-titles";
 import heroGenerated from "@/config/hero.generated.json";
 import { universeConfig } from "@/config/home-universe";
 
@@ -17,6 +18,7 @@ export interface HomeUniverseData {
   biography: string;
   portrait: string;
   works: UniverseWork[];
+  titles: HomeTitles;
 }
 
 /** Explicit allowlist: never spread a Product across the server/client boundary. */
@@ -29,6 +31,7 @@ export function getHomeUniverseData(content: SiteContent, products: Product[]): 
   return {
     name: content.hero.headline,
     supporting: content.hero.supporting,
+    titles: resolveHomeTitles(content.home),
     biography: content.bio.intro,
     portrait: content.hero.image && !content.hero.image.startsWith("/placeholders/")
       ? content.hero.image : heroGenerated.portrait,
