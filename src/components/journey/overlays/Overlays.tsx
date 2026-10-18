@@ -34,7 +34,7 @@ export function AboutOverlay({ data }: { data: HomeUniverseData }) {
   const paragraphs = data.biography.split(/\n\s*\n/).filter(Boolean);
   return (
     <div className={styles.aboutTrack}>
-      <div className={styles.aboutCopy} data-about-copy>
+      <div className={styles.aboutCopy} data-about-copy data-snap>
         <p className={styles.eyebrow} data-fx="eyebrow">
           01 / The artist
         </p>
@@ -57,7 +57,7 @@ export function AboutOverlay({ data }: { data: HomeUniverseData }) {
 /** World 3 content: the selected works. */
 export function MusicOverlay({ data }: { data: HomeUniverseData }) {
   return (
-    <div className={styles.musicCopy}>
+    <div className={styles.musicCopy} data-snap>
       <p className={styles.eyebrow} data-fx="eyebrow">
         02 / The music
       </p>

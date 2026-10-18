@@ -3,7 +3,7 @@
 import "lenis/dist/lenis.css";
 import dynamic from "next/dynamic";
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { forcedQuality, isTouchDevice, isWeakGpu, LITE_FPS, MOBILE_QUERY, POSTER_FPS, SEGMENTS, type QualityTier, type QualityVerdict } from "./config";
+import { forcedQuality, isStrongDevice, isTouchDevice, isWeakGpu, LITE_FPS, MOBILE_QUERY, POSTER_FPS, POSTER_FPS_STRONG, SEGMENTS, type QualityTier, type QualityVerdict } from "./config";
 import { SoundControls } from "./SoundControls";
 import { useTextChoreography } from "./text/useTextChoreography";
 import styles from "./journey.module.css";
@@ -238,14 +238,16 @@ export function JourneyExperience({ children }: { children: ReactNode }) {
   const onVerdict = useCallback((fps: number) => {
     const stage = probeStage.current;
     if (stage === "done") return;
-    if (fps < POSTER_FPS) {
+    // A strong device is never stepped down; the poster is only for a scene that cannot run at all.
+    const strong = isStrongDevice();
+    if (fps < (strong ? POSTER_FPS_STRONG : POSTER_FPS)) {
       probeStage.current = "done";
       keepVerdict("poster");
       setPoster(true);
       setProbing(false);
       return;
     }
-    if (stage === "first" && fps < LITE_FPS) {
+    if (stage === "first" && !strong && fps < LITE_FPS) {
       probeStage.current = "second";
       keepVerdict("lite");
       journey.tier = "lite";

@@ -4,7 +4,7 @@ import { Environment, Lightformer, PerformanceMonitor } from "@react-three/drei"
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HalfFloatType, WebGLRenderTarget, type DirectionalLight, type Light, type Mesh, type Object3D, type PointLight, type ShaderMaterial, type Texture } from "three";
-import { PALETTE, PROBE_SECONDS, QUALITY, testFlag, type QualityTier } from "../config";
+import { LITE_FPS, PALETTE, PROBE_SECONDS, PROBE_WARMUP, QUALITY, testFlag, type QualityTier } from "../config";
 import { journey } from "../store";
 import { CameraDirector } from "./CameraDirector";
 import { Effects } from "./Effects";
@@ -45,26 +45,39 @@ declare global {
 }
 
 /**
- * The FPS monitor: the first PROBE_SECONDS of rendered frames after the
- * shaders are compiled, as a median (one long frame from a chunk download or
- * a tab switch does not count against the device). Pauses of the loop are
- * skipped, so three seconds means three seconds of actual drawing.
+ * The FPS monitor, a safety net for genuinely weak devices. The first
+ * PROBE_WARMUP seconds of drawing are ignored (shader compilation, chunk
+ * arrival, the intro all stall every device), then PROBE_SECONDS of frames
+ * are taken as a median. A window below LITE_FPS never decides on its own: a
+ * second window is measured, and the better of the two is the verdict, so a
+ * passing stall can never step a phone down. Pauses of the loop are skipped.
  */
 function FpsProbe({ onVerdict }: { onVerdict: (medianFps: number) => void }) {
   const samples = useRef<number[]>([]);
   const elapsed = useRef(0);
+  const warmup = useRef(0);
+  const windows = useRef<number[]>([]);
   const sent = useRef(false);
   useFrame((_, delta) => {
     if (sent.current || delta <= 0 || delta > 0.5) return;
+    if (warmup.current < PROBE_WARMUP) {
+      warmup.current += delta;
+      return;
+    }
     samples.current.push(delta);
     elapsed.current += delta;
     if (elapsed.current < PROBE_SECONDS) return;
-    sent.current = true;
     const sorted = samples.current.slice().sort((a, b) => a - b);
     const median = 1 / sorted[Math.floor(sorted.length / 2)];
+    samples.current = [];
+    elapsed.current = 0;
+    windows.current.push(median);
+    if (windows.current.length === 1 && median < LITE_FPS) return;
+    sent.current = true;
+    const fps = Math.max(...windows.current);
     const j = (window.__journey ??= { fps: 0, frames: 0, dpr: 1, tier: journey.tier, dof: false });
-    j.probe = Math.round(median * 10) / 10;
-    onVerdict(median);
+    j.probe = Math.round(fps * 10) / 10;
+    onVerdict(fps);
   }, -2);
   return null;
 }

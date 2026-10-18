@@ -16,6 +16,8 @@ export interface JourneyState {
   /** A low-end mobile GPU (touch tier only): bloom stays off. */
   weakGpu: boolean;
   mobile: boolean;
+  /** Phone layout: the biography copy stacked under the piano (config STACKED_QUERY). */
+  stacked: boolean;
   /** A performance card is hovered: the hammer world goes into bullet time. */
   bullet: boolean;
   /** Part currently under the cursor in the exploded world. */
@@ -31,6 +33,7 @@ export const journey: JourneyState = {
   tier: "high",
   weakGpu: false,
   mobile: false,
+  stacked: false,
   hovered: null,
   bullet: false,
   sound: false,

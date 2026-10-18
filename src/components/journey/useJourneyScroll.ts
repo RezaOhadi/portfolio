@@ -4,8 +4,8 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { useEffect, type RefObject } from "react";
-import { isTouchDevice } from "./config";
+import { useEffect, useLayoutEffect, type RefObject } from "react";
+import { isTouchDevice, STACKED_QUERY } from "./config";
 import { journey } from "./store";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -54,10 +54,42 @@ function settle(y: number, direction: number) {
 function explodedEnd(node: HTMLElement) {
   return () => {
     const copy = node.querySelector<HTMLElement>("[data-about-copy]");
-    const below = window.matchMedia("(max-width: 760px)").matches;
-    if (!copy || !below) return node.getBoundingClientRect().top + window.scrollY + node.offsetHeight;
+    // Read the layout here, not journey.stacked: triggers are created in a layout effect,
+    // before the effect that keeps the flag current has run.
+    if (!copy || !window.matchMedia(STACKED_QUERY).matches) return node.getBoundingClientRect().top + window.scrollY + node.offsetHeight;
     return copy.getBoundingClientRect().top + window.scrollY - window.innerHeight;
   };
+}
+
+/**
+ * Phones: the landing assist. The browser's proximity snapping only catches a
+ * stop that is very close; a normal flick often ends with a heading just past
+ * the top edge, so the reader misses it and scrolls back. When a flick ends
+ * with a section heading within reach of its stop (30% of the screen, the
+ * snap position in portfolio.css), the page glides there. A short, deliberate
+ * scroll is never touched, nothing happens mid-copy, and nothing happens while
+ * a glide of its own is in flight.
+ */
+let gliding = 0;
+function landOnHeading(moved: number) {
+  if (!journey.stacked || performance.now() < gliding) return;
+  const vh = window.innerHeight;
+  // Only a real flick is assisted: a short, deliberate scroll (reading) is never undone.
+  if (Math.abs(moved) < vh * 0.4) return;
+  const stop = vh * 0.3;
+  const down = moved > 0;
+  let best: { delta: number } | null = null;
+  for (const el of document.querySelectorAll<HTMLElement>("[data-snap]")) {
+    const delta = el.getBoundingClientRect().top - stop;
+    // Going down: a heading still up to 55% of the screen short of its stop, or passed by up to 35%.
+    // Going up: the mirror image.
+    const ahead = down ? delta : -delta;
+    if (ahead > vh * 0.55 || ahead < -vh * 0.35) continue;
+    if (!best || Math.abs(delta) < Math.abs(best.delta)) best = { delta };
+  }
+  if (!best || Math.abs(best.delta) < 2) return;
+  gliding = performance.now() + 900;
+  window.scrollBy({ top: best.delta, behavior: "smooth" });
 }
 
 /** A menu key or anchor lands on the resting point of the world that holds its target. */
@@ -88,6 +120,20 @@ function onAnchor(event: MouseEvent) {
  * Reduced motion skips Lenis and snapping.
  */
 export function useJourneyScroll(root: RefObject<HTMLElement | null>, reduced: boolean) {
+  // The phone layout flag, kept current across rotation and resizes.
+  useLayoutEffect(() => {
+    const query = window.matchMedia(STACKED_QUERY);
+    const sync = () => {
+      journey.stacked = query.matches;
+    };
+    sync();
+    query.addEventListener("change", sync);
+    return () => {
+      query.removeEventListener("change", sync);
+      journey.stacked = false;
+    };
+  }, []);
+
   useEffect(() => {
     if (reduced) return;
     if (isTouchDevice()) {
@@ -116,8 +162,32 @@ export function useJourneyScroll(root: RefObject<HTMLElement | null>, reduced: b
       };
       window.addEventListener("scroll", onScroll, { passive: true });
       gsap.ticker.add(tick);
+      // Landing assist (phones): after a flick settles, a nearby heading comes to its stop.
+      let settleTimer = 0;
+      let gestureStart = window.scrollY;
+      let idle = true;
+      const onGesture = () => {
+        if (idle) {
+          idle = false;
+          gestureStart = last;
+        }
+      };
+      const onScrollEnd = () => {
+        window.clearTimeout(settleTimer);
+        settleTimer = window.setTimeout(() => {
+          idle = true;
+          landOnHeading(window.scrollY - gestureStart);
+        }, 60);
+      };
+      window.addEventListener("scroll", onGesture, { passive: true });
+      const hasScrollEnd = "onscrollend" in window;
+      if (hasScrollEnd) window.addEventListener("scrollend", onScrollEnd);
+      else window.addEventListener("scroll", () => { window.clearTimeout(settleTimer); settleTimer = window.setTimeout(onScrollEnd, 160); }, { passive: true });
       return () => {
         window.removeEventListener("scroll", onScroll);
+        window.removeEventListener("scroll", onGesture);
+        window.removeEventListener("scrollend", onScrollEnd);
+        window.clearTimeout(settleTimer);
         gsap.ticker.remove(tick);
         document.removeEventListener("click", onAnchor);
         html.classList.remove("journey-snap");

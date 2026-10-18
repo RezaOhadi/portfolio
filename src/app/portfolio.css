@@ -1324,6 +1324,27 @@ html.journey-snap body > footer,
 html.journey-snap footer:last-of-type {
   scroll-snap-align: end;
 }
+/* Phones: snapping is gentle (proximity) and lands on each section's heading, which
+   settles a third of the way down the screen; the copy under it then reveals as the
+   reader scrolls on (journey/text/useTextChoreography.ts). The piano's own worlds keep
+   their stops, so a flick out of a transition still settles on the instrument. */
+@media (max-width: 760px) {
+  html.journey-snap {
+    scroll-snap-type: y proximity;
+  }
+  html.journey-snap [data-segment]:not([data-kind="transition"]) {
+    scroll-snap-align: none;
+  }
+  html.journey-snap [data-segment="piano"],
+  html.journey-snap [data-segment="exploded"],
+  html.journey-snap [data-segment="hammers"],
+  html.journey-snap [data-snap] {
+    scroll-snap-align: start;
+  }
+  html.journey-snap [data-snap] {
+    scroll-margin-top: calc(30svh - 7rem);
+  }
+}
 
 /* Phones and tablets: each long copy block is its own compositor layer, rasterized once and
    only moved while the page scrolls. Measured on the S26 Ultra: the slow stretches through the

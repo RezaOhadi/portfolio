@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { SEGMENTS } from "./config";
 import styles from "./journey.module.css";
 
@@ -39,8 +39,12 @@ export function World({
 /** An empty scroll runway where the piano changes form. Decorative only. */
 export function Transition({ id }: { id: string }) {
   const def = SEGMENTS.find((s) => s.id === id);
-  // Unbuilt worlds collapse their runway until they land.
-  const height = def?.built ? `${((def.runway ?? 1) + 1) * 100}svh` : "0px";
+  const runway = def?.runway ?? 1;
+  // Unbuilt worlds collapse their runway until they land. Built ones hand their lengths to
+  // the stylesheet, which picks the phone length under STACKED_QUERY (journey.module.css).
+  const style = def?.built
+    ? ({ "--runway": runway, "--runway-stacked": def.runwayStacked ?? runway } as CSSProperties)
+    : { height: "0px" };
   return (
     <div
       aria-hidden
@@ -48,7 +52,7 @@ export function Transition({ id }: { id: string }) {
       data-kind="transition"
       data-built={def?.built ? "true" : "false"}
       className={styles.transition}
-      style={{ height }}
+      style={style}
     />
   );
 }

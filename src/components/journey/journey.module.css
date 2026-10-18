@@ -60,6 +60,14 @@
 }
 .transition {
   pointer-events: none;
+  /* The runway plus one screen: a transition runs while its runway fills the viewport. */
+  height: calc((var(--runway, 1) + 1) * 100svh);
+}
+/* Phones: shorter runways (config.ts runwayStacked), each filled by its own morph. */
+@media (max-width: 760px) {
+  .transition {
+    height: calc((var(--runway-stacked, var(--runway, 1)) + 1) * 100svh);
+  }
 }
 .journey[data-reduced="true"] .transition[data-built="true"] {
   height: 40svh !important;
@@ -338,7 +346,7 @@
      desktop world, and the copy begins only once that is done (useJourneyScroll
      ends the exploded progress at the copy's top on these widths). */
   .aboutTrack {
-    padding: 260svh max(1.25rem, env(safe-area-inset-left)) 12svh;
+    padding: 200svh max(1.25rem, env(safe-area-inset-left)) 5svh;
   }
   .aboutCopy {
     position: relative;
@@ -679,6 +687,10 @@
   border-bottom: 0;
 }
 @media (max-width: 760px) {
+  /* Phones: a shorter world, and the quote lights up word by word across it. */
+  .nameWorld {
+    min-height: 130svh;
+  }
   .nameWorld > :global(.portfolio-section) {
     top: 52svh;
   }

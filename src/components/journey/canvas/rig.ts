@@ -17,6 +17,8 @@ export const rig = {
   /** Damped segment progress. */
   piano: 0,
   explode: 0,
+  /** The explosion's own clock: explode, stretched on phones so the burst fills the shorter runway. */
+  blast: 0,
   exploded: 0,
   after: 0,
   /** Derived beats. */
@@ -115,6 +117,7 @@ export function stepRig(elapsed: number, dt: number) {
     rig.assemble = rig.materialize = 1;
     rig.piano = 0.3;
     rig.explode = r.explode > 0.5 ? 1 : 0;
+    rig.blast = rig.explode;
     rig.exploded = 0.5;
     for (const id of LATER) rig[id] = TRANSITIONS.has(id) ? (r[id] > 0.5 ? 1 : 0) : r[id] > 0.02 ? 0.5 : 0;
     rig.after = r[UNBUILT] > 0.04 ? 1 : 0;
@@ -124,6 +127,10 @@ export function stepRig(elapsed: number, dt: number) {
     rig.materialize = rig.dive >= 0.5 ? ease.settle(range(rig.reassemble, 0.22, 0.88)) : range(intro, 1.5, 4.4);
     rig.piano = damp(rig.piano, r.piano, 6, dt);
     rig.explode = damp(rig.explode, r.explode, 7, dt);
+    // Phones: the parts take the whole (shorter) runway to fly out. The burst ease is front-loaded
+    // (expo.out), so the runway progress is bent to start slowly and finish late; the camera keeps
+    // rig.explode as it is.
+    rig.blast = journey.stacked ? Math.pow(rig.explode, 1.7) * 0.74 : rig.explode;
     rig.exploded = damp(rig.exploded, r.exploded, 6, dt);
     for (const id of LATER) rig[id] = damp(rig[id], r[id], 6.5, dt);
     rig.after = UNBUILT ? damp(rig.after, r[UNBUILT], 4, dt) : 0;
@@ -158,15 +165,17 @@ export function stepRig(elapsed: number, dt: number) {
   rig.timeScale = damp(rig.timeScale, journey.bullet ? 0.03 : 1, 5, dt);
   rig.hammerTime += dt * rig.timeScale * (journey.reduced || rigOptions.frozen ? 0 : 1);
 
-  const e = rig.explode;
+  const e = rig.blast;
   // World 1: the camera arrives (time), the lid opens on arrival then wide with scroll.
   rig.arrival = journey.reduced ? 1 : ease.recoil(range(intro, 0.3, 4.2));
   rig.lid = 0.05 + ease.settle(range(intro, 1.8, 4.6)) * 0.5 + ease.settle(rig.piano) * 0.42;
   rig.tremble = journey.reduced ? 0 : ease.settle(range(rig.piano, 0.6, 1)) * (1 - range(e, 0.02, 0.08));
   rig.anticipation = bell(range(e, 0, 0.09));
   rig.burst = journey.reduced ? 0 : bell(range(e, 0.02, 0.32));
-  rig.snap = journey.reduced ? 0 : windowed(rig.exploded, 0.38, 0.5, 0.62, 0.74);
-  const out = ease.burst(range(e, 0.03, 0.6));
+  // Phones: the exploded progress runs over the piano runway alone (useJourneyScroll), so the
+  // drawing opens soon after the runway starts and holds through most of it.
+  rig.snap = journey.reduced ? 0 : journey.stacked ? windowed(rig.exploded, 0.08, 0.24, 0.72, 0.86) : windowed(rig.exploded, 0.38, 0.5, 0.62, 0.74);
+  const out = (journey.stacked ? ease.tumble : ease.burst)(range(e, 0.03, 0.6));
   rig.orbit = out * (1 - rig.snap);
   rig.spin = ease.settle(range(rig.exploded, 0.05, 1)) * 2.4;
   // The nebula gathers back onto the parts as World 2 ends.
@@ -202,9 +211,11 @@ function docked(delay: number) {
 }
 
 /** Explode progress of one part, with its stagger (undone again by the reassembly). */
+/** Phones: a softer burst curve, so the parts keep travelling across the whole runway. */
+const burstEase = () => (journey.stacked ? ease.tumble : ease.burst);
 export function partProgress(delay: number) {
-  return ease.burst(range(rig.explode, 0.02 + delay * 0.7, 0.02 + delay * 0.7 + 0.45)) * (1 - docked(delay));
+  return burstEase()(range(rig.blast, 0.02 + delay * 0.7, 0.02 + delay * 0.7 + 0.45)) * (1 - docked(delay));
 }
 export function partTumble(delay: number) {
-  return ease.tumble(range(rig.explode, 0.02 + delay * 0.7, 0.02 + delay * 0.7 + 0.55)) * (1 - docked(delay));
+  return ease.tumble(range(rig.blast, 0.02 + delay * 0.7, 0.02 + delay * 0.7 + 0.55)) * (1 - docked(delay));
 }

@@ -32,6 +32,17 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
   const spreadState = useRef({ spread: -1, wave: -1 });
   const visible = useMemo<{ node: HTMLElement; x: number; y: number }[]>(() => [], []);
   const textWidths = useMemo(() => new WeakMap<HTMLElement, number>(), []);
+  // What each label node was last given: a style write every frame invalidates style for
+  // the whole page, so nothing is written unless it changed.
+  const written = useMemo(() => new WeakMap<HTMLElement, { opacity: string; visibility: string; transform: string; lead: string; rotate: string }>(), []);
+  const lastOf = (node: HTMLElement) => {
+    let w = written.get(node);
+    if (!w) {
+      w = { opacity: "", visibility: "", transform: "", lead: "", rotate: "" };
+      written.set(node, w);
+    }
+    return w;
+  };
   const hinged = useMemo<Pose>(() => ({ pos: new Vector3(), rot: new Euler() }), []);
   const props = useMemo(() => {
     const map = new Map<string, Object3D>();
@@ -165,13 +176,25 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
       const node = labelNodes.get(part.id);
       if (node) {
         const drawing = DRAWING_LABELS.has(part.id) ? range(rig.snap, 0.55, 1) : 0;
-        const opacity = Math.max(h, drawing) * (exploded ? 1 : 0);
+        // Phones: the labels belong to the piano runway. Its raw progress closes them in the
+        // runway's last moment, whatever the damped value is still doing after a fast flick.
+        const gate = journey.stacked ? 1 - range(journey.raw.exploded ?? 0, 0.86, 0.95) : 1;
+        const opacity = Math.max(h, drawing) * (exploded ? 1 : 0) * gate;
         if (opacity > 0.01) {
           _v.set(0, 0, 0).applyMatrix4(g.matrixWorld).project(camera);
           visible.push({ node, x: ((_v.x + 1) / 2) * size.width, y: ((1 - _v.y) / 2) * size.height });
         }
-        node.style.opacity = opacity.toFixed(3);
-        node.style.visibility = opacity > 0.01 ? "" : "hidden";
+        const last = lastOf(node);
+        const op = opacity.toFixed(3);
+        if (last.opacity !== op) {
+          node.style.opacity = op;
+          last.opacity = op;
+        }
+        const vis = opacity > 0.01 ? "" : "hidden";
+        if (last.visibility !== vis) {
+          node.style.visibility = vis;
+          last.visibility = vis;
+        }
       }
     }
 
@@ -194,10 +217,23 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
         const reach = Math.min(entry.x, labelLayout.copyLeft - 16);
         const dx = Math.max(1, reach - column - width - 12);
         const dy = entry.y - y;
-        entry.node.style.transform = `translate3d(${column.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
-        entry.node.style.setProperty("--lead", `${Math.hypot(dx, dy).toFixed(1)}px`);
-        const leader = entry.node.lastElementChild as HTMLElement | null;
-        if (leader) leader.style.transform = `rotate(${Math.atan2(dy, dx).toFixed(4)}rad)`;
+        const was = lastOf(entry.node);
+        const transform = `translate3d(${column.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+        if (was.transform !== transform) {
+          entry.node.style.transform = transform;
+          was.transform = transform;
+        }
+        const lead = `${Math.hypot(dx, dy).toFixed(1)}px`;
+        if (was.lead !== lead) {
+          entry.node.style.setProperty("--lead", lead);
+          was.lead = lead;
+        }
+        const rotate = `rotate(${Math.atan2(dy, dx).toFixed(4)}rad)`;
+        if (was.rotate !== rotate) {
+          const leader = entry.node.lastElementChild as HTMLElement | null;
+          if (leader) leader.style.transform = rotate;
+          was.rotate = rotate;
+        }
       }
       visible.length = 0;
     }

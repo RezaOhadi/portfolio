@@ -14,25 +14,27 @@ export interface SegmentDef {
   motion: string;
   /** Runway length for transitions, in viewport heights of pure transition. */
   runway?: number;
+  /** Phones (copy stacked under the piano, STACKED_QUERY): a shorter runway the morph fills. */
+  runwayStacked?: number;
   /** Built segments get their full runway; unbuilt ones collapse until their world lands. */
   built: boolean;
 }
 
 export const SEGMENTS: SegmentDef[] = [
   { id: "piano", kind: "world", motion: "orbit", built: true },
-  { id: "explode", kind: "transition", motion: "explode", runway: 1.25, built: true },
+  { id: "explode", kind: "transition", motion: "explode", runway: 1.25, runwayStacked: 0.85, built: true },
   { id: "exploded", kind: "world", motion: "pull-back crane", built: true },
-  { id: "dive", kind: "transition", motion: "camera dive", runway: 1.2, built: true },
+  { id: "dive", kind: "transition", motion: "camera dive", runway: 1.2, runwayStacked: 0.95, built: true },
   { id: "corridor", kind: "world", motion: "dive", built: true },
-  { id: "twist", kind: "transition", motion: "twist 90°", runway: 1.1, built: true },
+  { id: "twist", kind: "transition", motion: "twist 90°", runway: 1.1, runwayStacked: 0.8, built: true },
   { id: "hammers", kind: "world", motion: "barrel roll", built: true },
   { id: "portal", kind: "transition", motion: "portal", runway: 1, built: true },
   { id: "strings", kind: "world", motion: "fly-along", built: true },
-  { id: "dissolve", kind: "transition", motion: "dissolve", runway: 1.2, built: true },
+  { id: "dissolve", kind: "transition", motion: "dissolve", runway: 1.2, runwayStacked: 1, built: true },
   { id: "soundboard", kind: "world", motion: "overhead descent", built: true },
-  { id: "morph", kind: "transition", motion: "morph", runway: 1.4, built: true },
+  { id: "morph", kind: "transition", motion: "morph", runway: 1.4, runwayStacked: 1.2, built: true },
   { id: "name", kind: "world", motion: "dolly zoom", built: true },
-  { id: "reassemble", kind: "transition", motion: "reassemble + swing", runway: 1.5, built: true },
+  { id: "reassemble", kind: "transition", motion: "reassemble + swing", runway: 1.5, runwayStacked: 1.15, built: true },
   { id: "outro", kind: "world", motion: "arc swing", built: true },
 ];
 
@@ -79,13 +81,46 @@ export const QUALITY: Record<QualityTier, QualityProfile> = {
 };
 
 /**
- * The first three seconds of rendering are measured once per visit. Under
- * LITE_FPS the scene steps down to the lite tier and is measured again; under
- * POSTER_FPS (at either step) the live scene gives way to a still poster.
+ * The quality probe is a safety net for genuinely weak devices, nothing more.
+ * Rendering is measured once per visit: the first PROBE_WARMUP seconds of
+ * drawing are ignored (shader compilation, chunk arrival, the intro), then a
+ * PROBE_SECONDS window is taken as a median, and a slow window only counts
+ * when a second one agrees. Under LITE_FPS the scene steps down to the lite
+ * tier and is measured again; under POSTER_FPS the still poster takes over.
+ * A strong device (isStrongDevice) is never stepped down, and only shows the
+ * poster when the scene cannot run at all (POSTER_FPS_STRONG).
  */
-export const PROBE_SECONDS = 3;
-export const LITE_FPS = 40;
-export const POSTER_FPS = 25;
+export const PROBE_WARMUP = 2.5;
+export const PROBE_SECONDS = 4;
+export const LITE_FPS = 30;
+export const POSTER_FPS = 18;
+export const POSTER_FPS_STRONG = 12;
+
+/** Phones: the biography copy sits under the piano, not beside it (journey.module.css). */
+export const STACKED_QUERY = "(max-width: 760px)";
+
+/**
+ * A flagship-class device: plenty of cores and memory and a current GPU, or a
+ * GPU family known to be fast. Such a device keeps the full picture whatever
+ * the first seconds looked like.
+ */
+export function isStrongDevice() {
+  if (typeof window === "undefined") return false;
+  if (isWeakGpu()) return false;
+  const nav = navigator as Navigator & { deviceMemory?: number };
+  const cores = nav.hardwareConcurrency ?? 0;
+  const memory = nav.deviceMemory ?? 0;
+  if (cores >= 8 && memory >= 6) return true;
+  try {
+    const gl = document.createElement("canvas").getContext("webgl");
+    const info = gl?.getExtension("WEBGL_debug_renderer_info");
+    const name = info ? String(gl!.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    return /Adreno \(TM\) [6-9][0-9]{2}|Xclipse|Immortalis|Mali-G[7-9][0-9]|Apple (A1[3-9]|A[2-9][0-9]|M[1-9])/i.test(name);
+  } catch {
+    return false;
+  }
+}
 
 /** What the probe decided, kept for the session so a revisit skips straight to it. */
 export type QualityVerdict = "full" | "lite" | "poster";

@@ -118,7 +118,7 @@ export function Soundboard() {
   const root = useRef<Mesh>(null);
   const bridge = useRef<Mesh>(null);
   const lamp = useRef<PointLight>(null);
-  const tiles = useRef<{ list: HTMLElement[]; rects: DOMRect[]; checked: number }>({ list: [], rects: [], checked: 0 });
+  const tiles = useRef<{ list: HTMLElement[]; boxes: { left: number; width: number; top: number; height: number }[]; checked: number }>({ list: [], boxes: [], checked: 0 });
   const last = useRef({ ambient: 0 });
 
   const built = useMemo(() => {
@@ -208,16 +208,24 @@ export function Soundboard() {
     if (rig.time - t.checked > 2) {
       t.list = Array.from(document.querySelectorAll<HTMLElement>("#gallery .gallery-tile"));
       t.checked = rig.time;
+      // The tiles' resting boxes, measured here (one layout read every two seconds) rather
+      // than per frame: reading a tile's rect after writing its translate forced a layout
+      // every frame. The tile's own translate is taken back out of the measurement.
+      t.boxes = t.list.map((tile) => {
+        const r = tile.getBoundingClientRect();
+        const shift = parseFloat(tile.style.translate.split(" ")[1] || "0") || 0;
+        return { left: r.left, width: r.width, top: r.top + window.scrollY - shift, height: r.height };
+      });
     }
     if (rig.soundboard > 0 && rig.soundboard < 1 && !journey.reduced) {
-      // Every read first, then every write: interleaving them forced a style and layout pass per tile, per frame.
-      const rects = t.rects;
-      for (let i = 0; i < t.list.length; i++) rects[i] = t.list[i].getBoundingClientRect();
+      const scrollTop = window.scrollY;
       for (let i = 0; i < t.list.length; i++) {
         const tile = t.list[i];
-        const r = rects[i];
-        if (r.bottom < 0 || r.top > state.size.height) continue;
-        _ndc.set(((r.left + r.width / 2) / state.size.width) * 2 - 1, -((r.top + r.height / 2) / state.size.height) * 2 + 1);
+        const b = t.boxes[i];
+        if (!b) continue;
+        const top = b.top - scrollTop;
+        if (top + b.height < 0 || top > state.size.height) continue;
+        _ndc.set(((b.left + b.width / 2) / state.size.width) * 2 - 1, -((top + b.height / 2) / state.size.height) * 2 + 1);
         _ray.setFromCamera(_ndc, state.camera);
         if (_ray.ray.intersectPlane(PLANE, _hit)) {
           const h = boardRipple(_hit.x, _hit.z);

@@ -6,7 +6,7 @@ import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { useEffect, type RefObject } from "react";
-import { isTouchDevice } from "../config";
+import { isTouchDevice, STACKED_QUERY } from "../config";
 import { emitSparks } from "../store";
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin, useGSAP);
@@ -35,6 +35,8 @@ const GOLD = "#f3d6ae";
  * spacing, colour sweeps or clip paths. Set when the choreography starts.
  */
 let touch = false;
+/** Phone layout (STACKED_QUERY): copy is revealed block by block as the reader scrolls. */
+let stacked = false;
 /**
  * An entrance trigger. Desktop plays on enter and reverses on the way back up.
  * Phones play once, by time, and the trigger is killed after it fires, so only
@@ -136,7 +138,34 @@ function lede(el: HTMLElement) {
   exitTrigger(el, el, 10, touch ? {} : { color: GOLD }, 40);
 }
 
+/**
+ * Phones: a section's heading lands a third of the way down the screen (its
+ * snap stop, portfolio.css) and the copy under it reveals block by block as
+ * the reader scrolls the heading up towards the nav. Scroll-driven, so a
+ * flick straight through still reveals everything. Whole blocks move, never
+ * lines: each block is one compositor layer, rasterized once.
+ */
+function revealBlock(el: HTMLElement) {
+  const scope = scopeOf(el);
+  const heading = scope.querySelector<HTMLElement>("[data-snap]") ?? scope;
+  // Only the copy that sits under the heading takes part (the first screen or so below it);
+  // cards and links further down are long past the heading's travel and simply stay as they are.
+  const reach = heading.getBoundingClientRect().top + window.innerHeight * 1.1;
+  if (el.getBoundingClientRect().top > reach) return;
+  const blocks = gsap.utils.toArray<HTMLElement>('[data-fx="body"], [data-fx="link"]', scope).filter((b) => b.getBoundingClientRect().top <= reach);
+  const index = Math.max(0, blocks.indexOf(el));
+  // Block i reveals while the heading travels from (30 - 7i)% down the screen to 16% higher.
+  const from = 30 - index * 7;
+  gsap.set(el, { willChange: "transform, opacity" });
+  gsap.fromTo(
+    el,
+    { opacity: 0, y: 36 },
+    { opacity: 1, y: 0, ease: "none", scrollTrigger: { trigger: heading, start: `top ${from}%`, end: `top ${from - 16}%`, scrub: 0.3 } },
+  );
+}
+
 function body(el: HTMLElement) {
+  if (stacked) return revealBlock(el);
   SplitText.create(el, {
     type: "lines",
     mask: "lines",
@@ -186,6 +215,7 @@ function labelOf(el: HTMLElement) {
 }
 
 function link(el: HTMLElement) {
+  if (stacked && !el.closest("[data-hero-copy]")) return revealBlock(el);
   // Word masks stay inline, so flex links (label + icon) keep their single line.
   SplitText.create(labelOf(el), {
     type: "words",
@@ -235,7 +265,24 @@ function rule(el: HTMLElement) {
   gsap.from(el, { scaleX: 0, transformOrigin: "left center", duration: 1.6, ease: "expo.inOut", scrollTrigger: { trigger: el, ...enter() } });
 }
 
-const ROLES: Record<string, (el: HTMLElement) => void> = { title, eyebrow, lede, body, number, link, block, stagger, rule };
+/** The closing quote: a lede on desktop; on phones it lights up word by word across its world. */
+function quote(el: HTMLElement) {
+  if (!stacked) return lede(el);
+  const world = (el.closest("[data-segment]") as HTMLElement | null) ?? el;
+  SplitText.create(el, {
+    type: "words",
+    autoSplit: true,
+    onSplit(self) {
+      return gsap.fromTo(
+        self.words,
+        { opacity: 0.14 },
+        { opacity: 1, ease: "none", stagger: 0.6, scrollTrigger: { trigger: world, start: "top 55%", end: "bottom 95%", scrub: 0.35 } },
+      );
+    },
+  });
+}
+
+const ROLES: Record<string, (el: HTMLElement) => void> = { title, eyebrow, lede, body, number, link, block, stagger, rule, quote };
 
 /** `started` holds every entrance until the first world is ready, so text arrives with the piano. */
 export function useTextChoreography(root: RefObject<HTMLElement | null>, reduced: boolean, started: boolean) {
@@ -249,6 +296,7 @@ export function useTextChoreography(root: RefObject<HTMLElement | null>, reduced
       if (!host) return;
       if (!started) return;
       touch = isTouchDevice();
+      stacked = touch && window.matchMedia(STACKED_QUERY).matches;
       // On a slow connection the hero copy has already shown itself (see LATE_COPY in the root layout): leave it in place.
       const shown = document.documentElement.classList.contains("fx-late");
       // Only the first, slow arrival: a later visit within the session gets the full entrance.

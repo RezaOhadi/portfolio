@@ -108,7 +108,7 @@ export default async function HomePage() {
             aria-labelledby="scores-title"
           >
             <div className="container-editorial">
-              <div className="section-top">
+              <div className="section-top" data-snap>
                 <div>
                   <span className="section-number" data-fx="eyebrow">
                     The catalogue
@@ -144,7 +144,7 @@ export default async function HomePage() {
             aria-labelledby="media-title"
           >
             <div className="container-editorial">
-              <div className="section-top">
+              <div className="section-top" data-snap>
                 <div>
                   <span className="section-number" data-fx="eyebrow">
                     02 / Listen & watch
@@ -281,7 +281,7 @@ export default async function HomePage() {
             aria-labelledby="concerts-title"
           >
             <div className="container-editorial">
-              <div className="section-top">
+              <div className="section-top" data-snap>
                 <div>
                   <span className="section-number" data-fx="eyebrow">
                     03 / On stage
@@ -345,7 +345,7 @@ export default async function HomePage() {
             aria-labelledby="gallery-title"
           >
             <div className="container-editorial">
-              <div className="section-top">
+              <div className="section-top" data-snap>
                 <div>
                   <span className="section-number" data-fx="eyebrow">
                     04 / In frame
@@ -389,7 +389,7 @@ export default async function HomePage() {
             <div className="container-editorial">
               <blockquote
                 className="mx-auto max-w-3xl text-center font-serif text-3xl italic leading-relaxed"
-                data-fx="lede"
+                data-fx="quote"
               >
                 In the space between two notes, a silence remembers everything
                 the music meant to say.
@@ -407,7 +407,7 @@ export default async function HomePage() {
             aria-labelledby="contact-title"
           >
             <div className="container-editorial contact-grid">
-              <div>
+              <div data-snap>
                 <span className="section-number" data-fx="eyebrow">
                   05 / Get in touch
                 </span>
