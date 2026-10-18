@@ -4,6 +4,7 @@ import "./globals.css";
 import "./portfolio.css";
 import { siteConfig } from "@/config/site";
 import { Providers } from "@/components/providers";
+import { ScrollToTop } from "@/components/layout/ScrollToTop";
 
 const serif = Cormorant_Garamond({
   subsets: ["latin"],
@@ -79,7 +80,10 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: LATE_COPY }} />
       </head>
       <body className="grain min-h-screen bg-ink font-sans text-ivory antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <ScrollToTop />
+          {children}
+        </Providers>
       </body>
     </html>
   );

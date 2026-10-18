@@ -154,6 +154,29 @@ export function useJourneyScroll(root: RefObject<HTMLElement | null>, reduced: b
           },
         });
       });
+      // Phones and narrow tablets lay the biography copy below the diagram, in flow. As it
+      // scrolls up, this progress (0 → 1 while the copy's top is still below the viewport)
+      // fades the part labels out, so they are gone before the first line of text appears.
+      const copy = host.querySelector<HTMLElement>("[data-about-copy]");
+      if (copy) {
+        const mm = gsap.matchMedia();
+        mm.add("(max-width: 760px)", () => {
+          ScrollTrigger.create({
+            trigger: copy,
+            start: () => `top bottom+=${Math.round(window.innerHeight * 0.35)}px`,
+            end: "top bottom",
+            onUpdate: (self) => {
+              journey.raw.aboutCopy = self.progress;
+            },
+            onRefresh: (self) => {
+              journey.raw.aboutCopy = self.progress;
+            },
+          });
+          return () => {
+            journey.raw.aboutCopy = 0;
+          };
+        });
+      }
       // Desktop: one trigger over the whole page carries the snap and settles on world resting
       // points. Phones snap natively instead (the journey-snap class, portfolio.css).
       if (!reduced && !isTouchDevice())

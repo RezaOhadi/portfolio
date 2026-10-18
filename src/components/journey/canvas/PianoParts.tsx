@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Euler, Quaternion, Ray, Vector3, type Object3D } from "three";
 import { playNote } from "../audio";
 import { emit, journey, range } from "../store";
-import { labelNodes } from "./labels";
+import { labelLayout, labelNodes } from "./labels";
 import { applySpread, type PianoPart, type Pose } from "./piano/build";
 import { fxShared } from "./piano/materials";
 import { ease, partProgress, partTumble, rig } from "./rig";
@@ -165,12 +165,15 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
       const node = labelNodes.get(part.id);
       if (node) {
         const drawing = DRAWING_LABELS.has(part.id) ? range(rig.snap, 0.55, 1) : 0;
-        const opacity = Math.max(h, drawing) * (exploded ? 1 : 0);
+        // Phones: gone before the biography copy scrolls into view (useJourneyScroll).
+        const clear = 1 - (journey.raw.aboutCopy ?? 0);
+        const opacity = Math.max(h, drawing) * (exploded ? 1 : 0) * clear;
         if (opacity > 0.01) {
           _v.set(0, 0, 0).applyMatrix4(g.matrixWorld).project(camera);
           visible.push({ node, x: ((_v.x + 1) / 2) * size.width, y: ((1 - _v.y) / 2) * size.height });
         }
         node.style.opacity = opacity.toFixed(3);
+        node.style.visibility = opacity > 0.01 ? "" : "hidden";
       }
     }
 
@@ -188,8 +191,10 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
           width = (entry.node.firstElementChild as HTMLElement | null)?.offsetWidth ?? 80;
           textWidths.set(entry.node, width);
         }
-        // The leader angles up or down to meet its part when rows were pushed apart.
-        const dx = Math.max(1, entry.x - column - width - 12);
+        // The leader angles up or down to meet its part when rows were pushed apart,
+        // and stops short of the biography column when the copy sits beside the diagram.
+        const reach = Math.min(entry.x, labelLayout.copyLeft - 16);
+        const dx = Math.max(1, reach - column - width - 12);
         const dy = entry.y - y;
         entry.node.style.transform = `translate3d(${column.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
         entry.node.style.setProperty("--lead", `${Math.hypot(dx, dy).toFixed(1)}px`);

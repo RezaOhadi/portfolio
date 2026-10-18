@@ -34,7 +34,7 @@ export function AboutOverlay({ data }: { data: HomeUniverseData }) {
   const paragraphs = data.biography.split(/\n\s*\n/).filter(Boolean);
   return (
     <div className={styles.aboutTrack}>
-      <div className={styles.aboutCopy}>
+      <div className={styles.aboutCopy} data-about-copy>
         <p className={styles.eyebrow} data-fx="eyebrow">
           01 / The artist
         </p>

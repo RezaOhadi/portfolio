@@ -259,7 +259,8 @@
   position: fixed;
   inset: 0;
   will-change: transform;
-  z-index: 2;
+  /* Same level as the copy and earlier in the DOM: text always paints above the labels. */
+  z-index: 1;
   pointer-events: none;
   overflow: hidden;
 }
