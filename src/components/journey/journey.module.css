@@ -334,8 +334,11 @@
   .aboutWorld {
     height: auto;
   }
+  /* The piano explodes and is drawn over its own runway, the same length as the
+     desktop world, and the copy begins only once that is done (useJourneyScroll
+     ends the exploded progress at the copy's top on these widths). */
   .aboutTrack {
-    padding: 78svh max(1.25rem, env(safe-area-inset-left)) 12svh;
+    padding: 260svh max(1.25rem, env(safe-area-inset-left)) 12svh;
   }
   .aboutCopy {
     position: relative;

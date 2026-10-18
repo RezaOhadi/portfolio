@@ -165,9 +165,7 @@ export function PianoParts({ parts }: { parts: PianoPart[] }) {
       const node = labelNodes.get(part.id);
       if (node) {
         const drawing = DRAWING_LABELS.has(part.id) ? range(rig.snap, 0.55, 1) : 0;
-        // Phones: gone before the biography copy scrolls into view (useJourneyScroll).
-        const clear = 1 - (journey.raw.aboutCopy ?? 0);
-        const opacity = Math.max(h, drawing) * (exploded ? 1 : 0) * clear;
+        const opacity = Math.max(h, drawing) * (exploded ? 1 : 0);
         if (opacity > 0.01) {
           _v.set(0, 0, 0).applyMatrix4(g.matrixWorld).project(camera);
           visible.push({ node, x: ((_v.x + 1) / 2) * size.width, y: ((1 - _v.y) / 2) * size.height });
