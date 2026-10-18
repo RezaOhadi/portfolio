@@ -29,7 +29,12 @@ export async function getMemberUser(): Promise<MemberUser | null> {
   if (!user) return null;
 
   const profile = await getOwnProfile(user.id);
-  const providers = user.identities?.map((i) => i.provider) ?? [];
+  // identities is the precise source; app_metadata.providers covers the rare
+  // response that omits it. A Google-only member has neither "email" entry.
+  const providers = [
+    ...(user.identities?.map((i) => i.provider) ?? []),
+    ...((user.app_metadata?.providers as string[] | undefined) ?? []),
+  ];
   return {
     id: user.id,
     email: user.email ?? null,

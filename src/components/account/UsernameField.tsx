@@ -106,7 +106,10 @@ export function UsernameField({
           type="text"
           required
           autoFocus={autoFocus}
-          autoComplete="username"
+          autoComplete="nickname"
+          data-1p-ignore="true"
+          data-lpignore="true"
+          data-bwignore="true"
           autoCapitalize="off"
           autoCorrect="off"
           spellCheck={false}
