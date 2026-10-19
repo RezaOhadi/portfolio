@@ -1,8 +1,12 @@
 "use server";
 
+import { headers } from "next/headers";
 import { env } from "@/lib/env";
 import { sendEmail, emailLayout } from "@/lib/email";
 import { contactSchema } from "@/lib/validation";
+import { describeRequest } from "@/lib/account/request-info";
+import { verifyTurnstile } from "@/lib/security/turnstile";
+import { rateHit } from "@/lib/security/rate-limit";
 
 export interface ContactState {
   status: "idle" | "success" | "error";
@@ -22,15 +26,31 @@ export async function submitContact(
   _prev: ContactState,
   formData: FormData,
 ): Promise<ContactState> {
+  const quietSuccess: ContactState = {
+    status: "success",
+    message: "Thank you — your message has been sent.",
+  };
+
   // Honeypot — bots fill hidden fields. Pretend success, do nothing.
-  if (formData.get("company")) {
-    return { status: "success", message: "Thank you — your message has been sent." };
-  }
-  // Time trap — submissions faster than 2s are almost certainly bots.
+  if (formData.get("company")) return quietSuccess;
+
+  // Time trap — submissions faster than 1.5s are almost certainly bots.
   const startedAt = Number(formData.get("startedAt") ?? 0);
-  if (startedAt && Date.now() - startedAt < 1500) {
-    return { status: "success", message: "Thank you — your message has been sent." };
-  }
+  if (startedAt && Date.now() - startedAt < 1500) return quietSuccess;
+
+  const info = describeRequest(await headers());
+
+  // Per-IP rate limit: at most 5 messages in 10 minutes. Silently accept once
+  // over the limit so a hammering bot gets no signal to adjust.
+  if (!(await rateHit("contact", info.ip, 600, 5))) return quietSuccess;
+
+  // Cloudflare Turnstile, verified server-side. A failed/absent token is
+  // swallowed as a quiet success so bots can't probe for the reason.
+  const turnstile = await verifyTurnstile(
+    formData.get("cf-turnstile-response") as string | null,
+    info.ip,
+  );
+  if (!turnstile.ok) return quietSuccess;
 
   const parsed = contactSchema.safeParse({
     name: formData.get("name"),

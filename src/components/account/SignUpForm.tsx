@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { AlertCircle, Loader2, MailCheck } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { USERNAME_MESSAGES, usernameProblem } from "@/lib/username";
+import { Turnstile } from "@/components/security/Turnstile";
 import { PasswordField } from "./PasswordField";
 import { UsernameField, type UsernameStatus } from "./UsernameField";
 import cta from "@/components/golden-grand/lets-play.module.css";
@@ -26,6 +27,8 @@ export function SignUpForm() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [resent, setResent] = useState(false);
+  const [token, setToken] = useState("");
+  const [turnstileKey, setTurnstileKey] = useState(0);
 
   const onStatus = useCallback((s: UsernameStatus) => setUsernameStatus(s), []);
 
@@ -41,33 +44,34 @@ export function SignUpForm() {
       return setError(`Please use at least ${MIN_PASSWORD} characters for your password.`);
 
     setLoading(true);
-    const supabase = createSupabaseBrowserClient();
-    if (!supabase) {
-      setError("Member accounts are not configured in this environment.");
+    // Posts to our server gateway, which runs a Cloudflare Turnstile check and
+    // a per-IP rate limit before creating the account (and the confirmation
+    // email). The confirmation link lands on /auth/callback and signs them in.
+    let res: Response;
+    try {
+      res = await fetch("/api/account/sign-up", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ username: handle, email, password, token }),
+      });
+    } catch {
       setLoading(false);
+      setError("Something went wrong. Please try again.");
+      setTurnstileKey((k) => k + 1);
       return;
     }
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-        data: { username: handle },
-      },
-    });
+    const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
     setLoading(false);
-    if (error) {
+
+    if (!res.ok || !body.ok) {
+      // A used Turnstile token can't be reused — force a fresh one on retry.
+      setToken("");
+      setTurnstileKey((k) => k + 1);
       setError(
-        /already registered/i.test(error.message)
+        body.error === "already-registered"
           ? "There is already an account with that email. Sign in instead."
-          : error.message,
+          : body.error || "Something went wrong. Please try again.",
       );
-      return;
-    }
-    // With email confirmation on, Supabase answers an existing email with a
-    // user that has no identities rather than an error.
-    if (data.user && data.user.identities?.length === 0) {
-      setError("There is already an account with that email. Sign in instead.");
       return;
     }
     setSent(true);
@@ -152,6 +156,8 @@ export function SignUpForm() {
         placeholder="Choose a password"
         hint={`At least ${MIN_PASSWORD} characters. Use the eye to check it; there is no second box.`}
       />
+
+      <Turnstile key={turnstileKey} onToken={setToken} />
 
       <button type="submit" className={`${cta.cta} ${styles.primary}`} disabled={loading}>
         {loading ? <Loader2 className={styles.spin} aria-hidden style={{ width: 16, height: 16 }} /> : null}

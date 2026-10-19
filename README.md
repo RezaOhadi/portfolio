@@ -77,6 +77,8 @@ groups as you enable features.
 | `ACCOUNT_EMAIL_FROM` | Email (optional) | Sender for account emails (welcome, sign-in alerts, password). Default `Reza Ohadi <no-reply@rezaohadi.com>` |
 | `CONTACT_TO_EMAIL` | Email | Where the contact form is delivered |
 | `ADMIN_EMAILS` | Admin | Comma-separated allowlist for `/admin` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Anti-spam (optional) | Cloudflare Turnstile site key for the contact + sign-up forms |
+| `TURNSTILE_SECRET_KEY` | Anti-spam (optional) | Turnstile secret key, used to verify tokens server-side |
 | `DOWNLOAD_LINK_TTL_SECONDS` | Downloads | Signed-URL lifetime (default `300`) |
 
 A feature is considered "configured" only when its keys are present; otherwise
