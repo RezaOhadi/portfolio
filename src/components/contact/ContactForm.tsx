@@ -3,6 +3,7 @@ import { useActionState, useEffect, useId, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { submitContact, type ContactState } from "@/app/(site)/contact/actions";
 import { INQUIRY_TYPES } from "@/lib/validation";
+import { Turnstile } from "@/components/security/Turnstile";
 const initial: ContactState = { status: "idle" };
 const fieldClass =
   "w-full border border-white/25 bg-ink-deep px-4 py-3 text-base text-ivory placeholder:text-silver-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ivory";
@@ -139,6 +140,7 @@ export function ContactForm() {
           ) : null}
         </div>
       ) : null}
+      <Turnstile />
       <div>
         <SubmitButton />
       </div>

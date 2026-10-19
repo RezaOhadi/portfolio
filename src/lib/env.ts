@@ -21,6 +21,9 @@ export const env = {
   stripePublishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
 
+  turnstileSiteKey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+  turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY,
+
   resendApiKey: process.env.RESEND_API_KEY,
   emailFrom: process.env.EMAIL_FROM ?? "Reza Ohadi <onboarding@resend.dev>",
   /** Account emails (welcome, sign-in alerts, password): the no-reply address. */
@@ -41,6 +44,9 @@ export const isSupabaseAdminConfigured = Boolean(
 );
 export const isStripeConfigured = Boolean(env.stripeSecretKey && env.stripePublishableKey);
 export const isResendConfigured = Boolean(env.resendApiKey);
+export const isTurnstileConfigured = Boolean(
+  env.turnstileSiteKey && env.turnstileSecretKey,
+);
 
 export function isAdminEmail(email: string | null | undefined): boolean {
   if (!email) return false;
