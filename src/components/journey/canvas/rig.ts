@@ -58,8 +58,12 @@ export const rig = {
   studio: 1,
   /** World position of the floating keyboard, the target of the dive. */
   keyboardPos: new Vector3(0, 1, 1),
-  /** Full-frame gold flash that masks the cut between two stages (0..1). */
-  flash: 0,
+  /**
+   * The cut between two stages (CutVeil): a gold bloom in the middle of the
+   * frame (glow) and an iris of dark closing in from the corners (dark), 0..1.
+   */
+  glow: 0,
+  dark: 0,
   /** Which stage is drawn. Exactly one is true outside a cut. */
   show: { piano: true, corridor: false, hammers: false, strings: false, board: false },
   /** Where the last hammer strikes: the iris of the portal opens around it. */
@@ -136,7 +140,7 @@ export function stepRig(elapsed: number, dt: number) {
     rig.after = UNBUILT ? damp(rig.after, r[UNBUILT], 4, dt) : 0;
   }
 
-  // Dive (World 2 -> 3): approach the keyboard, flash, cut, then the keyboard folds into a tunnel.
+  // Dive (World 2 -> 3): approach the keyboard, the veil closes, cut, then the keyboard folds into a tunnel.
   const cutDive = rig.dive >= 0.5;
   // Twist (World 3 -> 4): the keys swing up into blades as the camera rolls, cut, the hammers rise.
   const cutTwist = rig.twist >= 0.5;
@@ -150,8 +154,13 @@ export function stepRig(elapsed: number, dt: number) {
   rig.show.strings = cutPortal && rig.dissolve < 0.9;
   rig.show.board = cutPortal;
   rig.fin = journey.reduced ? 0 : ease.recoil(range(rig.twist, 0.05, 0.5));
-  const flash = (v: number) => (journey.reduced ? 0 : bell(range(v, 0.4, 0.6)) * 0.95);
-  rig.flash = Math.max(flash(rig.dive), flash(rig.twist), flash(rig.portal));
+  // The bloom gathers well before the cut and fades well after, dimming to an ember
+  // while the dark holds. The dark is complete from 0.465 to 0.535, around the damped
+  // cut at 0.5, so the stage switch is never seen.
+  const glow = (v: number) => (journey.reduced ? 0 : bell(range(v, 0.3, 0.7)) * (1 - 0.5 * windowed(v, 0.43, 0.48, 0.52, 0.57)));
+  const dark = (v: number) => (journey.reduced ? 0 : windowed(v, 0.34, 0.465, 0.535, 0.66));
+  rig.glow = Math.max(glow(rig.dive), glow(rig.twist), glow(rig.portal));
+  rig.dark = Math.max(dark(rig.dive), dark(rig.twist), dark(rig.portal));
   rig.chain =
     ease.settle(range(rig.dive, 0.28, 0.82)) +
     ease.settle(range(rig.portal, 0.3, 0.85)) +

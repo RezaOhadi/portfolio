@@ -30,7 +30,7 @@ const nameDistance =(portrait: number) => MathUtils.lerp(1, 2.6, portrait);
  * - World 1, The Piano: orbit around the instrument.
  * - Explode: pull-back, the camera recoils as the case bursts (with a shock).
  * - World 2, Exploded View: crane, a vertical descent through the floating stack.
- * - Dive: an accelerating plunge into the floating keyboard, cut inside a flash.
+ * - Dive: an accelerating plunge into the floating keyboard, cut inside the veil's dark.
  * - World 3, Keyboard Corridor: a forward dolly down an endless tunnel of keys.
  * Composition uses an off-axis lens shift so overlays keep their side of the frame.
  */
@@ -149,7 +149,7 @@ export function CameraDirector() {
     f.roll = 0;
     f.parallax = 1;
 
-    /* ---- Dive: plunge into the floating keyboard, cut inside the flash ---- */
+    /* ---- Dive: plunge into the floating keyboard, cut inside the dark ---- */
     if (rig.dive > 0 && !rig.show.corridor) {
       const a = plunge(range(rig.dive, 0, 0.5));
       // Close over the keys, approaching from where the camera already is.
@@ -167,7 +167,7 @@ export function CameraDirector() {
 
     /* ---- World 3: forward dolly down the endless key corridor ---- */
     if (rig.show.corridor) {
-      // Inside the flash the camera is already over the unfolding keyboard, still moving.
+      // Inside the dark the camera is already over the unfolding keyboard, still moving.
       const enter = ease.settle(range(rig.dive, 0.5, 1));
       // The twist keeps the camera moving forward while it rolls a quarter turn.
       const twist = ease.recoil(range(rig.twist, 0, 0.5));

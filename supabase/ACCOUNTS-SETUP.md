@@ -136,3 +136,71 @@ Then deploy the `accounts` branch (merge to `main` after the end-to-end test).
    - A guest purchase made earlier with the same email shows on `/account`.
    - `/library` still emails links to guests, unchanged.
    - `/admin/login` still works exactly as before.
+
+---
+
+## 7. Security emails and password changes
+
+Members receive, from `no-reply@rezaohadi.com` through Resend (sent by the
+app, not by Supabase):
+
+| Email | When |
+| --- | --- |
+| Welcome | The first time an account signs in with a confirmed address (email confirmation link, or a first Google sign-in). Members who existed before this migration never get it. |
+| New sign-in | Any sign-in from a browser or device the account has not used before (a random id in a long-lived cookie; clearing cookies or a private window counts as new). The first browser an account ever uses sets the baseline and gets no alert. Lists time, browser, approximate location and network address, and what to do if it was not them. |
+| Password changed / added | Every time a password is changed or set, with the same details. |
+| Security code | A member without a password (Google only) setting a first one: a six-digit code, valid 15 minutes, 5 attempts. |
+
+Password changes (`/account/password`) require the current password first.
+Supabase enforces this too (step 7.2), so the form cannot be bypassed. A
+member who arrived through a password-reset link is not asked for the current
+one (Supabase skips it for recovery sessions as well). A member who signed in
+more than 24 hours ago is asked for a code that Supabase emails (step 7.3).
+
+### 7.1 Database: run `supabase/security.sql`
+
+Supabase dashboard → **SQL Editor** → paste the whole of
+[`supabase/security.sql`](security.sql) → **Run**. Additive and safe to
+re-run. It adds `profiles.welcomed_at` (and marks every existing member as
+already welcomed), `member_devices` and `password_codes`. Until it has run,
+the site works as before and simply sends none of the new emails.
+
+### 7.2 Supabase: password settings
+
+**Authentication → Sign In / Providers → Email** (older dashboards:
+**Authentication → Providers → Email**), scroll to the password section:
+
+1. **Secure password change** → ON. (A member signed in for more than 24
+   hours must confirm with an emailed code before changing the password.)
+2. **Require current password when updating** → ON. (A password change must
+   include the correct current password, except after a reset link.)
+3. **Save**.
+
+### 7.3 Supabase: the "Reauthentication" email template
+
+This is the email Supabase sends with the code from 7.2 (1). Give it the same
+look as the others:
+
+1. **Authentication → Email Templates → Reauthentication**.
+2. **Subject**: `Your security code · Reza Ohadi`
+3. **Body**: paste [`email-templates/reauthentication.html`](email-templates/reauthentication.html)
+   (it shows `{{ .Token }}`, the six-digit code).
+4. **Save**.
+
+### 7.4 Vercel
+
+No new variable is required. `RESEND_API_KEY` must be set (it already is for
+receipts). To send the account emails from a different address, add
+`ACCOUNT_EMAIL_FROM`, e.g. `Reza Ohadi <no-reply@rezaohadi.com>` (the
+default); the domain must be verified in Resend.
+
+### 7.5 Test it
+
+1. `/sign-up` with a fresh address → confirm → the **Welcome** email arrives.
+2. Sign in to that account from a private window → **New sign-in** arrives
+   with the browser and city.
+3. `/account/password` → wrong current password → clear error; right one →
+   saved, **Your password was changed** arrives.
+4. With a Google-only account: `/account/password` → "Email me a code" →
+   **Your security code** arrives → enter it and the new password → saved,
+   **A password was added** arrives.

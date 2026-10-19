@@ -12,6 +12,8 @@ interface SendArgs {
   html: string;
   text?: string;
   replyTo?: string;
+  /** Sender; defaults to EMAIL_FROM (the store address). */
+  from?: string;
 }
 
 export type SendResult =
@@ -30,15 +32,17 @@ export async function sendEmail({
   html,
   text,
   replyTo,
+  from,
 }: SendArgs): Promise<SendResult> {
   const resend = getResend();
   if (!resend) {
     console.warn(`[email] Resend not configured — skipped "${subject}" → ${to}`);
+    await previewToDisk(subject, html);
     return { ok: false, skipped: true };
   }
   try {
     const { error } = await resend.emails.send({
-      from: env.emailFrom,
+      from: from ?? env.emailFrom,
       to,
       subject,
       html,
@@ -49,6 +53,25 @@ export async function sendEmail({
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Unknown email error" };
+  }
+}
+
+/**
+ * Development only: with EMAIL_PREVIEW_DIR set and no Resend key, every email
+ * that would have been sent is written there as HTML, so templates can be
+ * opened in a browser.
+ */
+async function previewToDisk(subject: string, html: string) {
+  const dir = process.env.EMAIL_PREVIEW_DIR;
+  if (!dir || process.env.NODE_ENV === "production") return;
+  try {
+    const { mkdir, writeFile } = await import("node:fs/promises");
+    const { join } = await import("node:path");
+    await mkdir(dir, { recursive: true });
+    const name = `${Date.now()}-${subject.replace(/[^a-z0-9]+/gi, "-").slice(0, 60)}.html`;
+    await writeFile(join(dir, name), html, "utf8");
+  } catch (e) {
+    console.warn("[email] preview not written:", e instanceof Error ? e.message : e);
   }
 }
 

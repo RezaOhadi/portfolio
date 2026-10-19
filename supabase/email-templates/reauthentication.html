@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="supported-color-schemes" content="dark" />
+    <title>Your security code</title>
+  </head>
+  <body style="margin:0;padding:0;background:#0a0a0c;color:#f2eee6;">
+    <!-- Supabase: Authentication → Email Templates → "Reauthentication".
+         Subject suggestion: Your security code · Reza Ohadi
+         Sent when a member who has been signed in for more than a day changes
+         their password; the code is typed into the password form. -->
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Your security code is {{ .Token }}.</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0a0a0c;">
+      <tr>
+        <td align="center" style="padding:40px 16px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;">
+            <tr>
+              <td style="padding:0 8px 22px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1;color:#f2eee6;">
+                Reza Ohadi<span style="color:#e0c17e;">.</span>
+                <div style="margin-top:8px;font-family:Arial,Helvetica,sans-serif;font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#bf9a52;">Pianist &middot; Composer</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:36px 32px;background:#111214;border:1px solid #3a3120;border-top:1px solid #e0c17e;border-radius:8px;">
+                <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#e0c17e;">Security</div>
+                <h1 style="margin:14px 0 10px;font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:400;line-height:1.15;color:#f2eee6;">Your security code</h1>
+                <p style="margin:0 0 22px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#b9b9c2;">
+                  Enter this code on the page where you are changing your password. It confirms that it is really you.
+                </p>
+                <div style="margin:0 0 26px;padding:18px 20px;border:1px solid #3a3120;border-radius:6px;background:#0a0a0c;font-family:Georgia,'Times New Roman',serif;font-size:34px;letter-spacing:10px;line-height:1;color:#e0c17e;text-align:center;">{{ .Token }}</div>
+                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.7;color:#6f6f78;">
+                  The code works for a short while and only once. If you did not ask for it, you can ignore this email; nothing changes without the code.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:22px 8px 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:#55555f;">
+                Sent to {{ .Email }} because it is the address on this account.<br />
+                Reza Ohadi &mdash; Pianist &amp; Composer
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

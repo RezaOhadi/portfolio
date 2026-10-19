@@ -55,6 +55,8 @@ export function SignInForm({ next, initialError }: { next: string; initialError?
       setLoading(false);
       return;
     }
+    // Records this browser and sends the new sign-in alert when it is unknown.
+    await fetch("/api/account/session", { method: "POST", credentials: "same-origin" }).catch(() => {});
     router.push(next);
     router.refresh();
   }

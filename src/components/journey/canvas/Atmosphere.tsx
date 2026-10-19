@@ -40,7 +40,7 @@ export function Atmosphere() {
               ? TUNNEL
               : STUDIO;
     const s = scene as Scene & { environmentIntensity: number };
-    // Inside a cut the change is hidden by the flash, so it can settle quickly.
+    // Inside a cut the change is hidden by the dark of the veil, so it can settle quickly.
     const k = 1 - Math.exp(-8 * Math.min(delta, 1 / 20));
     s.environmentIntensity = MathUtils.lerp(s.environmentIntensity ?? STUDIO.env, air.env, k);
     rig.studio = MathUtils.lerp(rig.studio, air.studio, k);

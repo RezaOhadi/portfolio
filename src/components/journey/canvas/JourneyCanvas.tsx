@@ -12,7 +12,7 @@ import { PianoParts } from "./PianoParts";
 import { ParticleField } from "./particles/ParticleField";
 import { Sparks } from "./Sparks";
 import { RimLight } from "./RimLight";
-import { FlashVeil } from "./FlashVeil";
+import { CutVeil } from "./CutVeil";
 import { Corridor } from "./stages/Corridor";
 import { Hammers } from "./stages/Hammers";
 import { Strings } from "./stages/Strings";
@@ -303,7 +303,7 @@ function Scene({ tier, onReady }: { tier: QualityTier; onReady: () => void }) {
       <Strings />
       <Portal />
       <Soundboard />
-      <FlashVeil />
+      <CutVeil />
       <Effects dof={profile.dof} dofOn={dofOn} multisampling={profile.multisampling} lite={touch} post={profile.post} />
     </>
   );

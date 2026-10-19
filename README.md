@@ -74,6 +74,7 @@ groups as you enable features.
 | `STRIPE_WEBHOOK_SECRET` | Payments | From `stripe listen` / dashboard |
 | `RESEND_API_KEY` | Email | Purchase + contact emails |
 | `EMAIL_FROM` | Email | Verified sender, e.g. `Reza Ohadi <store@domain.com>` |
+| `ACCOUNT_EMAIL_FROM` | Email (optional) | Sender for account emails (welcome, sign-in alerts, password). Default `Reza Ohadi <no-reply@rezaohadi.com>` |
 | `CONTACT_TO_EMAIL` | Email | Where the contact form is delivered |
 | `ADMIN_EMAILS` | Admin | Comma-separated allowlist for `/admin` |
 | `DOWNLOAD_LINK_TTL_SECONDS` | Downloads | Signed-URL lifetime (default `300`) |

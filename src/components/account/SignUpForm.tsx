@@ -160,7 +160,7 @@ export function SignUpForm() {
 
       <p className={styles.fine} style={{ marginTop: 16 }}>
         By creating an account you agree to receive the emails needed to run it
-        (confirmation, password resets, purchase receipts). Nothing else.
+        (confirmation, new sign-in alerts, password changes, purchase receipts). Nothing else.
         {" "}
         <Link href="/library" className={styles.textLink} style={{ textTransform: "none", letterSpacing: 0 }}>
           Prefer no account? Use the email library.

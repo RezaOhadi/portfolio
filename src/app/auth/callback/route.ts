@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMemberUser, claimPurchases, safeNext } from "@/lib/member";
+import { afterSignIn, recoveryCookie } from "@/lib/account/security";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,6 +50,8 @@ export async function GET(req: Request) {
   if (!member) return toSignIn("link");
 
   await claimPurchases(member);
+  // Welcome email on a first confirmed sign-in; new sign-in alert for an unknown browser.
+  const { cookie } = await afterSignIn(member, req.headers);
 
   // A member without a handle (first Google sign-in, or a sign-up whose chosen
   // name was taken in the meantime) picks one before anything else, except
@@ -58,5 +61,12 @@ export async function GET(req: Request) {
       ? `/account/username?next=${encodeURIComponent(next)}`
       : next;
 
-  return NextResponse.redirect(new URL(destination, url.origin), 302);
+  const res = NextResponse.redirect(new URL(destination, url.origin), 302);
+  if (cookie) res.cookies.set(cookie.name, cookie.value, cookie.options);
+  // A reset link: for a few minutes the password form asks for no current password.
+  if (type === "recovery") {
+    const recovery = recoveryCookie(member.id);
+    res.cookies.set(recovery.name, recovery.value, recovery.options);
+  }
+  return res;
 }

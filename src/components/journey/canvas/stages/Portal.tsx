@@ -12,7 +12,7 @@ const bell = (v: number) => Math.sin(Math.PI * Math.min(1, Math.max(0, v)));
 
 /**
  * The portal (World 4 -> 5): a gold iris opens around the last hammer's
- * strike point and the camera flies into it; after the flash the camera
+ * strike point and the camera flies into it; after the dark the camera
  * comes out through a second ring, already flying along the strings.
  */
 export function Portal() {

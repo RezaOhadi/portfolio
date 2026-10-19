@@ -7,6 +7,7 @@ import styles from "./account.module.css";
 /** One password box with a show/hide eye. There is never a "confirm" field. */
 export function PasswordField({
   id,
+  name = "password",
   label = "Password",
   value,
   onChange,
@@ -18,6 +19,7 @@ export function PasswordField({
   invalid,
 }: {
   id: string;
+  name?: string;
   label?: string;
   value: string;
   onChange: (value: string) => void;
@@ -38,7 +40,7 @@ export function PasswordField({
       <div className={styles.control}>
         <input
           id={id}
-          name="password"
+          name={name}
           type={show ? "text" : "password"}
           required
           minLength={minLength}

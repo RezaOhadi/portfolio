@@ -23,6 +23,8 @@ export const env = {
 
   resendApiKey: process.env.RESEND_API_KEY,
   emailFrom: process.env.EMAIL_FROM ?? "Reza Ohadi <onboarding@resend.dev>",
+  /** Account emails (welcome, sign-in alerts, password): the no-reply address. */
+  accountEmailFrom: process.env.ACCOUNT_EMAIL_FROM ?? "Reza Ohadi <no-reply@rezaohadi.com>",
   contactTo: process.env.CONTACT_TO_EMAIL ?? "rezaohadi.music@gmail.com",
 
   adminEmails: (process.env.ADMIN_EMAILS ?? "")

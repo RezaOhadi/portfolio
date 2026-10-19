@@ -33,7 +33,7 @@ function TouchEffects() {
   const [bloomOn, setBloomOn] = useState(touchQuality.bloom);
   useFrame(() => {
     if (bloomOn && !touchQuality.bloom) setBloomOn(false);
-    if (bloom.current) bloom.current.intensity = (0.85 + rig.burst * 0.9 + rig.anticipation * 0.6 + rig.flash * 1.4) * 0.7;
+    if (bloom.current) bloom.current.intensity = (0.85 + rig.burst * 0.9 + rig.anticipation * 0.6 + rig.glow * 0.5) * 0.7;
   });
   return (
     <EffectComposer multisampling={0} frameBufferType={HalfFloatType} enableNormalPass={false}>
@@ -54,8 +54,8 @@ function DesktopEffects({ dof, dofOn, multisampling }: { dof: boolean; dofOn: { 
 
   useFrame((_, delta) => {
     strength.current = MathUtils.damp(strength.current, dofOn.current ? 1 : 0, 3, Math.min(delta, 1 / 20));
-    if (bloom.current) bloom.current.intensity = 0.85 + rig.burst * 0.9 + rig.anticipation * 0.6 + rig.flash * 1.4;
-    const ca = rig.velocity * 0.0016 + rig.burst * 0.0024 + rig.flash * 0.005;
+    if (bloom.current) bloom.current.intensity = 0.85 + rig.burst * 0.9 + rig.anticipation * 0.6 + rig.glow * 0.5;
+    const ca = rig.velocity * 0.0016 + rig.burst * 0.0024 + rig.glow * 0.002;
     offset.current.set(ca, ca * 0.6);
     if (aberration.current) aberration.current.offset = offset.current;
     if (depth.current) {
