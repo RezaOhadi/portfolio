@@ -86,7 +86,7 @@ export function ChangePasswordForm({
             <span>
               {codeSent
                 ? `${codeState.message} Enter it below. Nothing there? Check your spam folder, or `
-                : `To confirm it is you, we will email a six-digit code to ${email}. `}
+                : `To confirm it is you, we will email an eight-digit code to ${email}. `}
               {/* Same form, different action: the fields are posted to the code sender instead. */}
               <button type="submit" formAction={sendAction} formNoValidate className={styles.textLink} disabled={sending}>
                 {sending ? "sending…" : codeSent ? "send it again" : "email me a code"}
@@ -109,11 +109,11 @@ export function ChangePasswordForm({
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"
-              maxLength={7}
+              maxLength={8}
               spellCheck={false}
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="123456"
+              placeholder="12345678"
               aria-invalid={state.field === "code" || undefined}
               className={styles.input}
             />

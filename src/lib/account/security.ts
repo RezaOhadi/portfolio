@@ -168,12 +168,12 @@ function hashCode(userId: string, code: string) {
 
 export type IssueResult = { ok: true } | { ok: false; reason: "not_configured" | "no_email" | "failed" | "email_failed" };
 
-/** Emails a fresh six-digit code to the member; any earlier code stops working. */
+/** Emails a fresh eight-digit code to the member; any earlier code stops working. */
 export async function issuePasswordCode(member: MemberUser): Promise<IssueResult> {
   if (!member.email) return { ok: false, reason: "no_email" };
   const admin = createSupabaseAdminClient();
   if (!admin) return { ok: false, reason: "not_configured" };
-  const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+  const code = String(randomInt(0, 100_000_000)).padStart(8, "0");
   const { error } = await admin.from("password_codes").upsert(
     {
       user_id: member.id,
